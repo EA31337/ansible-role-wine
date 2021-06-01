@@ -1,0 +1,10 @@
+# A file containing a list of collections to be installed.
+# Usage:
+# ansible-galaxy install -r requirements.yml
+---
+collections:
+  - name: geerlingguy.mac
+    when: ansible_os_family == "Darwin"
+roles:
+  - name: geerlingguy.homebrew
+    when: ansible_os_family == "Darwin"
