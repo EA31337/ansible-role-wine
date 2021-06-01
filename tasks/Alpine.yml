@@ -1,0 +1,7 @@
+---
+- name: Install Wine on Alpine
+  become: true
+  community.general.apk:
+    name: wine
+    state: present
+    update_cache: true

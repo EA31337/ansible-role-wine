@@ -1,0 +1,13 @@
+---
+- name: Add Wine repo
+  template:
+    src: winehq.{{ ansible_os_family }}.list.j2
+    dest: /etc/apt/sources.list.d/winehq.list
+- name: Install Wine package
+  become: true
+  apt:
+    allow_unauthenticated: yes
+    install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
+    name: wine64
+    state: present
+    update_cache: yes
