@@ -1,13 +1,32 @@
 ---
+- name: Adds 32-bit architecture dependencies
+  ansible.builtin.lineinfile:
+    create: true
+    dest: /var/lib/dpkg/arch
+    line: "{{ item }}"
+  with_items:
+    # - amd64
+    - i386
 - name: Add Wine repo
-  template:
+  ansible.builtin.template:
     src: winehq.{{ ansible_os_family }}.list.j2
     dest: /etc/apt/sources.list.d/winehq.list
-- name: Install Wine package
   become: true
-  apt:
-    allow_unauthenticated: yes
-    install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
-    name: wine64
+- name: Adds Wine's repo Apt signing key
+  ansible.builtin.apt_key:
+    id: D43F640145369C51D786DDEA76F1A20FF987672F
+    keyring: /etc/apt/trusted.gpg.d/winehq.gpg
     state: present
-    update_cache: yes
+    url: https://dl.winehq.org/wine-builds/winehq.key
+  become: true
+- name: Install Wine package
+  ansible.builtin.apt:
+    allow_unauthenticated: !!str yes
+    install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
+    name: "{{ item }}"
+    state: present
+    update_cache: !!str yes
+  become: true
+  with_items:
+    - wine
+    - wine32

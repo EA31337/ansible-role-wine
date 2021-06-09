@@ -2,6 +2,5 @@
 - name: Install Wine
   community.general.homebrew_cask:
     name: "{{ item }}"
-  ignore_errors: true
   with_items:
     - wine-stable

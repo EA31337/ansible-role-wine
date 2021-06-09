@@ -3,11 +3,11 @@ driver:
   name: docker
 lint: |
   set -e
-  #yamllint .
-  #ansible-lint
+  #  yamllint .
+  #  ansible-lint
 platforms:
-  #- name: alpine-python-latest
-    #image: python:alpine3.12
+  #  - name: alpine-python-latest
+  #  image: python:alpine3.12
   - name: debian-python-latest
     image: python:latest
 provisioner:
@@ -18,7 +18,7 @@ provisioner:
   inventory:
     group_vars:
       all:
-        #ansible_user: nobody
+        #  ansible_user: nobody
         wine_install_winetricks: true
 verifier:
   name: ansible

@@ -1,1 +1,1 @@
-deb https://dl.winehq.org/wine-builds/{{ lsb_release_dist_id }}/ {{ lsb_release_code_name }} main
+deb [trusted=yes] https://dl.winehq.org/wine-builds/{{ lsb_release_dist_id.stdout | lower }} {{ lsb_release_code_name.stdout }} main
