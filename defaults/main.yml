@@ -1,5 +1,4 @@
 ---
 wine_install_recommends: false
-wine_install_winetricks: false
 # Stable, development, or staging.
 wine_release: development

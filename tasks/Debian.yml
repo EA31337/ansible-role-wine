@@ -4,13 +4,15 @@
     create: true
     dest: /var/lib/dpkg/arch
     line: "{{ item }}"
+    mode: 0644
   with_items:
     # - amd64
     - i386
 - name: Add Wine repo
   ansible.builtin.template:
-    src: winehq.{{ ansible_os_family }}.list.j2
     dest: /etc/apt/sources.list.d/winehq.list
+    mode: 0644
+    src: winehq.{{ ansible_os_family }}.list.j2
   become: true
 - name: Adds Wine's repo Apt signing key
   ansible.builtin.apt_key:
