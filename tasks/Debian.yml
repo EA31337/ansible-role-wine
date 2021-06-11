@@ -5,6 +5,7 @@
     dest: /var/lib/dpkg/arch
     line: "{{ item }}"
     mode: 0644
+  become: true
   with_items:
     # - amd64
     - i386
