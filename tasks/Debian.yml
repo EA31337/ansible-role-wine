@@ -29,4 +29,5 @@
   become: true
   with_items:
     - wine
-    - wine32
+    - wine32:i386
+    - wine64:amd64
