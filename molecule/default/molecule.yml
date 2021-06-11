@@ -6,8 +6,8 @@ lint: |
   #  yamllint .
   #  ansible-lint
 platforms:
-  #  - name: alpine-python-latest
-  #  image: python:alpine3.12
+  - name: alpine-python-latest
+    image: python:alpine3.12
   - name: debian-python-latest
     image: python:latest
 provisioner:

@@ -5,3 +5,8 @@
     name: wine
     state: present
     update_cache: true
+- name: Create symbolic link
+  file:
+    src: /usr/bin/wine64
+    dest: /usr/bin/wine
+    state: link
