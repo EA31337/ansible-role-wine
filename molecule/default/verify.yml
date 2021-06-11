@@ -1,3 +1,7 @@
 ---
 - name: Verify
   hosts: all
+  tasks:
+    - name: Verify Wine command
+      changed_when: false
+      command: wine --version
