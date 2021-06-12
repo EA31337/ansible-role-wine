@@ -1,7 +1,7 @@
 ---
 - name: Check if Wine is installed
   changed_when: false
-  command: wine --version
+  command: which wine
   register: wine_cmd_res
   failed_when: wine_cmd_res.rc > 2
 - name: Install Wine
