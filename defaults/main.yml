@@ -2,6 +2,6 @@
 ---
 wine_install_recommends: false
 wine_install_winetricks: false
-# Stable, development, or staging.
-wine_release: development
+# Stable, devel, or staging.
+wine_release: devel
 wine_winetricks_url: https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks
