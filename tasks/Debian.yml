@@ -15,6 +15,17 @@
     mode: 0644
     src: winehq.{{ ansible_os_family }}.list.j2
   become: true
+- name: Install GPG agent (required by apt-key)
+  ansible.builtin.apt:
+    allow_unauthenticated: !!str yes
+    install_recommends: !!str no
+    name: "{{ item }}"
+    state: present
+    update_cache: !!str yes
+  become: true
+  with_items:
+    - gpg
+    - gpg-agent
 - name: Adds Wine's repo Apt signing key
   ansible.builtin.apt_key:
     id: D43F640145369C51D786DDEA76F1A20FF987672F

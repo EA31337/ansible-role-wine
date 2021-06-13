@@ -2,8 +2,8 @@
 - name: Check if Wine is installed
   changed_when: false
   command: which wine
-  register: wine_cmd_res
-  failed_when: wine_cmd_res.rc > 2
+  failed_when: cmd_which_wine_res.rc > 1
+  register: cmd_which_wine_res
 - name: Install Wine
   block:
     - name: Get code name of the distribution
@@ -19,7 +19,7 @@
     - name: Include operating system specific tasks
       include_tasks:
         file: "{{ ansible_os_family }}.yml"
-  when: wine_cmd_res.rc == 2
+  when: cmd_which_wine_res.rc != 0
 - name: Verify Wine command
   changed_when: false
   command: wine --version
