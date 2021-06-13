@@ -7,7 +7,7 @@
     mode: 0644
   become: true
   with_items:
-    # - amd64
+    - amd64
     - i386
 - name: Add Wine repo
   ansible.builtin.template:
