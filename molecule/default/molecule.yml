@@ -20,6 +20,6 @@ provisioner:
   inventory:
     group_vars:
       all:
-      #  ansible_user: nobody
+        wine_install_winetricks: true
 verifier:
   name: ansible

@@ -11,3 +11,11 @@
     src: /usr/bin/wine64
     dest: /usr/bin/wine
     state: link
+- name: Install Winetricks (via URL)
+  ansible.builtin.get_url:
+    dest: /usr/local/bin/winetricks
+    force: false
+    mode: 0755
+    url: "{{ wine_winetricks_url }}"
+  become: true
+  when: wine_install_winetricks

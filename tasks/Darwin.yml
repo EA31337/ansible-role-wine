@@ -4,3 +4,7 @@
     name: "{{ item }}"
   with_items:
     - wine-stable
+- name: Install Winetricks
+  ansible.buildin.package:
+    name: winetricks
+  when: wine_install_winetricks
