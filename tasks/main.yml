@@ -30,7 +30,7 @@
     or (wine_install_winetricks and cmd_which_winetricks_res != 0)
 - name: Verify Wine command
   changed_when: false
-  command: wine --version
+  command: which wine
 - name: Verify Winetricks command
   changed_when: false
   command: winetricks --version

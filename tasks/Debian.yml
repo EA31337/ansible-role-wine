@@ -48,6 +48,19 @@
         - wine32:i386
         - wine64:amd64
       when: lsb_release_dist_id.stdout in ["Debian"]
+    - name: Install Wine package (Ubuntu)
+      ansible.builtin.apt:
+        allow_unauthenticated: !!str yes
+        install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
+        name: "{{ item }}"
+        state: present
+        update_cache: !!str yes
+      become: true
+      with_items:
+        - wine32:i386
+        - wine64:amd64
+        - wine-stable
+      when: lsb_release_dist_id.stdout in ["Ubuntu"]
     - name: Install Wine package (non-Debian)
       ansible.builtin.apt:
         allow_unauthenticated: !!str yes
@@ -58,7 +71,7 @@
       become: true
       with_items:
         - winehq-{{ wine_release }}
-      when: lsb_release_dist_id.stdout not in ["Debian"]
+      when: lsb_release_dist_id.stdout not in ["Debian", "Ubuntu"]
 - name: Install Winetricks
   block:
     - name: Install Winetricks via Apt (Ubuntu)
