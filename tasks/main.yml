@@ -11,49 +11,12 @@
   register: cmd_which_winetricks_res
   when: wine_install_winetricks
 - name: Install Wine
-  block:
-    - name: Get code name of the distribution
-      changed_when: false
-      command: /usr/bin/lsb_release -sc
-      register: lsb_release_code_name
-      when: ansible_os_family in ["Debian"]
-    - name: Get ID of the distribution
-      changed_when: false
-      command: /usr/bin/lsb_release -si
-      register: lsb_release_dist_id
-      when: ansible_os_family in ["Debian"]
-    - name: Include operating system specific tasks
-      include_tasks:
-        file: "{{ ansible_os_family }}.yml"
+  include: wine.yml
   when: cmd_which_wine_res.rc != 0
 - name: Install Winetricks
-  block:
-    - name: Get ID of the distribution
-      changed_when: false
-      command: /usr/bin/lsb_release -si
-      register: lsb_release_dist_id
-      when: ansible_os_family in ["Debian"]
-    - name: Install Winetricks via Apt (Ubuntu)
-      ansible.builtin.apt:
-        allow_unauthenticated: true
-        install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
-        name: winetricks
-        state: present
-        update_cache: true
-      become: true
-      when:
-        - lsb_release_dist_id.stdout is defined
-        - lsb_release_dist_id.stdout in ["Ubuntu"]
-    - name: Install Winetricks via URL
-      ansible.builtin.get_url:
-        dest: /usr/local/bin/winetricks
-        force: false
-        mode: 0755
-        url: '{{ wine_winetricks_url }}'
-      become: true
-      when: >-
-        (lsb_release_dist_id.stdout is not defined
-        or lsb_release_dist_id.stdout not in ["Ubuntu"])
-  when: wine_install_winetricks and cmd_which_winetricks_res.rc != 0
+  include: winetricks.yml
+  when:
+    - wine_install_winetricks
+    - cmd_which_winetricks_res.rc != 0
 - name: Verify
   include: verify.yml
