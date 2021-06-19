@@ -55,12 +55,5 @@
         (lsb_release_dist_id.stdout is not defined
         or lsb_release_dist_id.stdout not in ["Ubuntu"])
   when: wine_install_winetricks and cmd_which_winetricks_res.rc != 0
-- name: Verify Wine command
-  changed_when: false
-  command: wine --version
-  register: wine_version
-  failed_when: wine_version.rc != 0 and wine_version.rc != -6
-- name: Verify Winetricks command
-  changed_when: false
-  command: winetricks --version
-  when: wine_install_winetricks
+- name: Verify
+  include: verify.yml
