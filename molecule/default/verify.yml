@@ -5,6 +5,8 @@
     - name: Verify Wine command
       changed_when: false
       command: wine --version
+      register: wine_version
+      failed_when: wine_version.rc != 0 and wine_version.rc != -6
     - name: Verify Winetricks command
       changed_when: false
       command: winetricks --version
