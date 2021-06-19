@@ -3,7 +3,7 @@
   community.general.homebrew_cask:
     name: "{{ item }}"
   with_items:
-    - wine-stable
+    - wine-{{ wine_release }}
 - name: Install Winetricks
   package:
     name: winetricks

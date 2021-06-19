@@ -74,7 +74,7 @@
       with_items:
         - wine32:i386
         - wine64:amd64
-        - winehq-stable
+        - winehq-{{ wine_release }}
       when: lsb_release_dist_id.stdout in ["Ubuntu"]
     - name: Install Wine package (non-Debian)
       ansible.builtin.apt:
