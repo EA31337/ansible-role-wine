@@ -72,7 +72,7 @@
         update_cache: true
       become: true
       with_items:
-        - winehq-stable
+        - winehq-{{ wine_release }}
       when: lsb_release_dist_id.stdout in ["Ubuntu"]
     - name: Install Wine package (non-Debian)
       ansible.builtin.apt:
@@ -93,22 +93,3 @@
   command: wineboot -u
   changed_when: false
 - name: Install Winetricks
-  block:
-    - name: Install Winetricks via Apt (Ubuntu)
-      ansible.builtin.apt:
-        allow_unauthenticated: true
-        install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
-        name: winetricks
-        state: present
-        update_cache: true
-      become: true
-      when: lsb_release_dist_id.stdout in ["Ubuntu"]
-    - name: Install Winetricks via URL (non-Ubuntu)
-      ansible.builtin.get_url:
-        dest: /usr/local/bin/winetricks
-        force: false
-        mode: 0755
-        url: '{{ wine_winetricks_url }}'
-      become: true
-      when: lsb_release_dist_id.stdout not in ["Ubuntu"]
-  when: wine_install_winetricks
