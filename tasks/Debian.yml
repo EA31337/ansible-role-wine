@@ -72,8 +72,6 @@
         update_cache: true
       become: true
       with_items:
-        - wine32:i386
-        - wine64:amd64
         - winehq-stable
       when: lsb_release_dist_id.stdout in ["Ubuntu"]
     - name: Install Wine package (non-Debian)
@@ -87,6 +85,13 @@
       with_items:
         - winehq-{{ wine_release }}
       when: lsb_release_dist_id.stdout not in ["Debian", "Ubuntu"]
+- name: Remove ~/.wine
+  file:
+    path: ~/.wine
+    state: absent
+- name: Reinitialize ~/.wine
+  command: wineboot -u
+  changed_when: false
 - name: Install Winetricks
   block:
     - name: Install Winetricks via Apt (Ubuntu)
