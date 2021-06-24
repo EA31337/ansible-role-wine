@@ -1,10 +1,10 @@
 ---
-- name: Verify Wine command
+- name: Check if Wine is installed
   changed_when: false
   command: wine --version
   register: wine_version
   failed_when: wine_version.rc != 0 and wine_version.rc != -6
-- name: Verify Winetricks command
+- name: Check if Winetricks is installed
   changed_when: false
   command: winetricks --version
   when: wine_install_winetricks
