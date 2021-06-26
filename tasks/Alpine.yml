@@ -1,7 +1,7 @@
 ---
 - name: Install Wine on Alpine
   become: true
-  community.general.apk:
+  ansible.builtin.package:
     name: wine
     state: present
     update_cache: true

@@ -5,6 +5,6 @@
   with_items:
     - wine-{{ wine_release }}
 - name: Install Winetricks
-  package:
+  ansible.builtin.package:
     name: winetricks
   when: wine_install_winetricks
