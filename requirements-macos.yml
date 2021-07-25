@@ -4,7 +4,5 @@
 ---
 collections:
   - name: geerlingguy.mac
-    when: ansible_os_family == "Darwin"
 roles:
   - name: geerlingguy.homebrew
-    when: ansible_os_family == "Darwin"
