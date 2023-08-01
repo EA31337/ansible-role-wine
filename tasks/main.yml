@@ -11,12 +11,12 @@
   register: cmd_which_winetricks_res
   when: wine_install_winetricks
 - name: Install Wine
-  include: wine.yml
+  include_tasks: wine.yml
   when: cmd_which_wine_res.rc != 0
 - name: Install Winetricks
-  include: winetricks.yml
+  include_tasks: winetricks.yml
   when:
     - wine_install_winetricks
     - cmd_which_winetricks_res.rc != 0
 - name: Verify
-  include: verify.yml
+  include_tasks: verify.yml
