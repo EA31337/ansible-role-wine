@@ -90,16 +90,16 @@
 - name: Remove ~/.wine if it wasn't previously reinitialized
   block:
     - name: Checking if previously reinitialized
-      stat:
+      ansible.builtin.stat:
         path: /tmp/.wine-reinitialized
       register: wine_reinitialized
     - name: Removing ~/.wine
-      file:
+      ansible.builtin.file:
         path: ~/.wine
         state: absent
       when: not wine_reinitialized.stat.exists
     - name: Marking as reintialized
-      file:
+      ansible.builtin.file:
         path: /tmp/.wine-reinitialized
         state: touch
         owner: root
@@ -107,9 +107,10 @@
         mode: 0555
       when: not wine_reinitialized.stat.exists
 - name: Reinitialize ~/.wine
-  command: wineboot -u
+  ansible.builtin.command: wineboot -u
   changed_when: false
 - name: Install Winetricks
+  when: wine_install_winetricks
   block:
     - name: Install Winetricks via Apt (Ubuntu)
       ansible.builtin.apt:
@@ -128,4 +129,3 @@
         url: '{{ wine_winetricks_url }}'
       become: true
       when: lsb_release_dist_id.stdout not in ["Ubuntu"]
-  when: wine_install_winetricks
