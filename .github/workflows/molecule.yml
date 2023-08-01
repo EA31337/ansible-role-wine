@@ -14,3 +14,5 @@ jobs:
         with:
           path: "${{ github.repository }}"
       - uses: gofrolist/molecule-action@v2
+        with:
+          molecule_working_dir: "${{ github.repository }}"
