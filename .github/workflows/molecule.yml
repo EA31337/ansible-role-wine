@@ -10,7 +10,9 @@ jobs:
   Test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           path: "${{ github.repository }}"
-      - uses: robertdebock/molecule-action@master
+      - uses: gofrolist/molecule-action@v2
+        with:
+          molecule_working_dir: "${{ github.repository }}"
