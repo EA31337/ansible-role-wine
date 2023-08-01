@@ -74,7 +74,7 @@
         update_cache: true
       become: true
       with_items:
-        - winehq-{{ wine_release }}
+        - wine-{{ wine_release }}
       when: lsb_release_dist_id.stdout in ["Ubuntu"]
     - name: Install Wine package (non-Debian)
       ansible.builtin.apt:
