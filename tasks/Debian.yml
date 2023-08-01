@@ -9,19 +9,7 @@
   with_items:
     - amd64
     - i386
-- name: Add Wine repo
-  ansible.builtin.template:
-    dest: /etc/apt/sources.list.d/winehq.list
-    mode: 0644
-    src: winehq.{{ ansible_os_family }}.list.j2
-  become: true
-- name: Add Wine backports repo
-  ansible.builtin.template:
-    dest: /etc/apt/sources.list.d/ubuntu.list
-    mode: 0644
-    src: winehq.Ubuntu.list.j2
-  become: true
-  when: lsb_release_dist_id.stdout in ["Ubuntu"]
+  when: false
 - name: Install GPG agent (required by apt-key)
   ansible.builtin.apt:
     allow_unauthenticated: true
@@ -33,6 +21,12 @@
   with_items:
     - gpg
     - gpg-agent
+- name: Add Wine repo
+  ansible.builtin.template:
+    dest: /etc/apt/sources.list.d/winehq.list
+    mode: 0644
+    src: winehq.{{ ansible_os_family }}.list.j2
+  become: true
 - name: Adds Wine's repo Apt signing key
   ansible.builtin.apt_key:
     id: D43F640145369C51D786DDEA76F1A20FF987672F
@@ -40,6 +34,13 @@
     state: present
     url: https://dl.winehq.org/wine-builds/winehq.key
   become: true
+- name: Add Wine backports repo
+  ansible.builtin.template:
+    dest: /etc/apt/sources.list.d/ubuntu.list
+    mode: 0644
+    src: winehq.Ubuntu.list.j2
+  become: true
+  when: lsb_release_dist_id.stdout in ["Ubuntu"]
 - name: Adds Wine's backports repo Apt signing key
   ansible.builtin.apt_key:
     id: BBB8BD3BBE6AD3419048EDC50795A9A788A59C82
@@ -60,8 +61,9 @@
       become: true
       with_items:
         - wine
-        - wine32:i386
-        - wine64:amd64
+        - wine64
+        # - wine32:i386
+        # - wine64:amd64
       when: lsb_release_dist_id.stdout in ["Debian"]
     - name: Install Wine package (Ubuntu)
       ansible.builtin.apt:
