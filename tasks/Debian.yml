@@ -87,3 +87,45 @@
       with_items:
         - winehq-{{ wine_release }}
       when: lsb_release_dist_id.stdout not in ["Debian", "Ubuntu"]
+- name: Remove ~/.wine if it wasn't previously reinitialized
+  block:
+    - name: Checking if previously reinitialized
+      stat:
+        path: /tmp/.wine-reinitialized
+      register: wine_reinitialized
+    - name: Removing ~/.wine
+      file:
+        path: ~/.wine
+        state: absent
+      when: not wine_reinitialized.stat.exists
+    - name: Marking as reintialized
+      file:
+        path: /tmp/.wine-reinitialized
+        state: touch
+        owner: root
+        group: sys
+        mode: 0555
+      when: not wine_reinitialized.stat.exists
+- name: Reinitialize ~/.wine
+  command: wineboot -u
+  changed_when: false
+- name: Install Winetricks
+  block:
+    - name: Install Winetricks via Apt (Ubuntu)
+      ansible.builtin.apt:
+        allow_unauthenticated: true
+        install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
+        name: winetricks
+        state: present
+        update_cache: true
+      become: true
+      when: lsb_release_dist_id.stdout in ["Ubuntu"]
+    - name: Install Winetricks via URL (non-Ubuntu)
+      ansible.builtin.get_url:
+        dest: /usr/local/bin/winetricks
+        force: false
+        mode: 0755
+        url: '{{ wine_winetricks_url }}'
+      become: true
+      when: lsb_release_dist_id.stdout not in ["Ubuntu"]
+  when: wine_install_winetricks
