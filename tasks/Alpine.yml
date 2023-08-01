@@ -7,7 +7,7 @@
     update_cache: true
 - name: Create symbolic link
   become: true
-  file:
+  ansible.builtin.file:
     src: /usr/bin/wine64
     dest: /usr/bin/wine
     state: link

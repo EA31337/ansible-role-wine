@@ -10,7 +10,7 @@ galaxy_info:
     - wine
   issue_tracker_url: https://github.com/EA31337/ansible-role-wine
   license: GPLv3
-  min_ansible_version: 2.7
+  min_ansible_version: !!str 2.7
   namespace: ea31337
   platforms:
     - name: Alpine

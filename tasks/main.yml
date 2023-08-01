@@ -1,22 +1,22 @@
 ---
 - name: Check if Wine command exists0
   changed_when: false
-  command: which wine
+  ansible.builtin.command: which wine
   failed_when: cmd_which_wine_res.rc > 1
   register: cmd_which_wine_res
 - name: Check if Winetricks command
   changed_when: false
-  command: which winetricks
+  ansible.builtin.command: which winetricks
   failed_when: cmd_which_winetricks_res.rc > 1
   register: cmd_which_winetricks_res
   when: wine_install_winetricks
 - name: Install Wine
-  include_tasks: wine.yml
+  ansible.builtin.include_tasks: wine.yml
   when: cmd_which_wine_res.rc != 0
 - name: Install Winetricks
-  include_tasks: winetricks.yml
+  ansible.builtin.include_tasks: winetricks.yml
   when:
     - wine_install_winetricks
     - cmd_which_winetricks_res.rc != 0
 - name: Verify
-  include_tasks: verify.yml
+  ansible.builtin.include_tasks: verify.yml
