@@ -1,5 +1,6 @@
 # yamllint disable rule:line-length
 ---
+wine_install_p7zip: false
 wine_install_recommends: false
 wine_install_winetricks: false
 # Stable, development, or staging.

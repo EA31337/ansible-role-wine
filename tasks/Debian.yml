@@ -87,6 +87,14 @@
       with_items:
         - winehq-{{ wine_release }}
       when: lsb_release_dist_id.stdout not in ["Debian", "Ubuntu"]
+    - name: Install p7zip
+      ansible.builtin.apt:
+        allow_unauthenticated: true
+        install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
+        name: p7zip-full
+        state: present
+        update_cache: true
+      become: true
 - name: Remove ~/.wine if it wasn't previously reinitialized
   block:
     - name: Checking if previously reinitialized

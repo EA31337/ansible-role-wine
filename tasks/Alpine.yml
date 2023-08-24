@@ -20,3 +20,9 @@
     url: "{{ wine_winetricks_url }}"
   become: true
   when: wine_install_winetricks
+- name: Install p7zip on Alpine
+  become: true
+  ansible.builtin.package:
+    name: p7zip
+    state: present
+    update_cache: true
