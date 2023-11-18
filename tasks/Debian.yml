@@ -96,6 +96,7 @@
         update_cache: true
       become: true
 - name: Remove ~/.wine if it wasn't previously reinitialized
+  when: false
   block:
     - name: Checking if previously reinitialized
       ansible.builtin.stat:
@@ -114,7 +115,6 @@
         group: sys
         mode: 0555
       when: not wine_reinitialized.stat.exists
-  when: false
 - name: Reinitialize ~/.wine
   ansible.builtin.command: wineboot -u
   changed_when: false
