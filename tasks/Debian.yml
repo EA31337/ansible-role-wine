@@ -9,7 +9,6 @@
   with_items:
     - amd64
     - i386
-  when: false
 - name: Install GPG agent (required by apt-key)
   ansible.builtin.apt:
     allow_unauthenticated: true
