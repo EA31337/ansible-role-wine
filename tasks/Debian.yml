@@ -114,6 +114,7 @@
         group: sys
         mode: 0555
       when: not wine_reinitialized.stat.exists
+  when: false
 - name: Reinitialize ~/.wine
   ansible.builtin.command: wineboot -u
   changed_when: false
