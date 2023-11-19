@@ -117,6 +117,8 @@
       when: not wine_reinitialized.stat.exists
 - name: Reinitialize ~/.wine
   ansible.builtin.command: wineboot -u
+  environment:
+    WINEARCH: win64
   changed_when: false
 - name: Install Winetricks
   when: wine_install_winetricks
