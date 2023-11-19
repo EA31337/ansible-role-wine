@@ -9,7 +9,6 @@
   with_items:
     - amd64
     - i386
-  when: false
 - name: Install GPG agent (required by apt-key)
   ansible.builtin.apt:
     allow_unauthenticated: true
@@ -75,6 +74,7 @@
       become: true
       with_items:
         - wine-{{ wine_release }}
+        - wine32-{{ wine_release }}
       when: lsb_release_dist_id.stdout in ["Ubuntu"]
     - name: Install Wine package (non-Debian)
       ansible.builtin.apt:
@@ -96,6 +96,7 @@
         update_cache: true
       become: true
 - name: Remove ~/.wine if it wasn't previously reinitialized
+  when: false
   block:
     - name: Checking if previously reinitialized
       ansible.builtin.stat:
