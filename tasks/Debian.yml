@@ -60,9 +60,8 @@
       become: true
       with_items:
         - wine
+        - wine32:i386
         - wine64
-        # - wine32:i386
-        # - wine64:amd64
       when: lsb_release_dist_id.stdout in ["Debian"]
     - name: Install Wine package (Ubuntu)
       ansible.builtin.apt:
