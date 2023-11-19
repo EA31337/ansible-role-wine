@@ -115,10 +115,11 @@
         group: sys
         mode: 0555
       when: not wine_reinitialized.stat.exists
-- name: Reinitialize ~/.wine
+- name: Updates ~/.wine
   ansible.builtin.command: wineboot -u
   environment:
     WINEARCH: win64
+    WINEPREFIX: ~/.wine64
   changed_when: false
 - name: Install Winetricks
   when: wine_install_winetricks
