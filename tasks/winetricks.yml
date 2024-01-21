@@ -4,6 +4,16 @@
   ansible.builtin.command: /usr/bin/lsb_release -si
   register: lsb_release_dist_id
   when: ansible_os_family in ["Debian"]
+
+- name: Check if Winetricks is installed
+  ansible.builtin.raw: winetricks --version
+  check_mode: false
+  changed_when: false
+  failed_when:
+    - winetricks_version_res.rc != 0
+    - winetricks_version_res.rc != 127
+  register: winetricks_version_res
+
 - name: Install Winetricks via Apt (Ubuntu)
   ansible.builtin.apt:
     allow_unauthenticated: true
@@ -13,8 +23,10 @@
     update_cache: true
   become: true
   when:
+    - winetricks_version_res.rc != 0  # Winetricks is not installed.
     - lsb_release_dist_id.stdout is defined
     - lsb_release_dist_id.stdout in ["Ubuntu"]
+
 - name: Install Winetricks via URL
   ansible.builtin.get_url:
     dest: /usr/local/bin/winetricks
@@ -22,6 +34,7 @@
     mode: 0755
     url: '{{ wine_winetricks_url }}'
   become: true
-  when: >-
-    (lsb_release_dist_id.stdout is not defined
-    or lsb_release_dist_id.stdout not in ["Ubuntu"])
+  when:
+    - winetricks_version_res.rc != 0  # Winetricks is not installed.
+    - (lsb_release_dist_id.stdout is not defined
+      or lsb_release_dist_id.stdout not in ["Ubuntu"])
