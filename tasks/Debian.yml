@@ -60,9 +60,8 @@
       become: true
       with_items:
         - wine
+        - wine32:i386
         - wine64
-        # - wine32:i386
-        # - wine64:amd64
       when: lsb_release_dist_id.stdout in ["Debian"]
     - name: Install Wine package (Ubuntu)
       ansible.builtin.apt:
@@ -74,7 +73,8 @@
       become: true
       with_items:
         - wine-{{ wine_release }}
-        - wine32-{{ wine_release }}
+        - wine32-{{ wine_release }}:i386
+        - wine64-{{ wine_release }}
       when: lsb_release_dist_id.stdout in ["Ubuntu"]
     - name: Install Wine package (non-Debian)
       ansible.builtin.apt:
@@ -117,8 +117,11 @@
       when: not wine_reinitialized.stat.exists
 - name: Reinitialize ~/.wine
   ansible.builtin.command: wineboot -u
+  environment:
+    WINEARCH: win64
   changed_when: false
 - name: Install Winetricks
+  become: true
   when: wine_install_winetricks
   block:
     - name: Install Winetricks via Apt (Ubuntu)
@@ -128,7 +131,6 @@
         name: winetricks
         state: present
         update_cache: true
-      become: true
       when: lsb_release_dist_id.stdout in ["Ubuntu"]
     - name: Install Winetricks via URL (non-Ubuntu)
       ansible.builtin.get_url:
@@ -136,5 +138,11 @@
         force: false
         mode: 0755
         url: '{{ wine_winetricks_url }}'
-      become: true
       when: lsb_release_dist_id.stdout not in ["Ubuntu"]
+    - name: Install Curl (required by winetricks)
+      ansible.builtin.apt:
+        allow_unauthenticated: true
+        install_recommends: false
+        name: curl
+        state: present
+        update_cache: true
