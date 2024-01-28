@@ -1,9 +1,8 @@
 ---
 - name: Ensure lsb_release command is present
-  ansible.builtin.apt:
+  ansible.builtin.package:
     name: lsb-release
     state: present
-    update_cache: true
 - name: Get code name of the distribution
   changed_when: false
   ansible.builtin.command: /usr/bin/lsb_release -sc
