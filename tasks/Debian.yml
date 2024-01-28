@@ -1,68 +1,70 @@
 ---
-- name: Adds 32-bit architecture dependencies
-  ansible.builtin.lineinfile:
-    create: true
-    dest: /var/lib/dpkg/arch
-    line: '{{ item }}'
-    mode: 0644
-  become: true
-  with_items:
-    - amd64
-    - i386
-- name: Update Apt cache
-  ansible.builtin.apt:
-    update_cache: true
-- name: Ensure lsb_release command is present
-  ansible.builtin.package:
-    name: lsb-release
-    state: present
-- name: Get code name of the distribution
-  changed_when: false
-  ansible.builtin.command: /usr/bin/lsb_release -sc
-  register: lsb_release_code_name
-- name: Get ID of the distribution
-  changed_when: false
-  ansible.builtin.command: /usr/bin/lsb_release -si
-  register: lsb_release_dist_id
-- name: Add Wine repo
-  ansible.builtin.template:
-    dest: /etc/apt/sources.list.d/winehq.list
-    mode: 0644
-    src: winehq.{{ ansible_os_family }}.list.j2
-  become: true
-- name: Ensure GPG agent is present (required by apt-key)
-  ansible.builtin.package:
-    name: '{{ item }}'
-    state: present
-  become: true
-  with_items:
-    - gpg
-    - gpg-agent
-- name: Adds Wine's repo Apt signing key
-  ansible.builtin.apt_key:
-    id: D43F640145369C51D786DDEA76F1A20FF987672F
-    keyring: /etc/apt/trusted.gpg.d/winehq.gpg
-    state: present
-    url: https://dl.winehq.org/wine-builds/winehq.key
-  become: true
-- name: Add Wine backports repo
-  ansible.builtin.template:
-    dest: /etc/apt/sources.list.d/ubuntu.list
-    mode: 0644
-    src: winehq.Ubuntu.list.j2
-  become: true
-  when: lsb_release_dist_id.stdout in ["Ubuntu"]
-- name: Adds Wine's backports repo Apt signing key
-  ansible.builtin.apt_key:
-    id: BBB8BD3BBE6AD3419048EDC50795A9A788A59C82
-    state: present
-    url:
-      "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xbbb8bd3bbe6ad341\
-      9048edc50795a9a788a59c82"
-  become: true
-- name: Install Wine package
+- name: Ensure Wine repository is configured
   block:
-    - name: Install Wine package (Debian)
+    - name: Adds 32-bit architecture dependencies
+      ansible.builtin.lineinfile:
+        create: true
+        dest: /var/lib/dpkg/arch
+        line: '{{ item }}'
+        mode: 0644
+      become: true
+      with_items:
+        - amd64
+        - i386
+    - name: Update Apt cache
+      ansible.builtin.apt:
+        update_cache: true
+    - name: Ensure lsb_release command is present
+      ansible.builtin.package:
+        name: lsb-release
+        state: present
+    - name: Gets code name of the distribution
+      changed_when: false
+      ansible.builtin.command: /usr/bin/lsb_release -sc
+      register: lsb_release_code_name
+    - name: Gets ID of the distribution
+      changed_when: false
+      ansible.builtin.command: /usr/bin/lsb_release -si
+      register: lsb_release_dist_id
+    - name: Ensure Wine repo is present
+      ansible.builtin.template:
+        dest: /etc/apt/sources.list.d/winehq.list
+        mode: 0644
+        src: winehq.{{ ansible_os_family }}.list.j2
+      become: true
+    - name: Ensure GPG agent is present (required by apt-key)
+      ansible.builtin.package:
+        name: '{{ item }}'
+        state: present
+      become: true
+      with_items:
+        - gpg
+        - gpg-agent
+    - name: Ensure Wine's repo Apt signing key is present
+      ansible.builtin.apt_key:
+        id: D43F640145369C51D786DDEA76F1A20FF987672F
+        keyring: /etc/apt/trusted.gpg.d/winehq.gpg
+        state: present
+        url: https://dl.winehq.org/wine-builds/winehq.key
+      become: true
+    - name: Ensure Wine backports repo is present
+      ansible.builtin.template:
+        dest: /etc/apt/sources.list.d/ubuntu.list
+        mode: 0644
+        src: winehq.Ubuntu.list.j2
+      become: true
+      when: lsb_release_dist_id.stdout in ["Ubuntu"]
+    - name: Adds Wine's backports repo Apt signing key
+      ansible.builtin.apt_key:
+        id: BBB8BD3BBE6AD3419048EDC50795A9A788A59C82
+        state: present
+        url:
+          "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xbbb8bd3bbe6ad341\
+          9048edc50795a9a788a59c82"
+      become: true
+- name: Ensure Wine is present
+  block:
+    - name: Ensure Wine package is present (Debian)
       ansible.builtin.apt:
         allow_unauthenticated: true
         install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
@@ -75,7 +77,7 @@
         - wine32:i386
         - wine64
       when: lsb_release_dist_id.stdout in ["Debian"]
-    - name: Install Wine package (Ubuntu)
+    - name: Ensure Wine package is present (Ubuntu)
       ansible.builtin.apt:
         allow_unauthenticated: true
         install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
@@ -88,7 +90,7 @@
         - wine32-{{ wine_release }}:i386
         - wine64-{{ wine_release }}
       when: lsb_release_dist_id.stdout in ["Ubuntu"]
-    - name: Install Wine package (non-Debian)
+    - name: Ensure Wine package is present (non-Debian)
       ansible.builtin.apt:
         allow_unauthenticated: true
         install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
