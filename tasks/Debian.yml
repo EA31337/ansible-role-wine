@@ -9,23 +9,35 @@
   with_items:
     - amd64
     - i386
-- name: Install GPG agent (required by apt-key)
+- name: Update Apt cache
   ansible.builtin.apt:
-    allow_unauthenticated: true
-    install_recommends: false
-    name: '{{ item }}'
-    state: present
     update_cache: true
-  become: true
-  with_items:
-    - gpg
-    - gpg-agent
+- name: Ensure lsb_release command is present
+  ansible.builtin.package:
+    name: lsb-release
+    state: present
+- name: Get code name of the distribution
+  changed_when: false
+  ansible.builtin.command: /usr/bin/lsb_release -sc
+  register: lsb_release_code_name
+- name: Get ID of the distribution
+  changed_when: false
+  ansible.builtin.command: /usr/bin/lsb_release -si
+  register: lsb_release_dist_id
 - name: Add Wine repo
   ansible.builtin.template:
     dest: /etc/apt/sources.list.d/winehq.list
     mode: 0644
     src: winehq.{{ ansible_os_family }}.list.j2
   become: true
+- name: Ensure GPG agent is present (required by apt-key)
+  ansible.builtin.package:
+    name: '{{ item }}'
+    state: present
+  become: true
+  with_items:
+    - gpg
+    - gpg-agent
 - name: Adds Wine's repo Apt signing key
   ansible.builtin.apt_key:
     id: D43F640145369C51D786DDEA76F1A20FF987672F
@@ -124,7 +136,7 @@
   become: true
   when: wine_install_winetricks
   block:
-    - name: Install Winetricks via Apt (Ubuntu)
+    - name: Ensure Winetricks is present (Ubuntu)
       ansible.builtin.apt:
         allow_unauthenticated: true
         install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"

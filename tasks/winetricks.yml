@@ -12,7 +12,7 @@
   failed_when: cmd_which_winetricks_res.rc > 1
   register: cmd_which_winetricks_res
 
-- name: Install Winetricks via Apt (Ubuntu)
+- name: Ensure Winetricks is present (Ubuntu)
   ansible.builtin.apt:
     allow_unauthenticated: true
     install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
