@@ -36,4 +36,5 @@
     - cmd_which_winetricks_res.rc != 0  # Winetricks is not installed.
     - (lsb_release_dist_id.stdout is not defined
       or lsb_release_dist_id.stdout not in ["Ubuntu"])
+    - wine_winetricks_url is defined
     - wine_winetricks_url | length > 0

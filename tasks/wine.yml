@@ -3,16 +3,24 @@
   ansible.builtin.package:
     name: lsb-release
     state: present
+  ignore_errors: true
+  register: res_lsb_release
 - name: Get code name of the distribution
   changed_when: false
   ansible.builtin.command: /usr/bin/lsb_release -sc
   register: lsb_release_code_name
-  when: ansible_os_family in ["Debian"]
+  when:
+    - ansible_os_family in ["Debian"]
+    - res_lsb_release is defined
+    - '"ERROR" not in res_lsb_release.stderr'
 - name: Get ID of the distribution
   changed_when: false
   ansible.builtin.command: /usr/bin/lsb_release -si
   register: lsb_release_dist_id
-  when: ansible_os_family in ["Debian"]
+  when:
+    - ansible_os_family in ["Debian"]
+    - res_lsb_release is defined
+    - '"ERROR" not in res_lsb_release.stderr'
 - name: Include operating system specific tasks
   ansible.builtin.include_tasks:
     file: "{{ ansible_os_family }}.yml"
