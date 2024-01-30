@@ -33,7 +33,9 @@
 
 - name: Sets Windows version via winetricks
   ansible.builtin.command: winetricks -q {{ wine_winetricks_winver }}
+  async: 20
   changed_when: false
+  poll: 0
   when:
     - cmd_which_winetricks_res.rc == 0
     - wine_winetricks_winver is defined
