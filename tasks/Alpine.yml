@@ -1,18 +1,18 @@
 ---
-- name: Install Wine on Alpine
+- name: Ensures Wine is present (Alpine)
   become: true
   ansible.builtin.package:
     name: wine
     state: present
     update_cache: true
-- name: Create symbolic link
+- name: Ensures symbolic link for Wine is present
   become: true
   ansible.builtin.file:
     src: /usr/bin/wine64
     dest: /usr/bin/wine
     state: link
   when: false
-- name: Install Winetricks (via URL)
+- name: Ensures Winetricks is present (via URL)
   ansible.builtin.get_url:
     dest: /usr/local/bin/winetricks
     force: false
@@ -20,7 +20,7 @@
     url: "{{ wine_winetricks_url }}"
   become: true
   when: wine_install_winetricks
-- name: Install p7zip on Alpine
+- name: Ensures p7zip is present (Alpine)
   become: true
   ansible.builtin.package:
     name: p7zip

@@ -1,4 +1,4 @@
 ---
-- name: Include operating system specific tasks
+- name: Includes operating system specific tasks
   ansible.builtin.include_tasks:
     file: "{{ ansible_os_family }}.yml"

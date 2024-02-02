@@ -1,5 +1,5 @@
 ---
-- name: Ensure Wine repository is configured
+- name: Ensures Wine repository is configured
   block:
     - name: Adds 32-bit architecture dependencies
       ansible.builtin.lineinfile:
@@ -11,10 +11,10 @@
       with_items:
         - amd64
         - i386
-    - name: Update Apt cache
+    - name: Ensures Apt cache is up-to-date
       ansible.builtin.apt:
         update_cache: true
-    - name: Ensure lsb_release command is present
+    - name: Ensures lsb_release command is present
       ansible.builtin.package:
         name: lsb-release
         state: present
@@ -26,13 +26,13 @@
       changed_when: false
       ansible.builtin.command: /usr/bin/lsb_release -si
       register: lsb_release_dist_id
-    - name: Ensure Wine repo is present
+    - name: Ensures Wine repo is present
       ansible.builtin.template:
         dest: /etc/apt/sources.list.d/winehq.list
         mode: 0644
         src: winehq.{{ ansible_os_family }}.list.j2
       become: true
-    - name: Ensure GPG agent is present (required by apt-key)
+    - name: Ensures GPG agent is present (required by apt-key)
       ansible.builtin.package:
         name: '{{ item }}'
         state: present
@@ -40,21 +40,21 @@
       with_items:
         - gpg
         - gpg-agent
-    - name: Ensure Wine's repo Apt signing key is present
+    - name: Ensures Wine's repo Apt signing key is present
       ansible.builtin.apt_key:
         id: D43F640145369C51D786DDEA76F1A20FF987672F
         keyring: /etc/apt/trusted.gpg.d/winehq.gpg
         state: present
         url: https://dl.winehq.org/wine-builds/winehq.key
       become: true
-    - name: Ensure Wine backports repo is present
+    - name: Ensures Wine backports repo is present
       ansible.builtin.template:
         dest: /etc/apt/sources.list.d/ubuntu.list
         mode: 0644
         src: winehq.Ubuntu.list.j2
       become: true
       when: lsb_release_dist_id.stdout in ["Ubuntu"]
-    - name: Adds Wine's backports repo Apt signing key
+    - name: Ensures Wine's backports repo Apt signing key is present
       ansible.builtin.apt_key:
         id: BBB8BD3BBE6AD3419048EDC50795A9A788A59C82
         state: present
@@ -62,9 +62,9 @@
           "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xbbb8bd3bbe6ad341\
           9048edc50795a9a788a59c82"
       become: true
-- name: Ensure Wine is present
+- name: Ensures Wine is present
   block:
-    - name: Ensure Wine package is present (Debian)
+    - name: Ensures Wine package is present (Debian)
       ansible.builtin.apt:
         allow_unauthenticated: true
         install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
@@ -77,7 +77,7 @@
         - wine32:i386
         - wine64
       when: lsb_release_dist_id.stdout in ["Debian"]
-    - name: Ensure Wine package is present (Ubuntu)
+    - name: Ensures Wine package is present (Ubuntu)
       ansible.builtin.apt:
         allow_unauthenticated: true
         install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
@@ -90,7 +90,7 @@
         - wine32-{{ wine_release }}:i386
         - wine64-{{ wine_release }}
       when: lsb_release_dist_id.stdout in ["Ubuntu"]
-    - name: Ensure Wine package is present (non-Debian)
+    - name: Ensures Wine package is present (non-Debian)
       ansible.builtin.apt:
         allow_unauthenticated: true
         install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
@@ -101,7 +101,7 @@
       with_items:
         - winehq-{{ wine_release }}
       when: lsb_release_dist_id.stdout not in ["Debian", "Ubuntu"]
-    - name: Install p7zip
+    - name: Ensures p7zip package is present
       ansible.builtin.apt:
         allow_unauthenticated: true
         install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
@@ -109,19 +109,19 @@
         state: present
         update_cache: true
       become: true
-- name: Remove ~/.wine if it wasn't previously reinitialized
+- name: Removes ~/.wine if it wasn't previously reinitialized
   when: false
   block:
     - name: Checking if previously reinitialized
       ansible.builtin.stat:
         path: /tmp/.wine-reinitialized
       register: wine_reinitialized
-    - name: Removing ~/.wine
+    - name: Removes ~/.wine
       ansible.builtin.file:
         path: ~/.wine
         state: absent
       when: not wine_reinitialized.stat.exists
-    - name: Marking as reintialized
+    - name: Marks as reintialized
       ansible.builtin.file:
         path: /tmp/.wine-reinitialized
         state: touch
@@ -129,16 +129,16 @@
         group: sys
         mode: 0555
       when: not wine_reinitialized.stat.exists
-- name: Reinitialize ~/.wine
+- name: Ensures ~/.wine is initialized
   ansible.builtin.command: wineboot -u
   environment:
     WINEARCH: win64
   changed_when: false
-- name: Install Winetricks
+- name: Ensures Winetricks is installed
   become: true
   when: wine_install_winetricks
   block:
-    - name: Ensure Winetricks is present (Ubuntu)
+    - name: Ensures Winetricks is present (Ubuntu)
       ansible.builtin.apt:
         allow_unauthenticated: true
         install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
@@ -146,14 +146,14 @@
         state: present
         update_cache: true
       when: lsb_release_dist_id.stdout in ["Ubuntu"]
-    - name: Install Winetricks via URL (non-Ubuntu)
+    - name: Ensures Winetricks is present via URL (non-Ubuntu)
       ansible.builtin.get_url:
         dest: /usr/local/bin/winetricks
         force: false
         mode: 0755
         url: '{{ wine_winetricks_url }}'
       when: lsb_release_dist_id.stdout not in ["Ubuntu"]
-    - name: Install Curl (required by winetricks)
+    - name: Ensures Curl is present (required by winetricks)
       ansible.builtin.apt:
         allow_unauthenticated: true
         install_recommends: false
@@ -161,6 +161,6 @@
         state: present
         update_cache: true
 
-- name: Apt clean
+- name: Cleans Apt
   ansible.builtin.apt:
     clean: true
