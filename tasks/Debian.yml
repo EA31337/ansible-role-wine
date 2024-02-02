@@ -160,3 +160,7 @@
         name: curl
         state: present
         update_cache: true
+
+- name: Apt clean
+  ansible.builtin.apt:
+    clean: true
