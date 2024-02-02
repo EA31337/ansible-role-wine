@@ -1,11 +1,11 @@
 ---
-- name: Check if Wine is installed
+- name: Checks if Wine is installed
   ansible.builtin.command: wine --version
   check_mode: false
   changed_when: false
   register: cmd_wine_version
   failed_when: cmd_wine_version.rc != 0 and cmd_wine_version.rc != -6
-- name: Check if Winetricks is installed
+- name: Checks if Winetricks is installed
   changed_when: false
   ansible.builtin.command: winetricks --version
   when: wine_install_winetricks
