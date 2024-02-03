@@ -1,5 +1,6 @@
 ---
 - name: Ensures Wine repository is configured
+  become: true
   block:
     - name: Adds 32-bit architecture dependencies
       ansible.builtin.lineinfile:
@@ -7,7 +8,6 @@
         dest: /var/lib/dpkg/arch
         line: '{{ item }}'
         mode: 0644
-      become: true
       with_items:
         - amd64
         - i386
@@ -21,22 +21,22 @@
     - name: Gets code name of the distribution
       changed_when: false
       ansible.builtin.command: /usr/bin/lsb_release -sc
+      become: false
       register: lsb_release_code_name
     - name: Gets ID of the distribution
       changed_when: false
       ansible.builtin.command: /usr/bin/lsb_release -si
+      become: false
       register: lsb_release_dist_id
     - name: Ensures Wine repo is present
       ansible.builtin.template:
         dest: /etc/apt/sources.list.d/winehq.list
         mode: 0644
         src: winehq.{{ ansible_os_family }}.list.j2
-      become: true
     - name: Ensures GPG agent is present (required by apt-key)
       ansible.builtin.package:
         name: '{{ item }}'
         state: present
-      become: true
       with_items:
         - gpg
         - gpg-agent
@@ -46,13 +46,11 @@
         keyring: /etc/apt/trusted.gpg.d/winehq.gpg
         state: present
         url: https://dl.winehq.org/wine-builds/winehq.key
-      become: true
     - name: Ensures Wine backports repo is present
       ansible.builtin.template:
         dest: /etc/apt/sources.list.d/ubuntu.list
         mode: 0644
         src: winehq.Ubuntu.list.j2
-      become: true
       when: lsb_release_dist_id.stdout in ["Ubuntu"]
     - name: Ensures Wine's backports repo Apt signing key is present
       ansible.builtin.apt_key:
@@ -61,8 +59,8 @@
         url:
           "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xbbb8bd3bbe6ad341\
           9048edc50795a9a788a59c82"
-      become: true
 - name: Ensures Wine is present
+  become: true
   block:
     - name: Ensures Wine package is present (Debian)
       ansible.builtin.apt:
@@ -71,7 +69,6 @@
         name: '{{ item }}'
         state: present
         update_cache: true
-      become: true
       with_items:
         - wine
         - wine32:i386
@@ -84,7 +81,6 @@
         name: '{{ item }}'
         state: present
         update_cache: true
-      become: true
       with_items:
         - wine-{{ wine_release }}
         - wine32-{{ wine_release }}:i386
@@ -97,7 +93,6 @@
         name: '{{ item }}'
         state: present
         update_cache: true
-      become: true
       with_items:
         - winehq-{{ wine_release }}
       when: lsb_release_dist_id.stdout not in ["Debian", "Ubuntu"]
@@ -108,7 +103,7 @@
         name: p7zip-full
         state: present
         update_cache: true
-      become: true
+
 - name: Removes ~/.wine if it wasn't previously reinitialized
   when: false
   block:
@@ -164,3 +159,4 @@
 - name: Cleans Apt
   ansible.builtin.apt:
     clean: true
+  become: true
