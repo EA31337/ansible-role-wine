@@ -65,6 +65,7 @@
     - name: Ensures Wine package is present (Debian)
       ansible.builtin.apt:
         allow_unauthenticated: true
+        autoclean: true
         install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
         name: '{{ item }}'
         state: present
@@ -156,7 +157,13 @@
         state: present
         update_cache: true
 
-- name: Cleans Apt
+- name: Removes dependencies that are no longer required
+  ansible.builtin.apt:
+    autoremove: true
+    purge: true
+  become: true
+
+- name: Cleans Apt cache
   ansible.builtin.apt:
     clean: true
   become: true
