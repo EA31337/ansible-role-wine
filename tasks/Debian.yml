@@ -142,13 +142,15 @@
         state: present
         update_cache: true
       when: lsb_release_dist_id.stdout in ["Ubuntu"]
-    - name: Ensures Winetricks is present via URL (non-Ubuntu)
+    - name: Ensures Winetricks is present via URL
       ansible.builtin.get_url:
         dest: /usr/local/bin/winetricks
         force: false
         mode: 0755
         url: '{{ wine_winetricks_url }}'
-      when: lsb_release_dist_id.stdout not in ["Ubuntu"]
+      when:
+        - wine_winetricks_url is defined
+        - wine_winetricks_url | length > 0
     - name: Ensures Curl is present (required by winetricks)
       ansible.builtin.apt:
         allow_unauthenticated: true
