@@ -20,10 +20,11 @@
     state: present
     update_cache: true
   become: true
-  when: >-
-    cmd_which_winetricks_res.rc != 0
-    or (lsb_release_dist_id.stdout is defined
-    and lsb_release_dist_id.stdout in ["Ubuntu"])
+  when:
+    - cmd_which_winetricks_res.rc != 0
+      or lsb_release_dist_id.stdout is defined
+    - lsb_release_dist_id.stdout in ["Ubuntu"]
+    - wine_winetricks_apt_install
 
 - name: Ensures Winetricks is present (via URL)
   ansible.builtin.get_url:
