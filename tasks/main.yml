@@ -15,8 +15,7 @@
   changed_when: false
   failed_when: cmd_which_winetricks_res.rc > 1
   register: cmd_which_winetricks_res
-  when:
-    - wine_install_winetricks
+  when: wine_install_winetricks
 
 - name: Ensures Winetricks is present
   ansible.builtin.include_tasks: winetricks.yml
@@ -30,6 +29,9 @@
   changed_when: false
   failed_when: cmd_which_winetricks_res.rc > 1
   register: cmd_which_winetricks_res
+  when:
+    - wine_install_winetricks
+      or wine_winetricks_winver is defined
 
 - name: Sets Windows version via winetricks
   ansible.builtin.command: winetricks -q {{ wine_winetricks_winver }}
