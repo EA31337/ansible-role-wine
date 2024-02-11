@@ -3,8 +3,8 @@
 wine_install_p7zip: false
 wine_install_recommends: false
 wine_install_winetricks: false
-# One of: stable, devel, or staging.
-wine_release: devel
+# One of: devel, staging or stable.
+wine_release: stable
 wine_winetricks_apt_install: false
 wine_winetricks_url: https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks
 wine_winetricks_winver: win10
