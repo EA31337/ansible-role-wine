@@ -17,7 +17,6 @@ To install this role, you can use the following terminal command:
 
 Available variables are listed below, along with default values (see `defaults/main.yml`):
 
-```yaml
-wine_version: "stable"  # Wine version to install (stable or development)
-wine_arch: "amd64"      # Architecture (amd64 or i386)
-wine_install_winetricks: false  # Whether to install Winetricks
+    wine_version: "stable"  # Wine version to install (stable or development)
+    wine_arch: "amd64"      # Architecture (amd64 or i386)
+    wine_install_winetricks: false  # Whether to install Winetricks
