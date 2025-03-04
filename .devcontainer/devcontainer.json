@@ -14,7 +14,9 @@
                 "vscodevim.vim",
                 "DavidAnson.vscode-markdownlint",
                 "GitHub.copilot-chat",
-                "GitHub.copilot"
+                "GitHub.copilot",
+                "ms-python.python",
+                "sourcery.sourcery"
             ],
         }
     },
@@ -33,7 +35,7 @@
     // "postCreateCommand": "uname -a",
     // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
     "image": "mcr.microsoft.com/devcontainers/base:jammy",
-    "name": "ansible-role-wine",
+    "name": "ansible-role-mt-runner",
     // Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
     "remoteUser": "vscode",
     "onCreateCommand": "sudo apt update && sudo apt install -y pipx && pipx install --include-deps ansible"
