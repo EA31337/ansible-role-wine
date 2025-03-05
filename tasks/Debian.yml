@@ -2,7 +2,7 @@
 - name: Ensures Wine repository is configured
   become: true
   block:
-    - name: Adds 32-bit architecture dependencies
+    - name: Adds architecture dependencies
       ansible.builtin.lineinfile:
         create: true
         dest: /var/lib/dpkg/arch
@@ -84,8 +84,21 @@
         update_cache: true
       with_items:
         - wine-{{ wine_release }}
-        - wine32-{{ wine_release }}:i386
-        - wine64-{{ wine_release }}
+      when: lsb_release_dist_id.stdout in ["Ubuntu"]
+    # The WineHQ package installs Wine's binaries in its own directory (/opt)
+    # rather than linking them into a standard PATH location.
+    # This packaging decision lets users choose which version to use.
+    - name: Create symlinks for Wine binaries
+      ansible.builtin.file:
+        src: /opt/wine-{{ wine_release }}/bin/{{ item }}
+        dest: /usr/local/bin/{{ item }}
+        state: link
+      become: true
+      loop:
+        - wine
+        - wine64
+        - winedbg
+        - wineboot
       when: lsb_release_dist_id.stdout in ["Ubuntu"]
     - name: Ensures Wine package is present (non-Debian)
       ansible.builtin.apt:
