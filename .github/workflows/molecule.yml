@@ -7,13 +7,15 @@ on:
   push:
 
 jobs:
-  Test:
+  test:
+    name: Test
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         scenario:
           - default
+          - stable
     steps:
       - uses: actions/checkout@v4
         with:
