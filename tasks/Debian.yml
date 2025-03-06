@@ -2,12 +2,12 @@
 - name: Ensures Wine repository is configured
   become: true
   block:
-    - name: Adds 32-bit architecture dependencies
+    - name: Adds architecture dependencies
       ansible.builtin.lineinfile:
         create: true
         dest: /var/lib/dpkg/arch
         line: '{{ item }}'
-        mode: 0644
+        mode: "0644"
       with_items:
         - amd64
         - i386
@@ -31,7 +31,7 @@
     - name: Ensures Wine repo is present
       ansible.builtin.template:
         dest: /etc/apt/sources.list.d/winehq.list
-        mode: 0644
+        mode: "0644"
         src: winehq.{{ ansible_os_family }}.list.j2
     - name: Ensures GPG agent is present (required by apt-key)
       ansible.builtin.package:
@@ -49,7 +49,7 @@
     - name: Ensures Wine backports repo is present
       ansible.builtin.template:
         dest: /etc/apt/sources.list.d/ubuntu.list
-        mode: 0644
+        mode: "0644"
         src: winehq.Ubuntu.list.j2
       when: lsb_release_dist_id.stdout in ["Ubuntu"]
     - name: Ensures Wine's backports repo Apt signing key is present
@@ -83,9 +83,7 @@
         state: present
         update_cache: true
       with_items:
-        - wine-{{ wine_release }}
-        - wine32-{{ wine_release }}:i386
-        - wine64-{{ wine_release }}
+        - winehq-{{ wine_release }}
       when: lsb_release_dist_id.stdout in ["Ubuntu"]
     - name: Ensures Wine package is present (non-Debian)
       ansible.builtin.apt:
@@ -123,7 +121,7 @@
         state: touch
         owner: root
         group: sys
-        mode: 0555
+        mode: "0555"
       when: not wine_reinitialized.stat.exists
 - name: Ensures ~/.wine is initialized
   ansible.builtin.command: wineboot -u
@@ -146,7 +144,7 @@
       ansible.builtin.get_url:
         dest: /usr/local/bin/winetricks
         force: false
-        mode: 0755
+        mode: "0755"
         url: '{{ wine_winetricks_url }}'
       when:
         - wine_winetricks_url is defined
