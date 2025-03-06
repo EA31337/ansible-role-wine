@@ -15,7 +15,7 @@ jobs:
       matrix:
         scenario:
           - default
-          - stable
+          - devel
     steps:
       - uses: actions/checkout@v4
         with:
