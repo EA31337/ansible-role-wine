@@ -83,29 +83,8 @@
         state: present
         update_cache: true
       with_items:
-        - wine-{{ wine_release }}
+        - winehq-{{ wine_release }}
       when: lsb_release_dist_id.stdout in ["Ubuntu"]
-    # The WineHQ package installs Wine's binaries in its own directory (/opt)
-    # rather than linking them into a standard PATH location.
-    # This packaging decision lets users choose which version to use.
-    - name: Check existence of Wine binaries
-      ansible.builtin.stat:
-        path: "/opt/wine-{{ wine_release }}/bin/{{ item }}"
-      register: wine_binary_stat
-      loop:
-        - wine
-        - wine64
-        - winedbg
-        - wineboot
-      when: lsb_release_dist_id.stdout in ["Ubuntu"]
-    - name: Create symlinks for Wine binaries
-      ansible.builtin.file:
-        src: "/opt/wine-{{ wine_release }}/bin/{{ item.item }}"
-        dest: "/usr/local/bin/{{ item.item }}"
-        state: link
-      become: true
-      loop: "{{ wine_binary_stat.results }}"
-      when: item.stat.exists
     - name: Ensures Wine package is present (non-Debian)
       ansible.builtin.apt:
         allow_unauthenticated: true
