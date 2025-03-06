@@ -9,4 +9,4 @@
         wine_install_p7zip: true
         wine_install_recommends: true
         wine_install_winetricks: true
-        wine_release: stable
+        wine_release: devel
