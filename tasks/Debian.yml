@@ -2,18 +2,6 @@
 - name: Ensures Wine repository is configured
   become: true
   block:
-    - name: Adds architecture dependencies
-      ansible.builtin.lineinfile:
-        create: true
-        dest: /var/lib/dpkg/arch
-        line: '{{ item }}'
-        mode: "0644"
-      with_items:
-        - amd64
-        - i386
-    - name: Ensures Apt cache is up-to-date
-      ansible.builtin.apt:
-        update_cache: true
     - name: Ensures lsb_release command is present
       ansible.builtin.package:
         name: lsb-release
@@ -28,6 +16,18 @@
       ansible.builtin.command: /usr/bin/lsb_release -si
       become: false
       register: lsb_release_dist_id
+    - name: Adds architecture dependencies
+      ansible.builtin.lineinfile:
+        create: true
+        dest: /var/lib/dpkg/arch
+        line: '{{ item }}'
+        mode: "0644"
+      with_items:
+        - amd64
+        - i386
+    - name: Ensures Apt cache is up-to-date
+      ansible.builtin.apt:
+        update_cache: true
     - name: Ensures Wine repo is present
       ansible.builtin.template:
         dest: /etc/apt/sources.list.d/winehq.list
@@ -51,7 +51,8 @@
         dest: /etc/apt/sources.list.d/ubuntu.list
         mode: "0644"
         src: winehq.Ubuntu.list.j2
-      when: lsb_release_dist_id.stdout in ["Ubuntu"]
+      when:
+        - lsb_release_dist_id.stdout in ["Ubuntu"]
     - name: Ensures Wine's backports repo Apt signing key is present
       ansible.builtin.apt_key:
         id: BBB8BD3BBE6AD3419048EDC50795A9A788A59C82
@@ -59,6 +60,8 @@
         url:
           "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xbbb8bd3bbe6ad341\
           9048edc50795a9a788a59c82"
+      when:
+        - lsb_release_dist_id.stdout in ["Ubuntu"]
 - name: Ensures Wine is present
   become: true
   block:
