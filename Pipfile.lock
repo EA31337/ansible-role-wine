@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "56406c21c4b22896e073b9f65e3026c1e1743afd2404304db15ff32378a68660"
+            "sha256": "14176958583ac8763602d90fb9fe9dc3ccccf1c600926bc219b4b42bf323bd2a"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -300,12 +300,12 @@
         },
         "docker": {
             "hashes": [
-                "sha256:317e95a48c32de8c1aac92a48066a5b73e218ed096e03758bcdd799a7130a1a1",
-                "sha256:cffc771d4ea1389fc66bc95cb72d304aa41d1a1563482a9a000fba3a84ed5071"
+                "sha256:ad8c70e6e3f8926cb8a92619b832b4ea5299e2831c14284663184e200546fa6c",
+                "sha256:c96b93b7f0a746f9e77d325bcfb87422a3d8bd4f03136ae8a85b37f1898d5fc0"
             ],
             "index": "pypi",
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'",
-            "version": "==4.4.0"
+            "markers": "python_version >= '3.8'",
+            "version": "==7.1.0"
         },
         "enrich": {
             "hashes": [
@@ -720,14 +720,6 @@
             "markers": "python_version >= '3.9'",
             "version": "==76.0.0"
         },
-        "six": {
-            "hashes": [
-                "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274",
-                "sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81"
-            ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2'",
-            "version": "==1.17.0"
-        },
         "subprocess-tee": {
             "hashes": [
                 "sha256:21942e976715af4a19a526918adb03a8a27a8edab959f2d075b777e3d78f532d",
@@ -767,14 +759,6 @@
             ],
             "markers": "python_version >= '3.8'",
             "version": "==10.0"
-        },
-        "websocket-client": {
-            "hashes": [
-                "sha256:17b44cc997f5c498e809b22cdf2d9c7a9e71c02c8cc2b6c56e7c2d1239bfa526",
-                "sha256:3239df9f44da632f96012472805d40a23281a991027ce11d2f45a6f24ac4c3da"
-            ],
-            "markers": "python_version >= '3.8'",
-            "version": "==1.8.0"
         }
     },
     "develop": {}
