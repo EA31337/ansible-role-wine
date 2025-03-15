@@ -1,0 +1,27 @@
+---
+- name: Check if Nix store exists
+  ansible.builtin.stat:
+    path: /nix/store
+  register: nix_store_stat
+
+- name: Ensure Wine is installed
+  become: "{{ ansible_user_id != 'root' }}"
+  block:
+
+    - name: Check if Wine is already installed
+      ansible.builtin.shell:
+        cmd: |
+          set -o pipefail
+          nix-env -q | grep -qw wine
+      changed_when: false
+      failed_when: wine_check.rc not in [0, 1]
+      register: wine_check
+      when: nix_store_stat.stat.exists
+
+    - name: Ensure Wine package is installed on Nix image
+      ansible.builtin.command: nix-env -iA nixpkgs.wine
+      when:
+        - nix_store_stat.stat.exists
+        - wine_check.rc != 0
+      register: wine_install
+      changed_when: wine_install.rc == 0
