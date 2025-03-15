@@ -1,7 +1,7 @@
 ansible
 ansible-lint
-docker==4.4
-molecule
-molecule-docker
+docker==7.1.0
+molecule==25.3.1
+molecule-docker==2.1.0
 pipenv
 pre-commit

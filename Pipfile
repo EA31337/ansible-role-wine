@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-docker = "==4.4"
+docker = "==7.1.0"
 pipenv = "*"
 molecule = "*"
 molecule-docker = "*"
