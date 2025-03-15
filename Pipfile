@@ -4,10 +4,11 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-docker = "==4.2.0"
+docker = "*"
 pipenv = "*"
 molecule = "*"
 molecule-docker = "*"
+requests = "==2.31.0"
 
 [dev-packages]
 
