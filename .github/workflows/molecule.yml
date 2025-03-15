@@ -16,6 +16,7 @@ jobs:
         scenario:
           - default
           - devel
+          - staging
     steps:
       - uses: actions/checkout@v4
         with:

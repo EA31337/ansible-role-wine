@@ -18,8 +18,15 @@
       register: wine_check
       when: nix_store_stat.stat.exists
 
+    - name: Set wine_pkg fact
+      ansible.builtin.set_fact:
+        wine_pkg: "{{ 'wine' ~ ('-staging' if wine_release == 'staging' else '') }}"
+      when:
+        - nix_store_stat.stat.exists
+        - wine_check.rc != 0
     - name: Ensure Wine package is installed on Nix image
-      ansible.builtin.command: nix-env -iA nixpkgs.wine
+      ansible.builtin.command: >-
+        nix-env -iA nixpkgs.{{ wine_pkg }}
       when:
         - nix_store_stat.stat.exists
         - wine_check.rc != 0
