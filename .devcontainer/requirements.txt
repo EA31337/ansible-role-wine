@@ -1,5 +1,7 @@
 ansible
 ansible-lint
+docker==4.4
 molecule
 molecule-docker
+pipenv
 pre-commit
