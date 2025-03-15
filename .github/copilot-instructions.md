@@ -60,11 +60,11 @@ Notes:
 
 ### Key Variables
 
-TBC
+Variables are defined in defaults/main.yml and vars/main.yml files.
 
 Notes:
 
-- On variable changes, update meta/main.yml and README.md accordingly.
+- On variable changes, update main.yml files and README.md accordingly.
 
 ### Testing Approach
 
