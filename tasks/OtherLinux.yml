@@ -50,14 +50,13 @@
 
     - name: Ensures Winetricks is present via URL
       ansible.builtin.get_url:
-        dest: /usr/local/bin/winetricks
+        dest: "{{ ansible_env.HOME }}/.nix-profile/bin/winetricks"
         force: false
         mode: "0755"
         url: '{{ wine_winetricks_url }}'
       when:
         - wine_winetricks_url is defined
         - wine_winetricks_url | length > 0
-
     - name: Check if curl is already installed
       ansible.builtin.shell:
         cmd: |
