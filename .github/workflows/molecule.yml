@@ -25,16 +25,25 @@ jobs:
         env:
           ANSIBLE_FORCE_COLOR: '1'
           ANSIBLE_STDOUT_CALLBACK: debug
+          MOLECULE_REPORT: molecule-${{ matrix.scenario }}-report.html
         with:
           molecule_args: --scenario-name ${{ matrix.scenario }}
           molecule_command: test
           molecule_options: --verbose
           molecule_working_dir: ${{ github.repository }}
+      - if: false
+        name: Converts test report
+        uses: patrick-werner/fhir-html-validation-to-markdown@1.0.0
+        with:
+          input_file: ${{ github.repository }}/molecule-${{ matrix.scenario }}-report.html
+      - if: always()
+        run: ls -l
+        working-directory: ${{ github.repository }}
       # Debug with tmate on failure when debug logging is enabled.
       - if: ${{ failure() && runner.debug == '1' }}
         uses: mxschmitt/action-tmate@v3
-      - name: Test Summary
-        if: always()
+      - if: always()
+        name: Test Summary
         run: |
           echo "## Molecule Test Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
