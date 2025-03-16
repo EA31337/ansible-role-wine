@@ -45,8 +45,8 @@ Rules:
 
 This role installs and configures wine package with distribution-specific approaches:
 
-- **Alpine Linux**: Uses Apk package manager
-- **Debian/Ubuntu**: Uses Apt package manager
+- **Alpine Linux**: Uses apk package manager
+- **Debian/Ubuntu**: Uses apt package manager
 - **Nix**: Uses nix-env in lightweight Nix environments
 
 Notes:
