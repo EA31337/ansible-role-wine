@@ -31,14 +31,16 @@ You are expected to be an expert in:
 ## Ansible Guidelines
 
 - Ensure idempotency in all tasks
+- Ensure indentation is correct, especially for arguments used for ansible modules.
 - Follow standard role structure: tasks/, handlers/, templates/, defaults/, meta/
 - Use ansible-lint and write Molecule tests for verification
 - Use descriptive task names and include helpful comments
 
 ## YAML Guidelines
 
-Rules:
+Linting rules:
 
+- yaml[line-length]: Break down long lines (max. 120 characters)
 - yaml[truthy]: Truthy value should be one of [false, true]
 
 ## Project Specifics
