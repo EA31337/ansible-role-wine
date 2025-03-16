@@ -1,0 +1,80 @@
+---
+- name: Check if Nix store exists
+  ansible.builtin.stat:
+    path: /nix/store
+  register: nix_store_stat
+
+- name: Ensure Wine is installed (Nix)
+  become: "{{ ansible_user_id != 'root' }}"
+  block:
+
+    - name: Check if Wine is already installed
+      ansible.builtin.shell:
+        cmd: |
+          set -o pipefail
+          nix-env -q | grep -qw wine
+      changed_when: false
+      failed_when: wine_check.rc not in [0, 1]
+      register: wine_check
+      when: nix_store_stat.stat.exists
+
+    - name: Set wine_pkg fact
+      ansible.builtin.set_fact:
+        wine_pkg: "{{ 'wine' ~ ('-staging' if wine_release == 'staging' else '') }}"
+      when:
+        - nix_store_stat.stat.exists
+        - wine_check.rc != 0
+    - name: Ensure Wine package is installed on Nix image
+      ansible.builtin.command: >-
+        nix-env -iA nixpkgs.{{ wine_pkg }}
+      when:
+        - nix_store_stat.stat.exists
+        - wine_check.rc != 0
+      register: wine_install
+      changed_when: wine_install.rc == 0
+
+- name: Ensures Winetricks is installed (Nix)
+  become: "{{ ansible_user_id != 'root' }}"
+  when:
+    - nix_store_stat.stat.exists
+    - wine_install_winetricks
+  block:
+
+    - name: Check if winetricks is already installed
+      ansible.builtin.shell:
+        cmd: |
+          set -o pipefail
+          nix-env -q | grep -qw winetricks
+      changed_when: false
+      failed_when: winetricks_check.rc not in [0, 1]
+      register: winetricks_check
+
+    - name: Ensures Winetricks is present (Nix)
+      ansible.builtin.command: nix-env -iA nixpkgs.winetricks
+      changed_when: winetricks_install.rc == 0
+      register: winetricks_install
+      when: winetricks_check.rc != 0
+
+    - name: Ensures Winetricks is present via URL
+      ansible.builtin.get_url:
+        dest: "{{ ansible_env.HOME }}/.nix-profile/bin/winetricks"
+        force: false
+        mode: "0755"
+        url: '{{ wine_winetricks_url }}'
+      when:
+        - wine_winetricks_url is defined
+        - wine_winetricks_url | length > 0
+    - name: Check if curl is already installed
+      ansible.builtin.shell:
+        cmd: |
+          set -o pipefail
+          nix-env -q | grep -qw curl
+      changed_when: false
+      failed_when: curl_check.rc not in [0, 1]
+      register: curl_check
+
+    - name: Ensures Curl is present (required by winetricks)
+      ansible.builtin.command: nix-env -iA nixpkgs.curl
+      changed_when: curl_install.rc == 0
+      register: curl_install
+      when: curl_check.rc != 0

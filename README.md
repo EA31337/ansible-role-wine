@@ -11,9 +11,10 @@ on several UNIX-like operating systems.
 
 - Ansible 2.9 or higher
 - Supported platforms:
-  - Ubuntu 18.04+
-  - Debian 10+
   - Alpine 3.12+
+  - Debian 10+
+  - Ubuntu 18.04+
+  - NixOS
 
 ## Installation
 
@@ -25,12 +26,4 @@ ansible-galaxy install git+https://github.com/EA31337/ansible-role-wine.git
 
 ## Role Variables
 
-Available variables are listed below,
-along with default values (see `defaults/main.yml`):
-
-```yaml
-    # Wine release to install.
-    wine_release: stable
-    # Whether to install Winetricks.
-    wine_winetricks_apt_install: false
-```
+For available variables, check [`defaults/main.yml`](defaults/main.yml).

@@ -6,7 +6,7 @@
   register: cmd_which_wine_res
 
 - name: Ensures Wine is present
-  ansible.builtin.include_tasks: wine.yml
+  ansible.builtin.include_tasks: wine/wine.yml
   when: cmd_which_wine_res.rc != 0
 
 - name: Checks if Winetricks is installed
@@ -18,7 +18,7 @@
   when: wine_install_winetricks
 
 - name: Ensures Winetricks is present
-  ansible.builtin.include_tasks: winetricks.yml
+  ansible.builtin.include_tasks: winetricks/winetricks.yml
   when:
     - wine_install_winetricks
     - cmd_which_winetricks_res.rc != 0

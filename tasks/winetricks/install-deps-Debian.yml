@@ -1,0 +1,29 @@
+---
+- name: Ensures that dependencies are installed ({{ ansible_os_family }})
+  become: "{{ ansible_user_id != 'root' }}"
+  block:
+
+    - name: Ensures curl is present
+      ansible.builtin.package:
+        name: curl
+        state: present
+
+    - name: Ensure gawk is present (Linux)
+      ansible.builtin.package:
+        name: gawk  # Required for winetricks.
+        state: present
+
+- name: Apt cleanup ({{ ansible_os_family }})
+  become: true
+  when: wine_install_winetricks
+  block:
+
+    - name: Removes dependencies that are no longer required
+      ansible.builtin.apt:
+        autoremove: true
+        purge: true
+
+    - name: Cleans Apt cache
+      ansible.builtin.apt:
+        autoclean: true
+        clean: true

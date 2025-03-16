@@ -10,18 +10,25 @@ platforms:
     image: i386/alpine:latest
   - name: debian-latest
     image: debian:latest
+  - name: nixos-latest
+    dockerfile: ../resources/playbooks/Dockerfile.j2
+    image: nixos/nix:latest
+    pre_build_image: false
   - name: ubuntu-jammy
     image: ubuntu:jammy
   - name: ubuntu-noble
     image: ubuntu:noble
+  - name: ubuntu-latest
+    image: ubuntu:latest
 provisioner:
   config_options:
     defaults:
+      callback_result_format: yaml
       remote_tmp: /tmp/.ansible-tmp-$${USER}
   name: ansible
-  inventory:
-    group_vars:
-      all:
-        wine_install_winetricks: true
+  options:
+    v: true
+  playbooks:
+    converge: converge.yml
 verifier:
   name: ansible

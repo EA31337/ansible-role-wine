@@ -10,6 +10,10 @@ platforms:
     image: i386/alpine:latest
   - name: debian-latest
     image: debian:latest
+  - name: nixos-latest
+    dockerfile: ../resources/playbooks/Dockerfile.j2
+    image: nixos/nix:latest
+    pre_build_image: false
   - name: ubuntu-jammy
     image: ubuntu:jammy
   - name: ubuntu-noble
@@ -29,7 +33,7 @@ provisioner:
         wine_install_winetricks_dependencies: true
         wine_install_p7zip: true
         wine_install_recommends: true
-        wine_release: devel
+        wine_release: staging
   options:
     v: true
   playbooks:
