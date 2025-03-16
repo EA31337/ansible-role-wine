@@ -33,9 +33,9 @@ provisioner:
         wine_install_p7zip: true
         wine_install_recommends: true
         wine_release: stable
-    options:
-      v: true
-    playbooks:
-      converge: ../default/converge.yml
+  options:
+    v: true
+  playbooks:
+    converge: converge.yml
 verifier:
   name: ansible
