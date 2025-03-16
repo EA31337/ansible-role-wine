@@ -4,11 +4,3 @@
     name: "{{ item }}"
   with_items:
     - wine-{{ wine_release }}
-- name: Ensures Winetricks package is present
-  ansible.builtin.package:
-    name: winetricks
-  when: wine_install_winetricks
-- name: Ensures p7zip package is present
-  ansible.builtin.package:
-    name: p7zip
-  when: wine_install_p7zip

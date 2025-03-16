@@ -1,46 +1,23 @@
 ---
-- name: Gets ID of the distribution
-  changed_when: false
-  ansible.builtin.command: /usr/bin/lsb_release -si
-  register: lsb_release_dist_id
-  when: ansible_os_family in ["Debian"]
+- name: Ensures winetricks and dependencies are present
+  become: "{{ ansible_user_id != 'root' }}"
+  block:
 
-- name: Checks if Winetricks is installed
-  ansible.builtin.command: which winetricks
-  check_mode: false
-  changed_when: false
-  failed_when: cmd_which_winetricks_res.rc > 1
-  register: cmd_which_winetricks_res
+    - name: Checks if Winetricks is installed
+      ansible.builtin.command: which winetricks
+      check_mode: false
+      changed_when: false
+      failed_when: cmd_which_winetricks_res.rc > 1
+      register: cmd_which_winetricks_res
 
-- name: Ensures Winetricks is present (Ubuntu)
-  ansible.builtin.apt:
-    allow_unauthenticated: true
-    install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
-    name: winetricks
-    state: present
-    update_cache: true
-  become: true
-  when:
-    - cmd_which_winetricks_res.rc != 0
-      or lsb_release_dist_id.stdout is defined
-    - lsb_release_dist_id.stdout in ["Ubuntu"]
-    - wine_winetricks_apt_install
+    - name: Ensures winetricks is present ({{ ansible_os_family }})
+      ansible.builtin.include_tasks:
+        file: "winetricks-{{ ansible_os_family }}.yml"
+      when:
+        - cmd_which_winetricks_res.rc != 0
 
-- name: Ensures Winetricks is present (via URL)
-  ansible.builtin.get_url:
-    dest: /usr/local/bin/winetricks
-    force: false
-    mode: "0755"
-    url: '{{ wine_winetricks_url }}'
-  become: true
-  when:
-    - cmd_which_winetricks_res.rc != 0  # Winetricks is not installed.
-    - not wine_winetricks_apt_install
-    - wine_winetricks_url is defined
-    - wine_winetricks_url | length > 0
-
-- name: Install dependencies required by winetricks ({{ ansible_os_family }})
-  ansible.builtin.include_tasks:
-    file: install-deps-{{ ansible_os_family }}.yml
-  when:
-    - wine_install_winetricks_dependencies
+    - name: Install dependencies required by winetricks ({{ ansible_os_family }})
+      ansible.builtin.include_tasks:
+        file: install-deps-{{ ansible_os_family }}.yml
+      when:
+        - wine_install_winetricks_dependencies

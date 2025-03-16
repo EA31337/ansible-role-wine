@@ -1,0 +1,5 @@
+---
+- name: Ensures Winetricks package is present
+  ansible.builtin.package:
+    name: winetricks
+  when: wine_install_winetricks

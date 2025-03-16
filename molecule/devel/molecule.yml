@@ -27,7 +27,6 @@ provisioner:
       all:
         wine_install_winetricks: true
         wine_install_winetricks_dependencies: true
-        wine_install_p7zip: true
         wine_install_recommends: true
         wine_release: devel
   options:

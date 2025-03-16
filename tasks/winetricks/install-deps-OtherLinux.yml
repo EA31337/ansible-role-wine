@@ -3,6 +3,21 @@
   become: "{{ ansible_user_id != 'root' }}"
   block:
 
+    - name: Check if curl is already installed
+      ansible.builtin.shell:
+        cmd: |
+          set -o pipefail
+          nix-env -q | grep -qw curl
+      changed_when: false
+      failed_when: curl_check.rc not in [0, 1]
+      register: curl_check
+
+    - name: Ensures Curl is present (required by winetricks)
+      ansible.builtin.command: nix-env -iA nixpkgs.curl
+      changed_when: curl_install.rc == 0
+      register: curl_install
+      when: curl_check.rc != 0
+
     - name: Check if Nix store exists
       ansible.builtin.stat:
         path: /nix/store

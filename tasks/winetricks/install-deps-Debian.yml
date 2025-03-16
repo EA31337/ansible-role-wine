@@ -3,15 +3,17 @@
   become: "{{ ansible_user_id != 'root' }}"
   block:
 
-    - name: Ensures curl is present
-      ansible.builtin.package:
-        name: curl
+    - name: Ensure required packages are present
+      ansible.builtin.apt:
+        allow_unauthenticated: true
+        install_recommends: false
+        name: "{{ item }}"
         state: present
-
-    - name: Ensure gawk is present (Linux)
-      ansible.builtin.package:
-        name: gawk  # Required for winetricks.
-        state: present
+        update_cache: true
+      loop:
+        - curl
+        - gawk
+        - p7zip
 
 - name: Apt cleanup ({{ ansible_os_family }})
   become: true

@@ -1,0 +1,9 @@
+---
+- name: Ensures required packages are present
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - curl
+    - gawk
+    - p7zip
