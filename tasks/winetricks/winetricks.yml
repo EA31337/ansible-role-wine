@@ -38,3 +38,9 @@
     - not wine_winetricks_apt_install
     - wine_winetricks_url is defined
     - wine_winetricks_url | length > 0
+
+- name: Install dependencies required by winetricks ({{ ansible_os_family }})
+  ansible.builtin.include_tasks:
+    file: install-deps-{{ ansible_os_family }}.yml
+  when:
+    - wine_install_winetricks_dependencies

@@ -1,0 +1,4 @@
+---
+- name: Includes operating system specific tasks ({{ ansible_os_family }})
+  ansible.builtin.include_tasks:
+    file: "wine-{{ ansible_os_family }}.yml"
