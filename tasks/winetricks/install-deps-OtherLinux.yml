@@ -1,45 +1,18 @@
 ---
-- name: Ensures that dependencies are installed ({{ ansible_os_family }})
+- name: Ensures that winetricks dependencies are installed
   become: "{{ ansible_user_id != 'root' }}"
   block:
-
-    - name: Check if curl is already installed
-      ansible.builtin.shell:
-        cmd: |
-          set -o pipefail
-          nix-env -q | grep -qw curl
-          which curl
-      changed_when: false
-      failed_when: curl_check.rc not in [0, 1]
-      register: curl_check
-
-    - name: Ensures Curl is present (required by winetricks)
-      ansible.builtin.command: nix-env -iA nixpkgs.curl
-      changed_when: curl_install.rc == 0
-      register: curl_install
-      when: curl_check.rc != 0
 
     - name: Check if Nix store exists
       ansible.builtin.stat:
         path: /nix/store
       register: nix_store_stat
 
-    - name: Check if gawk is already installed (Nix)
-      ansible.builtin.shell:
-        cmd: |
-          set -o pipefail
-          nix-env -q | grep -q gawk
-      changed_when: false
-      failed_when: awk_check.rc not in [0, 1]
-      register: awk_check
-      when:
-        - nix_store_stat.stat.exists
-
-    - name: Ensure gawk is installed (Nix)
-      ansible.builtin.command: nix-env -iA nixpkgs.gawk
-      when:
-        - awk_check is defined
-        - awk_check.rc != 0
-        - nix_store_stat.stat.exists
-      register: awk_install
-      changed_when: awk_install.rc == 0
+    - name: Ensures dependencies are present
+      ansible.builtin.command:
+        cmd: nix-env -iA nixpkgs.{{ item }}
+        creates: "{{ ansible_env.HOME }}/.nix-profile/bin/{{ item }}"
+      loop:
+        - curl
+        - gawk
+      when: nix_store_stat.stat.exists
