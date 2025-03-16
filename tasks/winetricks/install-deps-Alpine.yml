@@ -12,3 +12,9 @@
       ansible.builtin.package:
         name: gawk  # Required for winetricks.
         state: present
+
+    - name: Ensures p7zip is present (Alpine)
+      become: true
+      ansible.builtin.package:
+        name: p7zip
+        state: present

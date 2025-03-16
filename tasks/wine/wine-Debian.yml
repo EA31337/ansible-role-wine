@@ -106,26 +106,6 @@
         state: present
         update_cache: true
 
-- name: Removes ~/.wine if it wasn't previously reinitialized
-  when: false
-  block:
-    - name: Checking if previously reinitialized
-      ansible.builtin.stat:
-        path: /tmp/.wine-reinitialized
-      register: wine_reinitialized
-    - name: Removes ~/.wine
-      ansible.builtin.file:
-        path: ~/.wine
-        state: absent
-      when: not wine_reinitialized.stat.exists
-    - name: Marks as reintialized
-      ansible.builtin.file:
-        path: /tmp/.wine-reinitialized
-        state: touch
-        owner: root
-        group: sys
-        mode: "0555"
-      when: not wine_reinitialized.stat.exists
 - name: Ensures ~/.wine is initialized
   ansible.builtin.command: wineboot -u
   environment:
@@ -160,13 +140,17 @@
         state: present
         update_cache: true
 
-- name: Removes dependencies that are no longer required
-  ansible.builtin.apt:
-    autoremove: true
-    purge: true
+- name: Apt cleanup
   become: true
+  when: wine_install_winetricks
+  block:
 
-- name: Cleans Apt cache
-  ansible.builtin.apt:
-    clean: true
-  become: true
+    - name: Removes dependencies that are no longer required
+      ansible.builtin.apt:
+        autoremove: true
+        purge: true
+
+    - name: Cleans Apt cache
+      ansible.builtin.apt:
+        autoclean: true
+        clean: true
