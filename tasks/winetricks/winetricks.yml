@@ -20,4 +20,4 @@
       ansible.builtin.include_tasks:
         file: install-deps-{{ ansible_os_family }}.yml
       when:
-        - wine_install_winetricks_dependencies
+        - wine_install_winetricks_dependencies | length > 0

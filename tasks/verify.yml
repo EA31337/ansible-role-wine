@@ -14,9 +14,7 @@
 - name: Checks if required tools are installed
   changed_when: false
   ansible.builtin.command: "{{ item }} --version"
-  loop:
-    - awk
-    - curl
+  loop: "{{ wine_install_winetricks_dependencies }}"
   when:
     - wine_install_winetricks
-    - wine_install_winetricks_dependencies
+    - wine_install_winetricks_dependencies | length > 0

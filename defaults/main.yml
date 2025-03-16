@@ -2,7 +2,10 @@
 ---
 wine_install_recommends: false
 wine_install_winetricks: false
-wine_install_winetricks_dependencies: false
+wine_install_winetricks_dependencies:
+  - 7zip
+  - awk
+  - curl
 # Stable, devel, or staging (for winehq packages).
 wine_release: stable
 wine_winetricks_apt_install: false

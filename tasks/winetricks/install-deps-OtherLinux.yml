@@ -12,7 +12,5 @@
       ansible.builtin.command:
         cmd: nix-env -iA nixpkgs.{{ item }}
         creates: "{{ ansible_env.HOME }}/.nix-profile/bin/{{ item }}"
-      loop:
-        - curl
-        - gawk
+      loop: "{{ wine_install_winetricks_dependencies }}"
       when: nix_store_stat.stat.exists
