@@ -8,6 +8,7 @@
         cmd: |
           set -o pipefail
           nix-env -q | grep -qw curl
+          which curl
       changed_when: false
       failed_when: curl_check.rc not in [0, 1]
       register: curl_check
