@@ -40,7 +40,7 @@
       loop: "{{ wine_install_winetricks_dependencies }}"
       failed_when: false
 
-    - name: Display dependency check results
+    - name: Display dependency check results (debug)
       ansible.builtin.debug:
         msg: "Dependency check for {{ item.item }}: {{ 'Successful' if item.rc == 0 else 'Failed' }}"
       loop: "{{ dependency_check_results.results }}"
