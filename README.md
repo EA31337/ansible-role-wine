@@ -18,7 +18,7 @@ on several UNIX-like operating systems.
 
 ## Installation
 
-To install this role, you can use the following terminal command:
+To install this role, run the following terminal command:
 
 ```shell
 ansible-galaxy install git+https://github.com/EA31337/ansible-role-wine.git

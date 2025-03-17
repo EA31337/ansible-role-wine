@@ -6,6 +6,7 @@ wine_install_winetricks_dependencies:
   - 7zip
   - curl
   - gawk
+# Wine package version to install.
 # Stable, devel, or staging (for winehq packages).
 wine_release: stable
 wine_winetricks_apt_install: false
