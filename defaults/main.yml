@@ -4,8 +4,8 @@ wine_install_recommends: false
 wine_install_winetricks: false
 wine_install_winetricks_dependencies:
   - 7zip
-  - awk
   - curl
+  - gawk
 # Stable, devel, or staging (for winehq packages).
 wine_release: stable
 wine_winetricks_apt_install: false
