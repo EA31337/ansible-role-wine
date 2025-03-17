@@ -12,12 +12,13 @@
         "vscode": {
             "extensions": [
                 "DavidAnson.vscode-markdownlint",
-                "GitHub.copilot",
+                "elagil.pre-commit-helper"
                 "GitHub.copilot-chat",
+                "GitHub.copilot",
                 "github.vscode-github-actions",
                 "ms-python.python",
                 "sourcery.sourcery",
-                "vscodevim.vim"
+                "vscodevim.vim",
             ],
         }
     },
