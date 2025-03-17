@@ -1,0 +1,14 @@
+{
+    "code-runner.executorMap": {
+        "javascript": "node",
+        "pre-commit": "pre-commit run --all-files",
+        "python": "python -u",
+    },
+    "code-runner.executorMapByGlob": {
+        "molecule/default/molecule.yml": "molecule test -s default",
+        "molecule/devel/molecule.yml": "molecule test -s devel",
+        "molecule/winetricks/molecule.yml": "molecule test -s winetricks"
+    },
+    "code-runner.runInTerminal": true,
+    "code-runner.saveFileBeforeRun": true
+}
