@@ -41,9 +41,6 @@ jobs:
         uses: patrick-werner/fhir-html-validation-to-markdown@1.0.0
         with:
           input_file: ${{ github.repository }}/molecule-${{ matrix.scenario }}-report.html
-      - if: always()
-        run: ls -l
-        working-directory: ${{ github.repository }}
       # Debug with tmate on failure when debug logging is enabled.
       - if: ${{ failure() && runner.debug == '1' }}
         uses: mxschmitt/action-tmate@v3
