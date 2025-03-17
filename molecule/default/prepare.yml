@@ -1,4 +1,24 @@
 ---
-- name: Prepare
-  hosts: all
+- name: Prepare  hosts
+  hosts: all:!nixos*
   gather_facts: false
+  tasks:
+
+    - name: Install Python for Ansible
+      ansible.builtin.raw: |
+        command -v python3 || command -v python || (apt -y update && apt install -y python3-minimal)
+      changed_when: false
+      when: "'nixos' not in inventory_hostname"
+
+- name: Prepare NixOS hosts
+  hosts: ~nixos.*
+  gather_facts: false
+  tasks:
+    # Install Python 3 if not present
+    - name: Ensure Python is present for NixOS
+      ansible.builtin.raw: |
+        if ! command -v python3 &> /dev/null; then
+          nix-env -i python3
+        fi
+      changed_when: false
+      become: false

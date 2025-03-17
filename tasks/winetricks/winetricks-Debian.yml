@@ -1,0 +1,30 @@
+---
+
+- name: Gets ID of the distribution
+  changed_when: false
+  ansible.builtin.command: /usr/bin/lsb_release -si
+  register: lsb_release_dist_id
+
+- name: Ensures Winetricks is installed ({{ ansible_os_family }})
+  become: true
+  when: wine_install_winetricks | bool
+  block:
+
+    - name: Ensures Winetricks is present (Ubuntu)
+      ansible.builtin.apt:
+        allow_unauthenticated: true
+        install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
+        name: winetricks
+        state: present
+        update_cache: true
+      when: lsb_release_dist_id.stdout in ["Ubuntu"]
+
+    - name: Ensures Winetricks is present via URL
+      ansible.builtin.get_url:
+        dest: /usr/local/bin/winetricks
+        force: false
+        mode: "0755"
+        url: '{{ wine_winetricks_url }}'
+      when:
+        - wine_winetricks_url is defined
+        - wine_winetricks_url | length > 0

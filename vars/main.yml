@@ -1,1 +1,7 @@
 ---
+# This maps package names to their respective commands
+# Used to verify dependencies are correctly installed
+wine_package_command_map:
+  p7zip: 7z
+  curl: curl
+  gawk: awk
