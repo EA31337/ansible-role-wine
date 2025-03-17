@@ -13,6 +13,7 @@
             "extensions": [
                 "DavidAnson.vscode-markdownlint",
                 "elagil.pre-commit-helper",
+                "formulahendry.code-runner-copilot",
                 "formulahendry.code-runner",
                 "GitHub.copilot-chat",
                 "GitHub.copilot",
