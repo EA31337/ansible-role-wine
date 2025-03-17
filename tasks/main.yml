@@ -10,7 +10,7 @@
   when: cmd_which_wine_res.rc != 0
 
 - name: Ensures Winetricks is present
-  when: wine_install_winetricks
+  when: wine_install_winetricks | bool
   tags: winetricks
   block:
 

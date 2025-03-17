@@ -7,7 +7,7 @@
 
 - name: Ensures Winetricks is installed ({{ ansible_os_family }})
   become: true
-  when: wine_install_winetricks
+  when: wine_install_winetricks | bool
   block:
 
     - name: Ensures Winetricks is present (Ubuntu)

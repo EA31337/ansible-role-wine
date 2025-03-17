@@ -14,7 +14,7 @@
 
 - name: Apt cleanup
   become: true
-  when: wine_install_winetricks
+  when: wine_install_winetricks | bool
   block:
 
     - name: Removes dependencies that are no longer required

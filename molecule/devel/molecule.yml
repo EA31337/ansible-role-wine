@@ -34,5 +34,6 @@ provisioner:
     converge: ../default/converge.yml
     prepare: ../default/prepare.yml
     verify: ../default/verify.yml
+  when: wine_install_winetricks | bool
 verifier:
   name: ansible
