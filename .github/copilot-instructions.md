@@ -11,6 +11,7 @@ You are expected to be an expert in:
 
 ## Code Standards
 
+- Avoid writing trailing whitespace
 - Follow PEP 8 for Python.
 - Include docstrings and type hints where applicable
 - Maintain consistent YAML indentation
