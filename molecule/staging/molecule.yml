@@ -32,8 +32,6 @@ provisioner:
         wine_install_winetricks: true
         wine_install_recommends: true
         wine_release: staging
-  options:
-    v: true
   playbooks:
     converge: ../default/converge.yml
     prepare: ../default/prepare.yml

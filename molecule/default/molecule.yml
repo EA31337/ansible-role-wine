@@ -26,8 +26,6 @@ provisioner:
       callback_result_format: yaml
       remote_tmp: /tmp/.ansible-tmp-$${USER}
   name: ansible
-  options:
-    v: true
   playbooks:
     converge: converge.yml
 verifier:

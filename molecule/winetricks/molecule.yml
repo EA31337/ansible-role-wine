@@ -33,7 +33,6 @@ provisioner:
         wine_install_recommends: true
   options:
     tags: winetricks
-    v: true
   playbooks:
     converge: ../default/converge.yml
     prepare: ../default/prepare.yml
