@@ -25,14 +25,6 @@
       ansible.builtin.include_tasks: winetricks/winetricks.yml
       when: cmd_which_winetricks_res.rc != 0
 
-    - name: Checks if Winetricks is installed
-      ansible.builtin.command: which winetricks
-      check_mode: false
-      changed_when: false
-      failed_when: cmd_which_winetricks_res.rc > 1
-      register: cmd_which_winetricks_res
-      when: wine_winetricks_winver is defined
-
     - name: Sets Windows version via winetricks
       ansible.builtin.command: winetricks -q {{ wine_winetricks_winver }}
       async: 20

@@ -3,18 +3,9 @@
   become: "{{ ansible_user_id != 'root' }}"
   block:
 
-    - name: Checks if Winetricks is installed
-      ansible.builtin.command: which winetricks
-      check_mode: false
-      changed_when: false
-      failed_when: cmd_which_winetricks_res.rc > 1
-      register: cmd_which_winetricks_res
-
     - name: Ensures winetricks is present ({{ ansible_os_family }})
       ansible.builtin.include_tasks:
         file: "winetricks-{{ ansible_os_family }}.yml"
-      when:
-        - cmd_which_winetricks_res.rc != 0
 
     - name: Install dependencies required by winetricks ({{ ansible_os_family }})
       ansible.builtin.include_tasks:
