@@ -31,7 +31,11 @@ jobs:
           molecule_command: test
           molecule_options: --verbose
           molecule_working_dir: ${{ github.repository }}
-      - if: false
+      - if: always()
+        name: Ensure report file permissions are correct
+        run: sudo chmod 644 molecule-${{ matrix.scenario }}-report.html
+        working-directory: ${{ github.repository }}
+      - if: always()
         name: Converts test report
         uses: patrick-werner/fhir-html-validation-to-markdown@1.0.0
         with:
