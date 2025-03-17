@@ -37,5 +37,6 @@ provisioner:
   playbooks:
     converge: ../default/converge.yml
     prepare: ../default/prepare.yml
+    verify: ../default/verify.yml
 verifier:
   name: ansible

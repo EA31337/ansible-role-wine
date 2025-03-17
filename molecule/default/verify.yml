@@ -1,0 +1,31 @@
+---
+- name: Verify
+  hosts: all
+  tasks:
+    - name: Get Wine version
+      ansible.builtin.command: wine --version
+      register: wine_version_output
+      changed_when: false
+      failed_when: false
+
+    - name: Verify Wine is installed correctly
+      ansible.builtin.assert:
+        that:
+          - wine_version_output.rc == 0
+          - "'wine' in wine_version_output.stdout.lower()"
+        fail_msg: "Wine is not installed correctly"
+        success_msg: "Wine is installed correctly: {{ wine_version_output.stdout }}"
+
+    - name: Verify winetricks (if installed)
+      ansible.builtin.command: which winetricks
+      register: winetricks_check
+      changed_when: false
+      failed_when: false
+      when: wine_install_winetricks | bool
+
+    - name: Assert winetricks is installed
+      ansible.builtin.assert:
+        that: winetricks_check.rc == 0
+        fail_msg: "Winetricks not found but was expected to be installed"
+        success_msg: "Winetricks is installed correctly"
+      when: wine_install_winetricks | bool

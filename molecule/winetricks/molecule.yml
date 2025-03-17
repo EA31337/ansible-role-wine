@@ -10,6 +10,10 @@ platforms:
     image: i386/alpine:latest
   - name: debian-latest
     image: debian:latest
+  - name: nixos-latest
+    dockerfile: ../resources/playbooks/Dockerfile.j2
+    image: nixos/nix:latest
+    pre_build_image: false
   - name: ubuntu-jammy
     image: ubuntu:jammy
   - name: ubuntu-noble
@@ -27,8 +31,8 @@ provisioner:
       all:
         wine_install_winetricks: true
         wine_install_recommends: true
-        wine_release: devel
   options:
+    tags: winetricks
     v: true
   playbooks:
     converge: ../default/converge.yml
