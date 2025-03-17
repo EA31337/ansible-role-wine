@@ -39,9 +39,10 @@ You are expected to be an expert in:
 
 ## YAML Guidelines
 
-Linting rules:
+Ensure the following rules are strictly followed:
 
-- yaml[line-length]: Break down long lines (max. 120 characters)
+- yaml[indentation]: Avoid wrong indentation
+- yaml[line-length]: No long lines (max. 120 characters)
 - yaml[truthy]: Truthy value should be one of [false, true]
 
 ## Project Specifics
