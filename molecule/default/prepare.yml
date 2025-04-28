@@ -1,6 +1,6 @@
 ---
 - name: Prepare  hosts
-  hosts: all:!nixos*
+  hosts: "all:!nixos*"
   gather_facts: false
   tasks:
 
