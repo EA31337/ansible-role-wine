@@ -4,9 +4,14 @@
   ansible.builtin.command: which wine
   failed_when: cmd_which_wine_res.rc > 1
   register: cmd_which_wine_res
+  tags: wine
 
 - name: Ensures Wine is present
-  ansible.builtin.include_tasks: wine/wine.yml
+  ansible.builtin.include_tasks:
+    apply:
+      tags: wine
+    file: wine/wine.yml
+  tags: wine
   when: cmd_which_wine_res.rc != 0
 
 - name: Ensures Winetricks is present
