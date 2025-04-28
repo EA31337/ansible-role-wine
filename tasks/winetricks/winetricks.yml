@@ -5,10 +5,16 @@
 
     - name: Ensures winetricks is present ({{ ansible_os_family }})
       ansible.builtin.include_tasks:
+        apply:
+          tags: winetricks
         file: "winetricks-{{ ansible_os_family }}.yml"
+      tags: winetricks
 
     - name: Install dependencies required by winetricks ({{ ansible_os_family }})
       ansible.builtin.include_tasks:
+        apply:
+          tags: winetricks-deps
         file: install-deps-{{ ansible_os_family }}.yml
+      tags: winetricks-deps
       when:
         - wine_install_winetricks_dependencies | length > 0
