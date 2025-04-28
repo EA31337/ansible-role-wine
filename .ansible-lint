@@ -2,6 +2,7 @@
 # .ansible-lint
 exclude_paths:
   - "*.yml.swp"
+  - .ansible/
   - .cache/  # implicit unless exclude_paths is defined in config
 # Ansible-lint does not automatically load rules that have the 'opt-in' tag.
 # You must enable opt-in rules by listing each rule 'id' below.
@@ -14,4 +15,6 @@ enable_list:
   # add yaml here if you want to avoid ignoring yaml checks when yamllint
   # library is missing. Normally its absence just skips using that rule.
   - yaml
+mock_roles:
+  - community.docker.docker_image
 verbosity: 0
