@@ -11,7 +11,7 @@
       when: "'nixos' not in inventory_hostname"
 
 - name: Prepare NixOS hosts
-  hosts: ~nixos.*
+  hosts: "nixos.*"
   gather_facts: false
   tasks:
     # Install Python 3 if not present
