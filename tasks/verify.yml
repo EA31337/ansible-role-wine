@@ -9,6 +9,8 @@
 - name: Checks if Winetricks is installed
   changed_when: false
   ansible.builtin.command: winetricks --version
+  register: cmd_winetricks_version
+  failed_when: cmd_winetricks_version.rc != 0 and cmd_winetricks_version.rc != -6
   when: wine_install_winetricks | bool
 
 - name: Checks if required tools are installed
