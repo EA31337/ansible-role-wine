@@ -1,16 +1,12 @@
 ---
-- name: Ensures that dependencies are installed
+- name: Ensure Winetricks dependencies are installed
   become: "{{ ansible_user_id != 'root' }}"
-  block:
-
-    - name: Ensure required packages are present
-      ansible.builtin.apt:
-        allow_unauthenticated: true
-        install_recommends: false
-        name: "{{ item }}"
-        state: present
-        update_cache: true
-      loop: "{{ wine_install_winetricks_dependencies }}"
+  ansible.builtin.apt:
+    name: "{{ wine_install_winetricks_dependencies }}"
+    state: present
+    update_cache: true
+    install_recommends: false
+  when: wine_install_winetricks | bool
 
 - name: Apt cleanup
   become: true
