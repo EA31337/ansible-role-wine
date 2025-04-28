@@ -5,11 +5,10 @@
   tasks:
 
     - name: Install Python for Ansible
+      become: true
       ansible.builtin.raw: |
         command -v python3 || command -v python || (apt -y update && apt install -y python3-minimal)
       changed_when: false
-      when: "'nixos' not in inventory_hostname"
-
 - name: Prepare NixOS hosts
   hosts: "nixos.*"
   gather_facts: false
