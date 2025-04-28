@@ -54,7 +54,7 @@
           dependency_check_results.results |
           selectattr('rc', 'eq', 0) |
           list |
-          length == wine_install_winetricks_dependencies | length
+          length == (wine_install_winetricks_dependencies | length)
         fail_msg: >-
           Some winetricks dependencies failed verification.
           Please install:
