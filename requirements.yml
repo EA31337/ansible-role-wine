@@ -3,4 +3,4 @@
 # ansible-galaxy install -r requirements.yml
 ---
 collections:
-  - name: community.general  # Required by apk module.
+  - name: community.general

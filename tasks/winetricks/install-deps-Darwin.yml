@@ -1,6 +1,8 @@
 ---
-- name: Ensures required packages are present
-  ansible.builtin.package:
+- name: Ensure Winetricks dependencies via Homebrew
+  become: "{{ ansible_user_id != 'root' }}"
+  community.general.homebrew:
     name: "{{ item }}"
     state: present
   loop: "{{ wine_install_winetricks_dependencies }}"
+  when: wine_install_winetricks | bool
