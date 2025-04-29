@@ -1,6 +1,6 @@
 ---
 - name: Ensures Wine repository is configured
-  become: true
+  become: "{{ ansible_user_id != 'root' }}"
   block:
     - name: Ensures lsb_release command is present
       ansible.builtin.package:
@@ -62,6 +62,7 @@
           9048edc50795a9a788a59c82"
       when:
         - lsb_release_dist_id.stdout in ["Ubuntu"]
+
 - name: Ensures Wine is present
   become: true
   block:
@@ -111,38 +112,10 @@
   environment:
     WINEARCH: win64
   changed_when: false
-- name: Ensures Winetricks is installed
-  become: true
-  when: wine_install_winetricks
-  block:
-    - name: Ensures Winetricks is present (Ubuntu)
-      ansible.builtin.apt:
-        allow_unauthenticated: true
-        install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
-        name: winetricks
-        state: present
-        update_cache: true
-      when: lsb_release_dist_id.stdout in ["Ubuntu"]
-    - name: Ensures Winetricks is present via URL
-      ansible.builtin.get_url:
-        dest: /usr/local/bin/winetricks
-        force: false
-        mode: "0755"
-        url: '{{ wine_winetricks_url }}'
-      when:
-        - wine_winetricks_url is defined
-        - wine_winetricks_url | length > 0
-    - name: Ensures Curl is present (required by winetricks)
-      ansible.builtin.apt:
-        allow_unauthenticated: true
-        install_recommends: false
-        name: curl
-        state: present
-        update_cache: true
 
-- name: Apt cleanup
+- name: Apt cleanup ({{ ansible_os_family }})
   become: true
-  when: wine_install_winetricks
+  when: wine_install_winetricks | bool
   block:
 
     - name: Removes dependencies that are no longer required

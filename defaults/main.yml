@@ -1,9 +1,12 @@
 # yamllint disable rule:line-length
 ---
-wine_install_p7zip: false
 wine_install_recommends: false
 wine_install_winetricks: false
-wine_install_winetricks_dependencies: false
+wine_install_winetricks_dependencies:
+  - curl
+  - gawk
+  - p7zip
+# Wine package version to install.
 # Stable, devel, or staging (for winehq packages).
 wine_release: stable
 wine_winetricks_apt_install: false

@@ -4,44 +4,42 @@
   ansible.builtin.command: which wine
   failed_when: cmd_which_wine_res.rc > 1
   register: cmd_which_wine_res
+  tags: wine
 
 - name: Ensures Wine is present
-  ansible.builtin.include_tasks: wine/wine.yml
+  ansible.builtin.include_tasks:
+    apply:
+      tags: wine
+    file: wine/wine.yml
+  tags: wine
   when: cmd_which_wine_res.rc != 0
 
-- name: Checks if Winetricks is installed
-  ansible.builtin.command: which winetricks
-  check_mode: false
-  changed_when: false
-  failed_when: cmd_which_winetricks_res.rc > 1
-  register: cmd_which_winetricks_res
-  when: wine_install_winetricks
-
 - name: Ensures Winetricks is present
-  ansible.builtin.include_tasks: winetricks/winetricks.yml
-  when:
-    - wine_install_winetricks
-    - cmd_which_winetricks_res.rc != 0
+  when: wine_install_winetricks | bool
+  tags: winetricks
+  block:
 
-- name: Checks if Winetricks is installed
-  ansible.builtin.command: which winetricks
-  check_mode: false
-  changed_when: false
-  failed_when: cmd_which_winetricks_res.rc > 1
-  register: cmd_which_winetricks_res
-  when:
-    - wine_install_winetricks
-      or wine_winetricks_winver is defined
+    - name: Checks if Winetricks is installed
+      ansible.builtin.command: which winetricks
+      check_mode: false
+      changed_when: false
+      failed_when: cmd_which_winetricks_res.rc > 1
+      register: cmd_which_winetricks_res
 
-- name: Sets Windows version via winetricks
-  ansible.builtin.command: winetricks -q {{ wine_winetricks_winver }}
-  async: 20
-  changed_when: false
-  poll: 0
-  when:
-    - cmd_which_winetricks_res.rc == 0
-    - wine_winetricks_winver is defined
-    - wine_winetricks_winver | length > 0
+    - name: Ensures Winetricks is present
+      ansible.builtin.include_tasks: winetricks/winetricks.yml
+      when: cmd_which_winetricks_res.rc != 0
+
+    - name: Sets Windows version via winetricks
+      ansible.builtin.command: winetricks -q {{ wine_winetricks_winver }}
+      async: 20
+      changed_when: false
+      poll: 0
+      when:
+        - cmd_which_winetricks_res.rc == 0
+        - wine_winetricks_winver is defined
+        - wine_winetricks_winver | length > 0
 
 - name: Verify
   ansible.builtin.include_tasks: verify.yml
+  tags: verify

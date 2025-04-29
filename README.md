@@ -1,5 +1,6 @@
 # Ansible Role: Wine
 
+[![CodeRabbit PR Reviews](https://img.shields.io/coderabbit/prs/github/EA31337/ansible-role-wine?utm_source=oss&utm_medium=github&utm_campaign=EA31337%2Fansible-role-wine&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+PR+Reviews)](https://github.com/EA31337/ansible-role-wine/pulls)
 [![License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
 
 Ansible role to install Wine on UNIX-like platforms.
@@ -18,7 +19,7 @@ on several UNIX-like operating systems.
 
 ## Installation
 
-To install this role, you can use the following terminal command:
+To install this role, run the following terminal command:
 
 ```shell
 ansible-galaxy install git+https://github.com/EA31337/ansible-role-wine.git

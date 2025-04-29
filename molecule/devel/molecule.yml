@@ -19,20 +19,20 @@ platforms:
 provisioner:
   config_options:
     defaults:
-      callback_result_format: yaml
+      # Use the built-in default callback with result_format instead of community.general.yaml
+      stdout_callback: ansible.builtin.default
+      result_format: yaml
       remote_tmp: /tmp/.ansible-tmp-$${USER}
   name: ansible
   inventory:
     group_vars:
       all:
         wine_install_winetricks: true
-        wine_install_winetricks_dependencies: true
-        wine_install_p7zip: true
         wine_install_recommends: true
         wine_release: devel
-  options:
-    v: true
   playbooks:
     converge: ../default/converge.yml
+    prepare: ../default/prepare.yml
+    verify: ../default/verify.yml
 verifier:
   name: ansible
