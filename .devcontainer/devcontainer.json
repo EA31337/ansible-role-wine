@@ -19,7 +19,6 @@
                 "GitHub.copilot",
                 "github.vscode-github-actions",
                 "ms-python.python",
-                "sourcery.sourcery",
                 "vscodevim.vim"
             ]
         }
