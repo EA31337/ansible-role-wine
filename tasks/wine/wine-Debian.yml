@@ -64,7 +64,7 @@
         - lsb_release_dist_id.stdout in ["Ubuntu"]
 
 - name: Ensures Wine is present
-  become: true
+  become: "{{ lookup('env', 'UID') | int != 0 }}"
   block:
     - name: Ensures Wine package is present (Debian)
       ansible.builtin.apt:
@@ -114,7 +114,7 @@
   changed_when: false
 
 - name: Apt cleanup ({{ ansible_os_family }})
-  become: true
+  become: "{{ lookup('env', 'UID') | int != 0 }}"
   when: wine_install_winetricks | bool
   block:
 
