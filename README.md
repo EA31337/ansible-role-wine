@@ -28,3 +28,21 @@ ansible-galaxy install git+https://github.com/EA31337/ansible-role-wine.git
 ## Role Variables
 
 For available variables, check [`defaults/main.yml`](defaults/main.yml).
+
+## Testing
+
+### Docker
+
+To test on Docker containers, run:
+
+```shell
+ansible-playbook -i tests/inventory/docker-containers.yml tests/playbooks/docker-containers.yml
+```
+
+### Molecule
+
+To test using Molecule, run:
+
+```shell
+molecule test
+```
