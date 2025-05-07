@@ -21,6 +21,7 @@ reviews:
     - "**/*.yml"
     - "defaults/**"
     - "meta/**"
+    - "molecule/**"
     - "tasks/**"
     - "vars/**"
   poem: true
