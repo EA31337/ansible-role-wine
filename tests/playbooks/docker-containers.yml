@@ -59,6 +59,7 @@
           - python3-pip
           - python3-setuptools
         state: present
+        update_cache: true
       become: "{{ (ansible_user_id is defined and ansible_user_id != 'root') or (lookup('env', 'UID') | int != 0) }}"
       become_method: ansible.builtin.su
       when: container_image is search("ubuntu") or container_image is search("debian")
