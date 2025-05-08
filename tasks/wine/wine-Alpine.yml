@@ -1,6 +1,6 @@
 ---
 - name: Ensures Wine is present
-  become: "{{ ansible_user_id != 'root' }}"
+  become: "{{ (ansible_user_id is defined and ansible_user_id != 'root') or (lookup('env', 'UID') | int != 0) }}"
   block:
 
     - name: Ensures Wine is present ({{ ansible_os_family }})

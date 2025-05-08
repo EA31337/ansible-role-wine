@@ -6,7 +6,7 @@
   register: lsb_release_dist_id
 
 - name: Ensures Winetricks is installed ({{ ansible_os_family }})
-  become: "{{ lookup('env', 'UID') | int != 0 }}"
+  become: "{{ (ansible_user_id is defined and ansible_user_id != 'root') or (lookup('env', 'UID') | int != 0) }}"
   when: wine_install_winetricks | bool
   block:
 
