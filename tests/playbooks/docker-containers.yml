@@ -10,21 +10,13 @@
       wine-on-ubuntu-noble: ubuntu:noble
     container_image: "{{ container_image_map[inventory_hostname] | default('ubuntu:latest') }}"
   pre_tasks:
-    - name: Check if container is running
-      ansible.builtin.command: docker ps -q -f name={{ inventory_hostname }}
-      register: container_status
+    - name: Ensure container is started
+      ansible.builtin.docker_container:
+        name: "{{ inventory_hostname }}"
+        image: "{{ container_image }}"
+        state: started
+        command: sleep infinity
       delegate_to: localhost
-      changed_when: false
-      failed_when: false
-
-    - name: Ensure container is running or start it
-      ansible.builtin.command: >
-        docker run -d --name {{ inventory_hostname }} {{ container_image }} sleep infinity
-      changed_when: container_run_result.rc == 0
-      delegate_to: localhost
-      register: container_run_result
-      when: not container_status.stdout
-
     - name: Wait for container to be ready
       ansible.builtin.command: docker inspect -f '{{ "{{.State.Running}}" }}' {{ inventory_hostname }}
       register: inspect_result
