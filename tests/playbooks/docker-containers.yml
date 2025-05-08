@@ -1,6 +1,6 @@
 ---
 - name: Configure Docker container
-  hosts: wine-on-ubuntu-latest, wine-on-ubuntu-jammy, wine-on-ubuntu-noble
+  hosts: docker_containers
   gather_facts: false
   vars:
     ansible_python_interpreter: /usr/bin/python3
@@ -48,7 +48,7 @@
       become: "{{ (ansible_user_id is defined and ansible_user_id != 'root') or (lookup('env', 'UID') | int != 0) }}"
 
 - name: Install ea31337.wine role on all containers
-  hosts: all
+  hosts: docker_containers
   gather_facts: true
   tasks:
     - name: Installs ea31337.wine role
