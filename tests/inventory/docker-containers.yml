@@ -1,10 +1,6 @@
 ---
 all:
   hosts:
-    wine-on-ubuntu-jammy:
-      ansible_connection: docker
-      ansible_host: wine-on-ubuntu-jammy
-      ansible_python_interpreter: /usr/bin/python3
     wine-on-ubuntu-latest:
       ansible_connection: docker
       ansible_host: wine-on-ubuntu-latest
@@ -13,11 +9,7 @@ all:
       ansible_connection: docker
       ansible_host: wine-on-ubuntu-noble
       ansible_python_interpreter: /usr/bin/python3
-    ubuntu-jammy:
+    wine-on-ubuntu-jammy:
       ansible_connection: docker
-      ansible_host: ubuntu-jammy
-      ansible_python_interpreter: /usr/bin/python3
-    ubuntu-noble:
-      ansible_connection: docker
-      ansible_host: ubuntu-noble
+      ansible_host: wine-on-ubuntu-jammy
       ansible_python_interpreter: /usr/bin/python3
