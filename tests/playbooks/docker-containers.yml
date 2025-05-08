@@ -11,7 +11,7 @@
     container_image: "{{ container_image_map[inventory_hostname] | default('ubuntu:latest') }}"
   pre_tasks:
     - name: Ensure container is started
-      ansible.builtin.docker_container:
+      community.docker.docker_container:
         name: "{{ inventory_hostname }}"
         image: "{{ container_image }}"
         state: started
