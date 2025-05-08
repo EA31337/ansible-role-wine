@@ -55,10 +55,10 @@
         update_cache: true
       become: "{{ lookup('env', 'UID') | int != 0 }}"
 
-- name: Install Wine on all containers
+- name: Install ea31337.wine role on all containers
   hosts: all
   gather_facts: true
   tasks:
-    - name: Installs Wine
+    - name: Installs ea31337.wine role
       ansible.builtin.import_role:
         name: ea31337.wine
