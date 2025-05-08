@@ -6,4 +6,5 @@
 *.png
 __pycache__
 requirements-local.yml
+*.swp
 *.verb
