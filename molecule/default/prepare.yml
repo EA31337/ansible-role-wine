@@ -1,11 +1,11 @@
 ---
-- name: Prepare  hosts
+- name: Prepare hosts
   hosts: "all:!nixos*"
   gather_facts: false
   tasks:
 
     - name: Install Python for Ansible
-      become: true
+      become: "{{ lookup('env', 'UID') | int != 0 }}"
       ansible.builtin.raw: |
         command -v python3 || command -v python || (apt -y update && apt install -y python3-minimal)
       changed_when: false

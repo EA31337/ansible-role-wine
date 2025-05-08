@@ -1,6 +1,6 @@
 ---
 - name: Ensures Wine is present
-  become: true
+  become: "{{ ansible_user_id != 'root' }}"
   block:
 
     - name: Ensures Wine is present ({{ ansible_os_family }})
