@@ -5,14 +5,16 @@ name: Molecule
 on:
   pull_request:
     paths-ignore:
-      - '**.md'
-      - '*.yaml'
+      - '**/*.md'
+      - '**/*.yml'
+      - '**/*.yaml'
       - .github/workflows/test.yml
       - Pipfile*
   push:
     paths-ignore:
-      - '**.md'
-      - '*.yaml'
+      - '**/*.md'
+      - '**/*.yml'
+      - '**/*.yaml'
       - .github/workflows/test.yml
       - Pipfile*
 

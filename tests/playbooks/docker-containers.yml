@@ -1,6 +1,6 @@
 ---
 - name: Configure Docker container
-  hosts: wine-on-ubuntu-latest,wine-on-ubuntu-jammy,wine-on-ubuntu-noble
+  hosts: wine-on-ubuntu-latest, wine-on-ubuntu-jammy, wine-on-ubuntu-noble
   gather_facts: false
   vars:
     ansible_python_interpreter: /usr/bin/python3
@@ -18,7 +18,7 @@
         command: sleep infinity
       delegate_to: localhost
     - name: Wait for container to be ready
-      ansible.builtin.command: docker inspect -f '{{ "{{.State.Running}}" }}' {{ inventory_hostname }}
+      ansible.builtin.command: docker inspect -f "{% raw %}{{.State.Running}}{% endraw %}" {{ inventory_hostname }}
       register: inspect_result
       until: inspect_result.stdout == "true"
       retries: 5
