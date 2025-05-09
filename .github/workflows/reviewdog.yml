@@ -8,6 +8,7 @@ on:
 
 jobs:
   actionlint:
+    name: actionlint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,3 +17,13 @@ jobs:
         run: |
           echo "::add-matcher::.github/actionlint-matcher.json"
         shell: bash
+  prettier:
+    name: prettier
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: EPMatt/reviewdog-action-prettier@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+          level: error
+          reporter: github-pr-review
