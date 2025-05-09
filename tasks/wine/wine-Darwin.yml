@@ -1,7 +1,7 @@
 ---
 - name: Ensures Wine is present (Homebrew Cast)
-  become: "{{ (ansible_user_id is defined and ansible_user_id != 'root') or (lookup('env', 'UID') | int != 0) }}"
-  become_method: ansible.builtin.su
+  become: "{{ ansible_user_id is defined and ansible_user_id != 'root' }}"
+  become_method: ansible.builtin.sudo
   block:
     - name: Ensures Wine is present (Homebrew Cast)
       community.general.homebrew_cask:
