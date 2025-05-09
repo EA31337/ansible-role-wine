@@ -10,16 +10,19 @@ on several UNIX-like operating systems.
 
 ## Requirements
 
-- Ansible 2.9 or higher
-- Supported platforms:
-  - Alpine 3.12+
-  - Debian 10+
-  - Ubuntu 18.04+
-  - NixOS
+This role requires:
 
-## Installation
+- Ansible
+- Python
+- Administrative/root access on target hosts
+- One of the following operating systems:
+  - Alpine Linux
+  - Debian/Ubuntu
+  - NixOS or systems with Nix package manager
 
-To install this role, run the following terminal command:
+## Install
+
+To install this role, you can use the following terminal command:
 
 ```shell
 ansible-galaxy install git+https://github.com/EA31337/ansible-role-wine.git
@@ -27,4 +30,29 @@ ansible-galaxy install git+https://github.com/EA31337/ansible-role-wine.git
 
 ## Role Variables
 
-For available variables, check [`defaults/main.yml`](defaults/main.yml).
+For available variables,
+check [`defaults/main.yml`](defaults/main.yml).
+
+## Testing
+
+### Docker
+
+To test on Docker containers, run:
+
+```shell
+ansible-playbook -i tests/inventory/docker-containers.yml tests/playbooks/docker-containers.yml
+```
+
+### Molecule
+
+To test using Molecule, run:
+
+```shell
+molecule test
+```
+
+## License
+
+GNU GPL v3
+
+See: [LICENSE](./LICENSE)

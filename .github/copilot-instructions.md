@@ -37,6 +37,12 @@ You are expected to be an expert in:
 - Use ansible-lint and write Molecule tests for verification
 - Use descriptive task names and include helpful comments
 
+## Ansible Linting
+
+Ensure enforcing the following rules:
+
+- fqcn[keyword]: Avoid `collections` keyword by using FQCN for all plugins, modules, roles and playbooks
+
 ## YAML Guidelines
 
 Ensure the following rules are strictly followed:

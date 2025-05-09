@@ -1,0 +1,81 @@
+---
+- name: Configure Docker container
+  hosts: docker_containers, !wine-on-nixos-latest
+  gather_facts: false
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+    container_image_map:
+      wine-on-alpine-latest: alpine:latest
+      wine-on-debian-latest: debian:latest
+      wine-on-nixos-latest: nixos/nix
+      wine-on-ubuntu-jammy: ubuntu:jammy
+      wine-on-ubuntu-latest: ubuntu:latest
+      wine-on-ubuntu-noble: ubuntu:noble
+    container_image: "{{ container_image_map[inventory_hostname] | default('ubuntu:latest') }}"
+  pre_tasks:
+    - name: Ensure container is started
+      community.docker.docker_container:
+        name: "{{ inventory_hostname }}"
+        image: "{{ container_image }}"
+        state: started
+        command: sleep infinity
+      delegate_to: localhost
+    - name: Wait for container to be ready
+      ansible.builtin.command: docker inspect -f "{% raw %}{{.State.Running}}{% endraw %}" {{ inventory_hostname }}
+      register: inspect_result
+      until: inspect_result.stdout == "true"
+      retries: 5
+      delay: 2
+      delegate_to: localhost
+      changed_when: false
+
+    - name: Install Python 3 on Alpine
+      ansible.builtin.raw: >-
+        test -e "{{ ansible_python_interpreter }}"
+        || (apk update && apk add --no-cache python3 py3-pip)
+      become: "{{ (ansible_user_id is defined and ansible_user_id != 'root') or (lookup('env', 'UID') | int != 0) }}"
+      become_method: ansible.builtin.su
+      changed_when: false
+      when: container_image is search("alpine")
+
+    - name: Install Python 3 on Ubuntu/Debian
+      ansible.builtin.raw: >-
+        test -e "{{ ansible_python_interpreter }}"
+        || (apt-get update && apt-get install -y python3 python3-pip)
+      become: "{{ (ansible_user_id is defined and ansible_user_id != 'root') or (lookup('env', 'UID') | int != 0) }}"
+      become_method: ansible.builtin.su
+      changed_when: false
+      when: container_image is search("ubuntu") or container_image is search("debian")
+
+    - name: Gather facts
+      become: "{{ (ansible_user_id is defined and ansible_user_id != 'root') or (lookup('env', 'UID') | int != 0) }}"
+      become_method: ansible.builtin.su
+      ansible.builtin.setup:
+
+    - name: Install Python packages for Ubuntu/Debian
+      ansible.builtin.apt:
+        name:
+          - python3
+          - python3-pip
+          - python3-setuptools
+        state: present
+        update_cache: true
+      become: "{{ (ansible_user_id is defined and ansible_user_id != 'root') or (lookup('env', 'UID') | int != 0) }}"
+      become_method: ansible.builtin.su
+      when: container_image is search("ubuntu") or container_image is search("debian")
+
+- name: Install ea31337.wine role on all containers
+  hosts: docker_containers, !wine-on-nixos-latest
+  gather_facts: true
+  tasks:
+    - name: Installs ea31337.wine role
+      ansible.builtin.import_role:
+        name: ea31337.wine
+
+  post_tasks:
+    - name: Stop Docker containers
+      community.docker.docker_container:
+        name: "{{ inventory_hostname }}"
+        state: stopped
+      delegate_to: localhost
+      failed_when: false
