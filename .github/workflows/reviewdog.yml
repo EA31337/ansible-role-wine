@@ -12,3 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: reviewdog/action-actionlint@v1
+      - name: Add Problem Matcher for actionlint
+        run: |
+          echo "::add-matcher::.github/actionlint-matcher.json"
+        shell: bash
