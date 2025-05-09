@@ -6,5 +6,5 @@
     - name: Ensures Wine is present (Homebrew Cast)
       community.general.homebrew_cask:
         name: "{{ item }}"
-      with_items:
+      loop:
         - wine-{{ wine_release }}
