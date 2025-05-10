@@ -1,6 +1,7 @@
 ---
 - name: Ensure Winetricks dependencies are installed
   become: "{{ ansible_user_id != 'root' }}"
+  become_method: "{{ wine_become_method }}"
   ansible.builtin.apt:
     name: "{{ wine_install_winetricks_dependencies }}"
     state: present
@@ -9,7 +10,8 @@
   when: wine_install_winetricks | bool
 
 - name: Apt cleanup
-  become: true
+  become: "{{ ansible_user_id != 'root' }}"
+  become_method: "{{ wine_become_method }}"
   when: wine_install_winetricks | bool
   block:
 

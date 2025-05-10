@@ -2,11 +2,13 @@
 - name: Prepare hosts
   hosts: "all:!nixos*"
   gather_facts: false
+  vars:
+    wine_become_method: ansible.builtin.su
   tasks:
 
     - name: Install Python for Ansible
       become: "{{ (ansible_user_id is defined and ansible_user_id != 'root') or (lookup('env', 'UID') | int != 0) }}"
-      become_method: ansible.builtin.su
+      become_method: "{{ wine_become_method }}"
       ansible.builtin.raw: |
         command -v python3 || command -v python || (apt -y update && apt install -y python3-minimal)
       changed_when: false
