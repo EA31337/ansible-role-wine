@@ -2,6 +2,8 @@
 - name: Prepare hosts
   hosts: "all:!nixos*"
   gather_facts: false
+  vars:
+    wine_become_method: ansible.builtin.su
   tasks:
 
     - name: Install Python for Ansible
