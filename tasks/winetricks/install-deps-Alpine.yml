@@ -1,6 +1,7 @@
 ---
 - name: Ensures that dependencies are installed
   become: "{{ ansible_user_id != 'root' }}"
+  become_method: ansible.builtin.su
   block:
 
     - name: Install winetricks dependencies (Alpine)

@@ -1,6 +1,7 @@
 ---
 - name: Ensures winetricks is present ({{ ansible_os_family }})
   become: "{{ ansible_user_id != 'root' }}"
+  become_method: ansible.builtin.su
   block:
 
     - name: Ensures Winetricks is present (via URL)

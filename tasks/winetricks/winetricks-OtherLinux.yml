@@ -1,7 +1,7 @@
 ---
 - name: Ensures Winetricks is installed ({{ ansible_os_family }})
   become: "{{ ansible_user_id != 'root' }}"
-
+  become_method: ansible.builtin.su
   block:
 
     - name: Check if winetricks is already installed
