@@ -13,6 +13,7 @@
       wine-on-ubuntu-latest: ubuntu:latest
       wine-on-ubuntu-noble: ubuntu:noble
     container_image: "{{ container_image_map[inventory_hostname] | default('ubuntu:latest') }}"
+    wine_become_method: ansible.builtin.su
     wine_install_winetricks: true
   pre_tasks:
     - name: Ensure container is started
