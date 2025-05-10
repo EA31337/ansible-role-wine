@@ -1,7 +1,6 @@
 ---
 - name: Ensure Winetricks dependencies via Homebrew
   become: "{{ ansible_user_id != 'root' }}"
-  become_method: ansible.builtin.su
   community.general.homebrew:
     name: "{{ item }}"
     state: present

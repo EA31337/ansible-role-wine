@@ -37,7 +37,7 @@
       ansible.builtin.raw: |
         test -e "{{ ansible_python_interpreter }}" || (apk update && apk add --no-cache python3 py3-pip)
       become: "{{ become_for_container }}"
-      become_method: ansible.builtin.su
+      become_method: "{{ wine_become_method }}"
       changed_when: false
       when: container_image is search("alpine")
 
@@ -45,7 +45,7 @@
       ansible.builtin.raw: |
         test -e "{{ ansible_python_interpreter }}" || (nix-env -iA nixpkgs.python3 nixpkgs.python3Packages.pip)
       become: "{{ become_for_container }}"
-      become_method: ansible.builtin.su
+      become_method: "{{ wine_become_method }}"
       changed_when: false
       when: container_image is search("nixos")
 
@@ -53,14 +53,14 @@
       ansible.builtin.raw: |
         test -e "{{ ansible_python_interpreter }}" || (apt-get update && apt-get install -y python3 python3-pip)
       become: "{{ become_for_container }}"
-      become_method: ansible.builtin.su
+      become_method: "{{ wine_become_method }}"
       changed_when: false
       when: container_image is search("ubuntu") or container_image is search("debian")
 
     - name: Gather facts
       ansible.builtin.setup:
       become: "{{ become_for_container }}"
-      become_method: ansible.builtin.su
+      become_method: "{{ wine_become_method }}"
 
     - name: Install Python packages for Ubuntu/Debian
       ansible.builtin.apt:
@@ -71,7 +71,7 @@
         state: present
         update_cache: true
       become: "{{ become_for_container }}"
-      become_method: ansible.builtin.su
+      become_method: "{{ wine_become_method }}"
       when: container_image is search("ubuntu") or container_image is search("debian")
 
 - name: Install ea31337.wine role on all containers

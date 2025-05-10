@@ -6,7 +6,7 @@
 
 - name: Ensure Wine is installed (Nix)
   become: "{{ ansible_user_id != 'root' }}"
-  become_method: ansible.builtin.su
+  become_method: "{{ wine_become_method }}"
   block:
 
     - name: Check if Wine is already installed
