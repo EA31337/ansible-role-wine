@@ -1,6 +1,5 @@
 # yamllint disable rule:line-length
 ---
-wine_become_method: ansible.builtin.su
 wine_install_recommends: false
 wine_install_winetricks: false
 wine_install_winetricks_dependencies:

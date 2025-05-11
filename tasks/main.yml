@@ -16,7 +16,9 @@
 
 - name: Ensures Winetricks is present
   when: wine_install_winetricks | bool
-  tags: winetricks
+  tags:
+    - winetricks
+    - winetricks-deps
   block:
 
     - name: Checks if Winetricks is installed
@@ -40,6 +42,9 @@
         - wine_winetricks_winver is defined
         - wine_winetricks_winver | length > 0
 
-- name: Verify
-  ansible.builtin.include_tasks: verify.yml
-  tags: verify
+- name: Verify installation
+  ansible.builtin.include_tasks:
+    apply:
+      tags: wine-verify
+    file: verify.yml
+  tags: wine-verify

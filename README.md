@@ -47,6 +47,12 @@ Steps to test role on Docker containers.
     ansible-galaxy install -r requirements-local.yml
     ```
 
+    Alternatively, for development purposes, you can consider using symbolic link, e.g.
+
+    ```shell
+    ln -vs "$PWD" ~/.ansible/roles/ea31337.wine
+    ```
+
 2. Ensure Docker service (e.g. Docker Desktop) is running.
 3. Run playbook from `tests/`:
 
