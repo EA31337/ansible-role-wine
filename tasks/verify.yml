@@ -13,15 +13,6 @@
   failed_when: cmd_winetricks_version.rc != 0 and cmd_winetricks_version.rc != -6
   when: wine_install_winetricks | bool
 
-- name: Checks if required tools are installed
-  changed_when: false
-  ansible.builtin.command: "which {{ wine_package_command_map[item] | default(item) }}"
-  loop: "{{ wine_install_winetricks_dependencies }}"
-  register: dependency_check_results
-  when:
-    - wine_install_winetricks | bool
-    - wine_install_winetricks_dependencies | length > 0
-
 - name: Verify dependency installation status
   when:
     - wine_install_winetricks | bool
