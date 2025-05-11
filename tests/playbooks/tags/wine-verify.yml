@@ -18,10 +18,11 @@
   pre_tasks:
     - name: Ensure container is started
       community.docker.docker_container:
-        name: "{{ inventory_hostname }}"
-        image: "{{ container_image }}"
-        state: started
         command: sleep infinity
+        image: "{{ container_image }}"
+        name: "{{ inventory_hostname }}"
+        pull: true
+        state: started
       delegate_to: localhost
 
     - name: Wait for container to be ready
