@@ -18,18 +18,17 @@
   pre_tasks:
     - name: Ensure container is started
       community.docker.docker_container:
-        command: sleep infinity
-        image: "{{ container_image }}"
         name: "{{ inventory_hostname }}"
-        pull: true
+        image: "{{ container_image }}"
         state: started
+        command: sleep infinity
       delegate_to: localhost
 
     - name: Wait for container to be ready
-      ansible.builtin.command: >
-        docker inspect -f "{% raw %}{{.State.Running}}{% endraw %}" {{ inventory_hostname }}
-      register: inspect_result
-      until: inspect_result.stdout == "true"
+      community.docker.docker_container_info:
+        name: "{{ inventory_hostname }}"
+      register: container_info
+      until: container_info.containers[0].State.Running | bool
       retries: 5
       delay: 2
       delegate_to: localhost
