@@ -1,7 +1,7 @@
 ---
 - name: Ensures winetricks and dependencies are present
   become: "{{ ansible_user_id != 'root' }}"
-  become_method: "{{ wine_become_method[ansible_os_family] }}"
+  become_method: "{{ wine_become_method[ansible_os_family] | default('ansible.builtin.sudo') }}"
   when: wine_install_winetricks | bool
   block:
 
