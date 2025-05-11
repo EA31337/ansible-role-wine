@@ -1,4 +1,6 @@
 ---
+# 'wine_become_method' is expected to be a dictionary keyed by OS family (e.g., 'Debian', 'RedHat'),
+# where each key maps to the appropriate become method (e.g., 'sudo', 'su') for that OS family.
 wine_become_method:
   _default: ansible.builtin.sudo
   Alpine: ansible.builtin.su
