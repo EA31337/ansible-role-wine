@@ -14,6 +14,11 @@ repos:
     hooks:
       - id: ansible-lint
 
+  - repo: https://github.com/aristanetworks/j2lint.git
+    rev: v1.2.0
+    hooks:
+      - id: j2lint
+
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
     hooks:
