@@ -28,9 +28,9 @@
       community.docker.docker_container_info:
         name: "{{ inventory_hostname }}"
       register: container_info
-      until: container_info.containers[0].State.Running | bool
-      retries: 5
-      delay: 2
+      until:
+        - container_info is defined
+        - (container_info.container is defined and container_info.container.State.Running | default(false) | bool)
       delegate_to: localhost
       changed_when: false
 
