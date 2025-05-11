@@ -1,7 +1,7 @@
 ---
 - name: Configure Docker container
   # Note: Since facts are not gathered, we're checking connection_user or UID to determine if we need to use become.
-  become: "{{ (connection_user is not defined) or (connection_user != 'root') or (lookup('env', 'UID') | int != 0) }}"
+  become: "{{ (connection_user is not defined and connection_user != 'root') or (lookup('env', 'UID') | int != 0) }}"
   # Use su as become_method as sudo is not available in all containers.
   become_method: ansible.builtin.su
   gather_facts: false
