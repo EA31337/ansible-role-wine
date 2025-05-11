@@ -1,7 +1,7 @@
 ---
 - name: Ensures Wine repository is configured
   become: "{{ (ansible_user_id is defined and ansible_user_id != 'root') or (lookup('env', 'UID') | int != 0) }}"
-  become_method: "{{ wine_become_method[ansible_os_family] | default(wine_become_method['_default']) }}"
+  become_method: "{{ wine_become_method.get(ansible_os_family, wine_become_method['_default']) }}"
   block:
     - name: Ensures lsb_release command is present
       ansible.builtin.package:
