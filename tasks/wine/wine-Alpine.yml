@@ -1,7 +1,7 @@
 ---
 - name: Ensures Wine is present
   become: "{{ (ansible_user_id is defined and ansible_user_id != 'root') or (lookup('env', 'UID') | int != 0) }}"
-  become_method: "{{ wine_become_method }}"
+  become_method: "{{ wine_become_method[ansible_os_family] }}"
   block:
 
     - name: Ensures Wine is present ({{ ansible_os_family }})

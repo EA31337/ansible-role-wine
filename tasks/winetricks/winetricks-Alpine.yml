@@ -1,7 +1,7 @@
 ---
 - name: Ensures winetricks is present ({{ ansible_os_family }})
   become: "{{ ansible_user_id != 'root' }}"
-  become_method: "{{ wine_become_method }}"
+  become_method: "{{ wine_become_method[ansible_os_family] }}"
   block:
 
     - name: Ensures Winetricks is present (via URL)
