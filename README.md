@@ -22,6 +22,8 @@ This role requires:
 
 ## Install
 
+### Install from GitHub
+
 To install this role, you can use the following terminal command:
 
 ```shell
