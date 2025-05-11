@@ -1,6 +1,7 @@
 ---
 - name: Configure Docker container
   become: "{{ (ansible_user_id is defined and ansible_user_id != 'root') or (lookup('env', 'UID') | int != 0) }}"
+  # Use su as become_method as sudo is not available in all containers.
   become_method: ansible.builtin.su
   gather_facts: false
   hosts: docker_containers
