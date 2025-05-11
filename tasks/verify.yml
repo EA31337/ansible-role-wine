@@ -18,7 +18,6 @@
   ansible.builtin.command: "{{ wine_package_command_map[item] | default(item) }} --version"
   loop: "{{ wine_install_winetricks_dependencies }}"
   register: dependency_check_results
-  failed_when: false
   when:
     - wine_install_winetricks | bool
     - wine_install_winetricks_dependencies | length > 0
