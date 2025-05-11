@@ -2,18 +2,6 @@
 - name: Ensure Docker containers are up-and-running
   gather_facts: false
   hosts: docker_containers
-  tags: always
-  vars:
-    container_image_map:
-      wine-on-alpine-latest: alpine:latest
-      wine-on-debian-latest: debian:latest
-      wine-on-nixos-latest: nixos/nix
-      wine-on-ubuntu-jammy: ubuntu:jammy
-      wine-on-ubuntu-latest: ubuntu:latest
-      wine-on-ubuntu-noble: ubuntu:noble
-    container_image: "{{ container_image_map[inventory_hostname] | default('ubuntu:latest') }}"
-  vars_files:
-    - ../../vars/main.yml
 
   pre_tasks:
     - name: Ensure container is started
@@ -35,6 +23,19 @@
       delegate_to: localhost
       changed_when: false
 
+  tags: always
+  vars:
+    container_image_map:
+      wine-on-alpine-latest: alpine:latest
+      wine-on-debian-latest: debian:latest
+      wine-on-nixos-latest: nixos/nix
+      wine-on-ubuntu-jammy: ubuntu:jammy
+      wine-on-ubuntu-latest: ubuntu:latest
+      wine-on-ubuntu-noble: ubuntu:noble
+    container_image: "{{ container_image_map[inventory_hostname] | default('ubuntu:latest') }}"
+  vars_files:
+    - ../../vars/main.yml
+
 - name: Import ea31337.wine role (wine-verify tag)
   hosts: docker_containers
   gather_facts: true
@@ -43,8 +44,6 @@
       ansible.builtin.import_role:
         name: ea31337.wine
   tags: wine-verify
-  vars:
-    wine_install_winetricks: true
 
   post_tasks:
     - name: Stop Docker containers
@@ -53,3 +52,6 @@
         state: stopped
       delegate_to: localhost
       failed_when: false
+
+  vars:
+    wine_install_winetricks: true
