@@ -1,4 +1,5 @@
 ---
+wine_become_method: ansible.builtin.su
 # This maps package names to their respective commands
 # Used to verify dependencies are correctly installed
 wine_package_command_map:
