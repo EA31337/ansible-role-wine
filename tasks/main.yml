@@ -40,6 +40,9 @@
         - wine_winetricks_winver is defined
         - wine_winetricks_winver | length > 0
 
-- name: Verify
-  ansible.builtin.include_tasks: verify.yml
+- name: Verify installation
+  ansible.builtin.include_tasks:
+    apply:
+      tags: verify
+    file: verify.yml
   tags: verify
