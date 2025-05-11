@@ -1,5 +1,6 @@
 ---
 wine_become_method:
+  _default: ansible.builtin.sudo
   Alpine: ansible.builtin.su
   Darwin: ansible.builtin.sudo
   Debian: ansible.builtin.su

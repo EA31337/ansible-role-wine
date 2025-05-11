@@ -1,7 +1,7 @@
 ---
 - name: Ensures that dependencies are installed
   become: "{{ ansible_user_id != 'root' }}"
-  become_method: "{{ wine_become_method[ansible_os_family] | default('ansible.builtin.sudo') }}"
+  become_method: "{{ wine_become_method[ansible_os_family] | default(wine_become_method['_default']) }}"
   block:
 
     - name: Install winetricks dependencies (Alpine)

@@ -1,7 +1,7 @@
 ---
 - name: Ensures that winetricks dependencies are installed
   become: "{{ ansible_user_id != 'root' }}"
-  become_method: "{{ wine_become_method[ansible_os_family] }}"
+  become_method: "{{ wine_become_method[ansible_os_family] | default(wine_become_method['_default']) }}"
   block:
 
     - name: Check if Nix store exists
