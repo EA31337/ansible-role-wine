@@ -36,7 +36,7 @@
       changed_when: false
 
 - name: Import ea31337.wine role (wine-verify tag)
-  hosts: docker_containers, !wine-on-nixos-latest
+  hosts: docker_containers
   gather_facts: true
   tasks:
     - name: Import ea31337.wine role

@@ -74,7 +74,7 @@
       when: container_image is search("ubuntu") or container_image is search("debian")
 
 - name: Install ea31337.wine role on all containers
-  hosts: docker_containers, !wine-on-nixos-latest
+  hosts: docker_containers
   gather_facts: true
   tags: always
   tasks:
