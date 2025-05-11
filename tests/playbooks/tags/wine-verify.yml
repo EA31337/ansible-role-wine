@@ -1,0 +1,54 @@
+---
+- name: Ensure Docker containers are up-and-running
+  gather_facts: false
+  hosts: docker_containers
+  tags: always
+  vars:
+    container_image_map:
+      wine-on-alpine-latest: alpine:latest
+      wine-on-debian-latest: debian:latest
+      wine-on-nixos-latest: nixos/nix
+      wine-on-ubuntu-jammy: ubuntu:jammy
+      wine-on-ubuntu-latest: ubuntu:latest
+      wine-on-ubuntu-noble: ubuntu:noble
+    container_image: "{{ container_image_map[inventory_hostname] | default('ubuntu:latest') }}"
+  vars_files:
+    - ../../vars/main.yml
+
+  pre_tasks:
+    - name: Ensure container is started
+      community.docker.docker_container:
+        name: "{{ inventory_hostname }}"
+        image: "{{ container_image }}"
+        state: started
+        command: sleep infinity
+      delegate_to: localhost
+
+    - name: Wait for container to be ready
+      ansible.builtin.command: >
+        docker inspect -f "{% raw %}{{.State.Running}}{% endraw %}" {{ inventory_hostname }}
+      register: inspect_result
+      until: inspect_result.stdout == "true"
+      retries: 5
+      delay: 2
+      delegate_to: localhost
+      changed_when: false
+
+- name: Import ea31337.wine role (wine-verify tag)
+  hosts: docker_containers, !wine-on-nixos-latest
+  gather_facts: true
+  tasks:
+    - name: Import ea31337.wine role
+      ansible.builtin.import_role:
+        name: ea31337.wine
+  tags: wine-verify
+  vars:
+    wine_install_winetricks: true
+
+  post_tasks:
+    - name: Stop Docker containers
+      community.docker.docker_container:
+        name: "{{ inventory_hostname }}"
+        state: stopped
+      delegate_to: localhost
+      failed_when: false

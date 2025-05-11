@@ -60,6 +60,11 @@ jobs:
           ansible-playbook -i tests/inventory/docker-containers.yml tests/playbooks/docker-containers.yml
         working-directory: ${{ github.repository }}
 
+      - name: Run Ansible playbook with wine-verify tag
+        run: |
+          ansible-playbook -i tests/inventory/docker-containers.yml tests/playbooks/tags/wine-verify.yml
+        working-directory: ${{ github.repository }}
+
       # Debug with tmate on failure when debug logging is enabled.
       - if: ${{ failure() && runner.debug == '1' }}
         uses: mxschmitt/action-tmate@v3
