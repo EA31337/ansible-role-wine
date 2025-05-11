@@ -15,7 +15,7 @@
 
 - name: Checks if required tools are installed
   changed_when: false
-  ansible.builtin.command: "{{ wine_package_command_map[item] | default(item) }} --version"
+  ansible.builtin.command: "which {{ wine_package_command_map[item] | default(item) }}"
   loop: "{{ wine_install_winetricks_dependencies }}"
   register: dependency_check_results
   when:
@@ -27,13 +27,6 @@
     - wine_install_winetricks | bool
     - wine_install_winetricks_dependencies | length > 0
   block:
-    - name: Get version check commands for dependencies
-      ansible.builtin.set_fact:
-        version_check_commands:
-          p7zip: "7z || true"
-          curl: "curl --version || true"
-          gawk: "awk --version || true"
-
     - name: Check if required tools are installed
       ansible.builtin.command: which "{{ wine_package_command_map[item] | default(item) }}"
       changed_when: false
