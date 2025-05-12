@@ -5,28 +5,24 @@ collections:
   - community.general
 dependencies: []
 galaxy_info:
-  author: EA31337 Ltd
+  author: kenorb
+  company: EA31337 Ltd
   description: |
     Role for installing Wine, winetricks and dependencies on UNIX-like platforms.
   galaxy_tags:
-    - emulator
-    - games
-    - graphics
-    - linux
-    - windows
-    - wine
-    - daemon
     - desktop
     - development
     - docker
+    - emulator
     - games
     - graphics
     - gui
     - linux
-    - ubuntu
     - supervisor
     - system
-  issue_tracker_url: https://github.com/EA31337/ansible-role-wine
+    - ubuntu
+    - windows
+    - wine
   license: GPLv3
   min_ansible_version: "2.7"
   namespace: ea31337
