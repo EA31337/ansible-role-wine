@@ -1,4 +1,9 @@
+# Documentation: https://docs.ansible.com/ansible/latest/dev_guide/collections_galaxy_meta.html
 ---
+collections:
+  - community.docker
+  - community.general
+dependencies: []
 galaxy_info:
   author: EA31337 Ltd
   description: |
