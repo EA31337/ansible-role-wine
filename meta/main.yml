@@ -1,8 +1,5 @@
 # Documentation: https://docs.ansible.com/ansible/latest/dev_guide/collections_galaxy_meta.html
 ---
-collections:
-  - community.docker
-  - community.general
 dependencies: []
 galaxy_info:
   author: kenorb
@@ -23,7 +20,7 @@ galaxy_info:
     - ubuntu
     - windows
     - wine
-  license: GPLv3
+  license: GPL-3.0-or-later
   min_ansible_version: "2.7"
   namespace: ea31337
   platforms:
@@ -33,13 +30,20 @@ galaxy_info:
     - name: Debian
       versions:
         - all
-        # - "6.1" . # Refs: https://github.com/ansible/ansible-lint/issues/4603
+        - bullseye
+        - buster
+        - jessie
+        - stretch
+        - wheezy
     # - name: NixOS
     #   versions:
     #     - all
     - name: Ubuntu
       versions:
         - all
-        # - 22.04
-        # - 24.04
+        - artful
+        - bionic
+        - focal
+        - trusty
+        - xenial
   role_name: wine
