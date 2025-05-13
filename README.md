@@ -22,9 +22,19 @@ This role requires:
 
 ## Install
 
-To install this role, you can use the following terminal command:
+### Install from Ansible Galaxy
 
-```shell
+To install this role from Ansible Galaxy, run the following command:
+
+```console
+ansible-galaxy install ea31337.wine
+```
+
+### Install from GitHub
+
+To install this role from GitHub, run:
+
+```console
 ansible-galaxy install git+https://github.com/EA31337/ansible-role-wine.git
 ```
 
