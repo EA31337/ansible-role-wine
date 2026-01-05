@@ -128,6 +128,7 @@
   tags: always
   vars:
     controller_python: "{{ ansible_playbook_python }}"
+    wine_install_winetricks: true
   tasks:
     - name: Installs ea31337.wine role
       ansible.builtin.import_role:
@@ -140,6 +141,3 @@
         state: stopped
       delegate_to: localhost
       failed_when: false
-
-      vars:
-        wine_install_winetricks: true
