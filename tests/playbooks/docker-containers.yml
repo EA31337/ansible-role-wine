@@ -56,13 +56,14 @@
         command: sleep infinity
         # NixOS containers require privileged mode due to non-standard filesystem layout.
         privileged: "{{ container_image is search('nixos') }}"
+        pull: >-
+          {{ not (container_image is search('nixos')) }}
+        # Recreate NixOS containers to ensure clean state.
+        recreate: "{{ container_image is search('nixos') }}"
         # Relaxed seccomp/apparmor for NixOS compatibility.
         security_opts: >-
           {{ ['seccomp=unconfined', 'apparmor=unconfined']
           if container_image is search('nixos') else omit }}
-        recreate: true
-        pull: >-
-          {{ not (container_image is search('wine-nixos')) }}
       delegate_to: localhost
       vars:
         # Use system Python with requests installed for controller-side Docker modules.
