@@ -18,6 +18,15 @@
         image: "{{ container_image }}"
         state: started
         command: sleep infinity
+        # NixOS containers require privileged mode due to non-standard filesystem layout.
+        privileged: "{{ container_image is search('nixos') }}"
+        # Relaxed seccomp/apparmor for NixOS compatibility.
+        security_opts: >-
+          {{ ['seccomp=unconfined', 'apparmor=unconfined']
+          if container_image is search('nixos') else omit }}
+        recreate: true
+        pull: >-
+          {{ not (container_image is search('wine-nixos')) }}
       delegate_to: localhost
       vars:
         # Use system Python with requests installed for controller-side Docker modules.
@@ -66,6 +75,7 @@
   tags: always
   vars:
     controller_python: "{{ ansible_playbook_python }}"
+    nixos_built_image: wine-nixos:latest
     container_image_map:
       wine-on-alpine-latest: alpine:latest
       wine-on-debian-latest: debian:latest
