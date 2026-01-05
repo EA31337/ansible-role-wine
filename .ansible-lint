@@ -17,4 +17,6 @@ enable_list:
   - yaml
 mock_roles:
   - community.docker.docker_image
+# Skip collection installation during linting to avoid network issues in CI
+offline: true
 verbosity: 0
