@@ -49,8 +49,6 @@ provisioner:
     host_vars:
       nixos-latest:
         ansible_python_interpreter: /root/.nix-profile/bin/python3
-  ssh_connection:
-    pipelining: true
   name: ansible
   options:
     diff: true
@@ -63,6 +61,8 @@ provisioner:
     prepare: prepare.yml
     side_effect: side_effect.yml
     verify: verify.yml
+  ssh_connection:
+    pipelining: true
 
 scenario:
   name: default
