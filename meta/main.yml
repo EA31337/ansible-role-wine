@@ -32,18 +32,14 @@ galaxy_info:
         - all
         - bullseye
         - buster
-        - jessie
         - stretch
-        - wheezy
     # - name: NixOS
     #   versions:
     #     - all
     - name: Ubuntu
       versions:
         - all
-        - artful
         - bionic
         - focal
-        - trusty
         - xenial
   role_name: wine
