@@ -46,7 +46,6 @@ provisioner:
   inventory:
     group_vars:
       all:
-        ansible_python_interpreter: auto_silent
     host_vars:
       nixos-latest:
         ansible_python_interpreter: /root/.nix-profile/bin/python3
