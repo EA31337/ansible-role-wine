@@ -1,7 +1,7 @@
 ---
 - name: Ensures Wine repository is configured
-  become: "{{ (ansible_user_id is defined and ansible_user_id != 'root') or (lookup('env', 'UID') | int != 0) }}"
-  become_method: "{{ wine_become_method.get(ansible_os_family, wine_become_method['_default']) }}"
+  become: "{{ (ansible_facts['user_id'] is defined and ansible_facts['user_id'] != 'root') or (lookup('env', 'UID') | int != 0) }}"
+  become_method: '{{ wine_become_method.get(ansible_facts["os_family"], wine_become_method["_default"]) }}'
   block:
     - name: Ensures lsb_release command is present
       ansible.builtin.package:
@@ -29,24 +29,25 @@
     - name: Ensures Apt cache is up-to-date
       ansible.builtin.apt:
         update_cache: true
+    - name: Ensures CA certificates are installed
+      ansible.builtin.apt:
+        name: ca-certificates
+        state: present
+    - name: Ensures GPG key directory exists
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: "0755"
+    - name: Download Wine's repo GPG key
+      ansible.builtin.get_url:
+        url: https://dl.winehq.org/wine-builds/winehq.key
+        dest: /etc/apt/keyrings/winehq-archive-keyring.asc
+        mode: "0644"
     - name: Ensures Wine repo is present
       ansible.builtin.template:
         dest: /etc/apt/sources.list.d/winehq.list
         mode: "0644"
-        src: winehq.{{ ansible_os_family }}.list.j2
-    - name: Ensures GPG agent is present (required by apt-key)
-      ansible.builtin.package:
-        name: '{{ item }}'
-        state: present
-      with_items:
-        - gpg
-        - gpg-agent
-    - name: Ensures Wine's repo Apt signing key is present
-      ansible.builtin.apt_key:
-        id: D43F640145369C51D786DDEA76F1A20FF987672F
-        keyring: /etc/apt/trusted.gpg.d/winehq.gpg
-        state: present
-        url: https://dl.winehq.org/wine-builds/winehq.key
+        src: 'winehq.{{ ansible_facts["os_family"] }}.list.j2'
     - name: Ensures Wine backports repo is present
       ansible.builtin.template:
         dest: /etc/apt/sources.list.d/ubuntu.list
@@ -54,18 +55,16 @@
         src: winehq.Ubuntu.list.j2
       when:
         - lsb_release_dist_id.stdout in ["Ubuntu"]
-    - name: Ensures Wine's backports repo Apt signing key is present
-      ansible.builtin.apt_key:
-        id: BBB8BD3BBE6AD3419048EDC50795A9A788A59C82
-        state: present
-        url:
-          "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xbbb8bd3bbe6ad341\
-          9048edc50795a9a788a59c82"
+    - name: Download Ubuntu backports GPG key
+      ansible.builtin.get_url:
+        url: "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xbbb8bd3bbe6ad3419048edc50795a9a788a59c82"
+        dest: /etc/apt/keyrings/ubuntu-backports-keyring.asc
+        mode: "0644"
       when:
         - lsb_release_dist_id.stdout in ["Ubuntu"]
 
 - name: Ensures Wine is present
-  become: "{{ (ansible_user_id is defined and ansible_user_id != 'root') or (lookup('env', 'UID') | int != 0) }}"
+  become: "{{ (ansible_facts['user_id'] is defined and ansible_facts['user_id'] != 'root') or (lookup('env', 'UID') | int != 0) }}"
   block:
     - name: Ensures Wine package is present (Debian)
       ansible.builtin.apt:
@@ -114,8 +113,8 @@
     WINEARCH: win64
   changed_when: false
 
-- name: Apt cleanup ({{ ansible_os_family }})
-  become: "{{ (ansible_user_id is defined and ansible_user_id != 'root') or (lookup('env', 'UID') | int != 0) }}"
+- name: Apt cleanup ({{ ansible_facts["os_family"] }})
+  become: "{{ (ansible_facts['user_id'] is defined and ansible_facts['user_id'] != 'root') or (lookup('env', 'UID') | int != 0) }}"
   when: wine_install_winetricks | bool
   block:
 
