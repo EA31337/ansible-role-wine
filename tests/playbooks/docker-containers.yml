@@ -94,6 +94,10 @@
       ansible.builtin.raw: |
         test -e "{{ ansible_python_interpreter }}" || (apt-get update && apt-get install -y python3 python3-pip)
       changed_when: false
+      register: python_install_result
+      retries: 3
+      delay: 10
+      until: python_install_result.rc == 0
       when: container_image is search("ubuntu") or container_image is search("debian")
 
     - name: Gather facts
