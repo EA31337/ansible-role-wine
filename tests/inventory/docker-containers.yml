@@ -27,4 +27,4 @@ all:
           ansible_connection: docker
           ansible_distribution: NixOS
           ansible_host: wine-on-nixos-latest
-          ansible_python_interpreter: /root/.nix-profile/bin/python3
+          ansible_python_interpreter: auto_silent
