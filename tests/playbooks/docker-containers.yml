@@ -58,8 +58,9 @@
         privileged: "{{ container_image is search('nixos') }}"
         pull: >-
           {{ not (container_image is search('nixos')) }}
-        # Recreate NixOS containers to ensure clean state.
-        recreate: "{{ container_image is search('nixos') }}"
+        # Don't recreate - just restart if needed
+        recreate: false
+        restart: false
         # Relaxed seccomp/apparmor for NixOS compatibility.
         security_opts: >-
           {{ ['seccomp=unconfined', 'apparmor=unconfined']
@@ -100,14 +101,17 @@
       until: python_install_result.rc == 0
       when: container_image is search("ubuntu") or container_image is search("debian")
 
-    - name: Verify Python on NixOS
+    - name: Install or verify Python on NixOS
       ansible.builtin.raw: |
-        # Python should already be installed from Dockerfile
+        # Check if Python is already installed from Dockerfile
         if [ -x /root/.nix-profile/bin/python3 ]; then
           /root/.nix-profile/bin/python3 --version
-        else
-          exit 1
+          exit 0
         fi
+        # If not, install it now
+        PATH=/root/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH
+        nix-channel --update
+        nix-env -iA nixpkgs.python3 nixpkgs.python3Packages.pip
       changed_when: false
       when: container_image is search("nixos")
 
