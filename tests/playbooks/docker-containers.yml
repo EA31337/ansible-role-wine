@@ -100,6 +100,15 @@
       until: python_install_result.rc == 0
       when: container_image is search("ubuntu") or container_image is search("debian")
 
+    - name: Install Python 3 on NixOS
+      ansible.builtin.raw: |
+        if [ ! -e "{{ ansible_python_interpreter }}" ]; then
+          nix-env -iA nixpkgs.python3 && \
+          ln -sf "$(which python3)" /usr/bin/python3 || true
+        fi
+      changed_when: false
+      when: container_image is search("nixos")
+
     - name: Gather facts
       ansible.builtin.setup:
 
