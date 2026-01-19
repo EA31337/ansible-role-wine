@@ -1,4 +1,5 @@
 ---
+# Note: Keep keys and envs in alphabetical order.
 name: Molecule
 
 # yamllint disable-line rule:truthy
@@ -26,13 +27,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      max-parallel: 2
       matrix:
         scenario:
           - default
           - devel
           - staging
           - winetricks
+      max-parallel: 2
     steps:
       - uses: actions/checkout@v4
         with:
