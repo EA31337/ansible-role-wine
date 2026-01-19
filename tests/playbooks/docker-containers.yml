@@ -109,6 +109,19 @@
       changed_when: false
       when: container_image is search("nixos")
 
+    - name: Discover Python 3 path on NixOS
+      ansible.builtin.shell: |
+        PATH=/root/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH
+        which python3
+      register: nix_python_path
+      changed_when: false
+      when: container_image is search("nixos")
+
+    - name: Set Python interpreter for NixOS
+      ansible.builtin.set_fact:
+        ansible_python_interpreter: "{{ nix_python_path.stdout | default(ansible_python_interpreter) }}"
+      when: container_image is search("nixos") and (nix_python_path.stdout | length > 0)
+
     - name: Gather facts
       ansible.builtin.setup:
 
