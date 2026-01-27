@@ -67,14 +67,57 @@ jobs:
         continue-on-error: true
       - if: always()
         name: Ensure report file permissions are correct
-        run: sudo chmod 644 molecule-${{ matrix.scenario }}-report.html
+        run: |
+          if [ -f "molecule-${{ matrix.scenario }}-report.html" ]; then
+            sudo chmod 644 molecule-${{ matrix.scenario }}-report.html
+          else
+            echo "Report file not found, skipping permission change"
+          fi
         working-directory: ${{ github.repository }}
       - if: always()
         name: Converts test report
-        uses: patrick-werner/fhir-html-validation-to-markdown@1.0.0
-        with:
-          input_file: ${{ github.repository }}/molecule-${{ matrix.scenario }}-report.html
-      # Debug with tmate on failure when debug logging is enabled.
+        run: |
+          if [ ! -f "molecule-${{ matrix.scenario }}-report.html" ]; then
+            echo "Report file not found, skipping conversion"
+            exit 0
+          fi
+          # Process the HTML file, remove the first table, and convert to Markdown
+          awk '
+            BEGIN {skip=0; table_removed=0}
+
+            /<table class="grid">/ {
+                if (table_removed == 0) {
+                    skip=1
+                    next
+                }
+            }
+
+            skip && /<\/table>/ {
+                if (table_removed == 0) {
+                    skip=0
+                    table_removed=1
+                    next
+                }
+            }
+
+            skip {next}
+
+            {print}
+          ' "molecule-${{ matrix.scenario }}-report.html" | pandoc -f html -t markdown_strict | awk '
+            /^## / {gsub(/^## /, "#### ")}
+
+            {gsub(/<strong>/, ""); gsub(/<\/strong>/, "")}  
+
+            /error/ {gsub("error", "❌ error")}
+            /warning/ {gsub("warning", "⚠️ warning")}
+            /information/ {gsub("information", "ℹ️ information")}
+            /hint/ {gsub("hint", "ℹ️ hint")}
+            /Process Info/ {gsub("Process Info", "🔹 Process Info")}
+            /Slicing Information/ {gsub("Slicing Information", "✂️ Slicing Info")}
+
+            {print}
+          ' >> $GITHUB_STEP_SUMMARY
+        working-directory: ${{ github.repository }}
       - if: ${{ failure() && runner.debug == '1' }}
         uses: mxschmitt/action-tmate@v3
     timeout-minutes: 20
