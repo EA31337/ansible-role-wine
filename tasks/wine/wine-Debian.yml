@@ -1,7 +1,11 @@
 ---
 - name: Ensures Wine repository is configured
-  become: "{{ (ansible_facts['user_id'] is defined and ansible_facts['user_id'] != 'root') or (lookup('env', 'UID') | int != 0) }}"
-  become_method: '{{ wine_become_method.get(ansible_facts["os_family"], wine_become_method["_default"]) }}'
+  become: >
+    {{ (ansible_facts['user_id'] is defined and ansible_facts['user_id'] != 'root')
+    or (lookup('env', 'UID') | int != 0) }}
+  become_method: >
+    {{ wine_become_method.get(ansible_facts["os_family"],
+    wine_become_method["_default"]) }}
   block:
     - name: Ensures lsb_release command is present
       ansible.builtin.package:
@@ -64,7 +68,9 @@
         - lsb_release_dist_id.stdout in ["Ubuntu"]
 
 - name: Ensures Wine is present
-  become: "{{ (ansible_facts['user_id'] is defined and ansible_facts['user_id'] != 'root') or (lookup('env', 'UID') | int != 0) }}"
+  become: >
+    {{ (ansible_facts['user_id'] is defined and ansible_facts['user_id'] != 'root')
+    or (lookup('env', 'UID') | int != 0) }}
   block:
     - name: Ensures Wine package is present (Debian)
       ansible.builtin.apt:
@@ -114,7 +120,9 @@
   changed_when: false
 
 - name: Apt cleanup ({{ ansible_facts["os_family"] }})
-  become: "{{ (ansible_facts['user_id'] is defined and ansible_facts['user_id'] != 'root') or (lookup('env', 'UID') | int != 0) }}"
+  become: >
+    {{ (ansible_facts['user_id'] is defined and ansible_facts['user_id'] != 'root')
+    or (lookup('env', 'UID') | int != 0) }}
   when: wine_install_winetricks | bool
   block:
 
