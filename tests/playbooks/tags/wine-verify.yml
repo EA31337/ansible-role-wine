@@ -9,8 +9,7 @@
         command: sleep infinity
         image: "{{ container_image }}"
         name: "{{ inventory_hostname }}"
-        pull: >-
-          {{ not (container_image is search('nixos')) }}
+        pull: "{{ not is_nixos_image }}"
         state: started
       delegate_to: localhost
 
@@ -35,6 +34,7 @@
       wine-on-ubuntu-latest: ubuntu:latest
       wine-on-ubuntu-noble: ubuntu:noble
     container_image: "{{ container_image_map[inventory_hostname] | default('ubuntu:latest') }}"
+    is_nixos_image: "{{ inventory_hostname == 'wine-on-nixos-latest' }}"
   vars_files:
     - ../../vars/main.yml
 
