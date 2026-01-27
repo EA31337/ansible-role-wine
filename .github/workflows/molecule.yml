@@ -33,11 +33,18 @@ jobs:
           - devel
           - staging
           - winetricks
-      max-parallel: 2
+      max-parallel: 1
     steps:
       - uses: actions/checkout@v4
         with:
           path: ${{ github.repository }}
+      - name: Clean up Docker resources before test
+        run: |
+          docker container prune -f
+          docker image prune -af
+          docker volume prune -f
+          docker system df
+        continue-on-error: true
       - uses: gofrolist/molecule-action@v2
         env:
           ANSIBLE_FORCE_COLOR: '1'
@@ -50,6 +57,14 @@ jobs:
           molecule_command: test
           molecule_options: ${{ runner.debug == '1' && '--verbose' || '' }}
           molecule_working_dir: ${{ github.repository }}
+      - if: always()
+        name: Clean up Docker resources after test
+        run: |
+          docker container prune -f
+          docker image prune -af
+          docker volume prune -f
+          docker system df
+        continue-on-error: true
       - if: always()
         name: Ensure report file permissions are correct
         run: sudo chmod 644 molecule-${{ matrix.scenario }}-report.html
