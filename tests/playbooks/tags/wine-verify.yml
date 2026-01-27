@@ -9,7 +9,8 @@
         command: sleep infinity
         image: "{{ container_image }}"
         name: "{{ inventory_hostname }}"
-        pull: true
+        pull: >-
+          {{ not (container_image is search('nixos')) }}
         state: started
       delegate_to: localhost
 
@@ -25,10 +26,11 @@
 
   tags: always
   vars:
+    nixos_built_image: wine-nixos:latest
     container_image_map:
       wine-on-alpine-latest: alpine:latest
       wine-on-debian-latest: debian:latest
-      wine-on-nixos-latest: nixos/nix
+      wine-on-nixos-latest: "{{ nixos_built_image }}"
       wine-on-ubuntu-jammy: ubuntu:jammy
       wine-on-ubuntu-latest: ubuntu:latest
       wine-on-ubuntu-noble: ubuntu:noble
