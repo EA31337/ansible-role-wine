@@ -106,7 +106,7 @@ jobs:
           ' "molecule-${{ matrix.scenario }}-report.html" | pandoc -f html -t markdown_strict | awk '
             /^## / {gsub(/^## /, "#### ")}
 
-            {gsub(/<strong>/, ""); gsub(/<\/strong>/, "")}  
+            {gsub(/<strong>/, ""); gsub(/<\/strong>/, "")}
 
             /error/ {gsub("error", "❌ error")}
             /warning/ {gsub("warning", "⚠️ warning")}
@@ -116,7 +116,7 @@ jobs:
             /Slicing Information/ {gsub("Slicing Information", "✂️ Slicing Info")}
 
             {print}
-          ' >> $GITHUB_STEP_SUMMARY
+          ' >> "$GITHUB_STEP_SUMMARY"
         working-directory: ${{ github.repository }}
       - if: ${{ failure() && runner.debug == '1' }}
         uses: mxschmitt/action-tmate@v3
