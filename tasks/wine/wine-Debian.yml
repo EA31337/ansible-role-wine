@@ -66,6 +66,10 @@
         mode: "0644"
       when:
         - lsb_release_dist_id.stdout in ["Ubuntu"]
+    - name: Update Apt cache after adding Wine repositories
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 0
 
 - name: Ensures Wine is present
   become: >
