@@ -1,7 +1,7 @@
 ---
 - name: Ensures that winetricks dependencies are installed
-  become: "{{ ansible_user_id != 'root' }}"
-  become_method: "{{ wine_become_method.get(ansible_os_family, wine_become_method['_default']) }}"
+  become: "{{ ansible_facts['user_id'] != 'root' }}"
+  become_method: '{{ wine_become_method.get(ansible_facts["os_family"], wine_become_method["_default"]) }}'
   block:
 
     - name: Check if Nix store exists
@@ -12,6 +12,6 @@
     - name: Ensures dependencies are present
       ansible.builtin.command:
         cmd: nix-env -iA nixpkgs.{{ item }}
-        creates: "{{ ansible_env.HOME }}/.nix-profile/bin/{{ item }}"
+        creates: "{{ ansible_facts['env']['HOME'] }}/.nix-profile/bin/{{ item }}"
       loop: "{{ wine_install_winetricks_dependencies }}"
       when: nix_store_stat.stat.exists
