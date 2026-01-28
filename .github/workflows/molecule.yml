@@ -40,9 +40,18 @@ jobs:
           path: ${{ github.repository }}
       - name: Clean up Docker resources before test
         run: |
-          docker container prune -f
-          docker image prune -af
-          docker volume prune -f
+          echo "=== Disk usage before cleanup ==="
+          df -h
+          docker system df
+          echo "=== Cleaning up Docker resources ==="
+          docker ps -aq | xargs -r docker stop || true
+          docker ps -aq | xargs -r docker rm -f || true
+          docker images -aq | xargs -r docker rmi -f || true
+          docker volume ls -q | xargs -r docker volume rm -f || true
+          docker network prune -f || true
+          docker system prune -af --volumes || true
+          echo "=== Disk usage after cleanup ==="
+          df -h
           docker system df
         continue-on-error: true
       - uses: gofrolist/molecule-action@v2
@@ -60,9 +69,15 @@ jobs:
       - if: always()
         name: Clean up Docker resources after test
         run: |
-          docker container prune -f
-          docker image prune -af
-          docker volume prune -f
+          echo "=== Cleaning up Docker resources ==="
+          docker ps -aq | xargs -r docker stop || true
+          docker ps -aq | xargs -r docker rm -f || true
+          docker images -aq | xargs -r docker rmi -f || true
+          docker volume ls -q | xargs -r docker volume rm -f || true
+          docker network prune -f || true
+          docker system prune -af --volumes || true
+          echo "=== Final disk usage ==="
+          df -h
           docker system df
         continue-on-error: true
       - if: always()
