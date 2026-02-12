@@ -1,7 +1,7 @@
 ---
 - name: Ensures Wine repository is configured
   become: true
-  become_method: ansible.builtin.sudo
+  become_method: ansible.builtin.su
   block:
     - name: Ensures lsb_release command is present
       ansible.builtin.package:
@@ -69,7 +69,7 @@
 
 - name: Ensures Wine is present
   become: true
-  become_method: ansible.builtin.sudo
+  become_method: ansible.builtin.su
   block:
     - name: Set wine package name for Ubuntu
       ansible.builtin.set_fact:
@@ -150,7 +150,7 @@
 
 - name: Apt cleanup ({{ ansible_facts["os_family"] }})
   become: true
-  become_method: ansible.builtin.sudo
+  become_method: ansible.builtin.su
   when: wine_install_winetricks | bool
   block:
 
