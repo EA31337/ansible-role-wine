@@ -10,7 +10,7 @@ wine_become_method:
   Debian: ansible.builtin.su
   NixOS: ansible.builtin.su
   OtherLinux: ansible.builtin.su
-  Ubuntu: ansible.builtin.su
+  Ubuntu: ansible.builtin.sudo
   Windows: ansible.builtin.runas
 # This maps package names to their respective commands
 # Used to verify dependencies are correctly installed

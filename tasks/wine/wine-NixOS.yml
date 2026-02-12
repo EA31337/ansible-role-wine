@@ -6,14 +6,14 @@
 
 - name: Ensure Wine is installed (Nix)
   become: "{{ ansible_facts['user_id'] != 'root' }}"
-  become_method: '{{ wine_become_method.get(ansible_facts["os_family"], wine_become_method["_default"]) }}'
+  become_method: ansible.builtin.su
   block:
 
     - name: Check if Wine is already installed
       ansible.builtin.shell:
         cmd: |
           set -o pipefail
-          nix-env -q | grep -qw wine
+          nix-env -q | grep -qw wine64
       changed_when: false
       failed_when: wine_check.rc not in [0, 1]
       register: wine_check
@@ -21,15 +21,30 @@
 
     - name: Set wine_pkg fact
       ansible.builtin.set_fact:
-        wine_pkg: "{{ 'wine' ~ ('-staging' if wine_release == 'staging' else '') }}"
+        wine_pkg: "wine64"
       when:
         - nix_store_stat.stat.exists
         - wine_check.rc != 0
+
     - name: Ensure Wine package is installed on Nix image
       ansible.builtin.command: >-
-        nix-env -iA nixpkgs.{{ wine_pkg }}
+        nix-env -i {{ wine_pkg }}
       when:
         - nix_store_stat.stat.exists
         - wine_check.rc != 0
       register: wine_install
       changed_when: wine_install.rc == 0
+
+- name: Create symlink from wine to wine64 in nix profile
+  become: "{{ ansible_facts['user_id'] != 'root' }}"
+  become_method: ansible.builtin.su
+  ansible.builtin.shell: |
+    set -e
+    wine64_info=$(nix-env -q --out-path wine64)
+    wine64_path="${wine64_info##* }/bin/wine64"
+    wine_link="${wine64_path%/*}/wine"
+    ln -sf "$wine64_path" "$wine_link"
+    echo "Created symlink: $wine_link -> $wine64_path"
+  when: nix_store_stat.stat.exists
+  register: wine_symlink_create
+  changed_when: wine_symlink_create.rc == 0

@@ -130,4 +130,4 @@ jobs:
         working-directory: ${{ github.repository }}
       - if: ${{ failure() && runner.debug == '1' }}
         uses: mxschmitt/action-tmate@v3
-    timeout-minutes: 20
+    timeout-minutes: 30

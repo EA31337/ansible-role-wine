@@ -1,15 +1,11 @@
 ---
 - name: Ensures Wine is present
-  become: >
-    {{ (ansible_facts['user_id'] is defined and ansible_facts['user_id'] != 'root')
-    or (lookup('env', 'UID') | int != 0) }}
-  become_method: >
-    {{ wine_become_method.get(ansible_facts["os_family"],
-    wine_become_method["_default"]) }}
+  become: true
+  become_method: ansible.builtin.su
   block:
 
     - name: Ensures Wine is present ({{ ansible_facts["os_family"] }})
       ansible.builtin.package:
-        name: wine
+        name: "wine{% if wine_version %}={{ wine_version }}{% endif %}"
         state: present
         update_cache: true
