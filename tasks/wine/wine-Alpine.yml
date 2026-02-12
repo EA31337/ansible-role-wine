@@ -4,8 +4,42 @@
   become_method: ansible.builtin.su
   block:
 
+    - name: Update apk cache
+      ansible.builtin.command: apk update
+      changed_when: false
+
+    - name: Query available wine versions
+      ansible.builtin.shell: apk search -e wine | grep '^wine-' | head -1
+      register: wine_available_version
+      changed_when: false
+      failed_when: false
+
+    - name: Extract major version from available wine
+      ansible.builtin.set_fact:
+        wine_alpine_major: "{{ wine_available_version.stdout | regex_search('wine-([0-9]+)', '\\1') | first }}"
+      when: wine_available_version.stdout | length > 0
+
+    - name: Validate wine major version (9, 10, or 11)
+      ansible.builtin.assert:
+        that:
+          - wine_alpine_major is defined
+          - wine_alpine_major in ['9', '10', '11']
+        fail_msg: "Available wine version {{ wine_alpine_major | default('unknown') }} not in acceptable range (9, 10, or 11)"
+        success_msg: "Wine version {{ wine_alpine_major }} is acceptable"
+      when: wine_version is defined and wine_version | length > 0
+
     - name: Ensures Wine is present ({{ ansible_facts["os_family"] }})
       ansible.builtin.package:
-        name: "wine{% if wine_version %}={{ wine_version }}{% endif %}"
+        name: wine
         state: present
-        update_cache: true
+
+    - name: Ensures p7zip package is present
+      ansible.builtin.package:
+        name: p7zip
+        state: present
+
+- name: Ensures ~/.wine is initialized
+  ansible.builtin.command: wineboot -u
+  environment:
+    WINEARCH: win64
+  changed_when: false
