@@ -27,7 +27,7 @@
   vars:
     nixos_built_image: wine-nixos:latest
     container_image_map:
-      wine-on-alpine-latest: alpine:latest
+      wine-on-alpine-latest: alpine:3.20
       wine-on-debian-latest: debian:latest
       wine-on-nixos-latest: "{{ nixos_built_image }}"
       wine-on-ubuntu-jammy: ubuntu:jammy
