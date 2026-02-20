@@ -6,13 +6,38 @@
   register: cmd_which_wine_res
   tags: wine
 
+- name: Check for NixOS (via nix-env command)
+  ansible.builtin.command: which nix-env
+  register: nixos_early_check
+  changed_when: false
+  failed_when: false
+  tags: wine
+
+- name: Check current Wine version on NixOS
+  ansible.builtin.shell: nix-env -q wine64 2>/dev/null | head -1 || echo "not_installed"
+  register: nixos_wine_version_check
+  changed_when: false
+  when: nixos_early_check.rc == 0
+  tags: wine
+
+- name: Determine if Wine version mismatch on NixOS
+  ansible.builtin.set_fact:
+    wine_version_mismatch: >-
+      {{
+        nixos_early_check.rc == 0 and
+        wine_version is defined and
+        wine_version | string == '9' and
+        'wine64-9' not in (nixos_wine_version_check.stdout | default('not_installed'))
+      }}
+  tags: wine
+
 - name: Ensures Wine is present
   ansible.builtin.include_tasks:
     apply:
       tags: wine
     file: wine/wine.yml
   tags: wine
-  when: cmd_which_wine_res.rc != 0
+  when: cmd_which_wine_res.rc != 0 or (wine_version_mismatch | default(false) | bool)
 
 - name: Ensures Winetricks is present
   when: wine_install_winetricks | bool

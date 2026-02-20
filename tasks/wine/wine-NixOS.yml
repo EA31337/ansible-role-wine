@@ -9,14 +9,27 @@
   become_method: ansible.builtin.su
   block:
 
-    - name: Check if Wine is already installed
+    - name: Check current Wine version
       ansible.builtin.shell:
         cmd: |
           set -o pipefail
-          nix-env -q | grep -qw wine64
+          if ! nix-env -q | grep -qw wine64; then
+            echo "not_installed"
+          else
+            wine64_version=$(nix-env -q wine64 | head -1)
+            echo "$wine64_version"
+          fi
       changed_when: false
-      failed_when: wine_check.rc not in [0, 1]
-      register: wine_check
+      register: wine_version_check
+      when: nix_store_stat.stat.exists
+
+    - name: Determine if Wine needs installation
+      ansible.builtin.set_fact:
+        wine_needs_install: >-
+          {{
+            wine_version_check.stdout == "not_installed" or
+            (wine_version is defined and wine_version | string == '9' and 'wine64-9' not in wine_version_check.stdout)
+          }}
       when: nix_store_stat.stat.exists
 
     - name: Set wine_pkg fact
@@ -24,16 +37,58 @@
         wine_pkg: "wine64"
       when:
         - nix_store_stat.stat.exists
-        - wine_check.rc != 0
+        - wine_needs_install | bool
 
-    - name: Ensure Wine package is installed on Nix image
-      ansible.builtin.command: >-
-        nix-env -i {{ wine_pkg }}
+    - name: Determine nixpkgs revision for Wine version
+      ansible.builtin.set_fact:
+        nixpkgs_revision: >-
+          {%- if wine_version is defined and wine_version | string == '9' -%}
+          nixos-24.05
+          {%- else -%}
+          nixpkgs
+          {%- endif -%}
       when:
         - nix_store_stat.stat.exists
-        - wine_check.rc != 0
+        - wine_needs_install | bool
+
+    - name: Ensure Wine package is installed on Nix image
+      ansible.builtin.shell: |
+        set -e
+        {% if wine_version is defined and wine_version | string == '9' %}
+        # For Wine 9, use nixos-24.05 channel which has wine-9.x
+        if ! nix-channel --list | grep -q nixos-24.05; then
+          nix-channel --add https://nixos.org/channels/nixos-24.05 nixos-24.05
+          nix-channel --update nixos-24.05
+        fi
+        # Remove existing Wine and fontconfig if wrong version
+        if nix-env -q | grep -qw wine64 && ! nix-env -q wine64 | grep -q wine64-9; then
+          echo "Removing wine64 (wrong version)"
+          nix-env -e wine64 || true
+        fi
+        if nix-env -q | grep -qw fontconfig; then
+          echo "Removing fontconfig to reinstall with Wine 9"
+          nix-env -e fontconfig || true
+        fi
+        # Install Wine 9 with all necessary dependencies
+        nix-env -iA \
+          nixos-24.05.wine64 \
+          nixos-24.05.fontconfig \
+          nixos-24.05.freetype \
+          nixos-24.05.xorg.libX11 \
+          nixos-24.05.xorg.libxcb
+        {% else %}
+        nix-env -iA \
+          nixpkgs.{{ wine_pkg }} \
+          nixpkgs.fontconfig \
+          nixpkgs.freetype \
+          nixpkgs.xorg.libX11 \
+          nixpkgs.xorg.libxcb
+        {% endif %}
+      when:
+        - nix_store_stat.stat.exists
+        - wine_needs_install | bool
       register: wine_install
-      changed_when: wine_install.rc == 0
+      changed_when: "'installing' in wine_install.stdout or 'building' in wine_install.stdout"
 
 - name: Create symlink from wine to wine64 in nix profile
   become: "{{ ansible_facts['user_id'] != 'root' }}"
@@ -48,3 +103,57 @@
   when: nix_store_stat.stat.exists
   register: wine_symlink_create
   changed_when: wine_symlink_create.rc == 0
+
+- name: Configure fontconfig for NixOS
+  become: "{{ ansible_facts['user_id'] != 'root' }}"
+  become_method: ansible.builtin.su
+  ansible.builtin.shell: |
+    set -e
+    # Get fontconfig path from nix profile
+    fontconfig_info=$(nix-env -q --out-path fontconfig 2>/dev/null || echo "")
+    if [ -n "$fontconfig_info" ]; then
+      fontconfig_path="${fontconfig_info##* }"
+      home_dir="${HOME}"
+      # Create fontconfig directories
+      mkdir -p "${home_dir}/.config/fontconfig"
+      mkdir -p "${home_dir}/.cache/fontconfig"
+      mkdir -p "${home_dir}/.fonts"
+      
+      # Create fonts.conf with absolute paths and proper prefixes
+      cat > "${home_dir}/.config/fontconfig/fonts.conf" <<EOF
+    <?xml version="1.0"?>
+    <!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
+    <fontconfig>
+      <dir prefix="default">${fontconfig_path}/share/fonts</dir>
+      <dir prefix="default">/usr/share/fonts</dir>
+      <dir prefix="default">/usr/local/share/fonts</dir>
+      <dir prefix="default">${home_dir}/.fonts</dir>
+      <dir prefix="default">${home_dir}/.local/share/fonts</dir>
+      <cachedir prefix="default">${home_dir}/.cache/fontconfig</cachedir>
+      <include ignore_missing="yes">${fontconfig_path}/etc/fonts/fonts.conf</include>
+      <config>
+        <rescan><int>30</int></rescan>
+      </config>
+    </fontconfig>
+    EOF
+      
+      # Set FONTCONFIG_FILE and FONTCONFIG_PATH environment variables
+      if ! grep -q "FONTCONFIG_FILE" ~/.bashrc 2>/dev/null; then
+        cat >> ~/.bashrc <<EOFBASH
+    # Wine fontconfig settings for NixOS
+    export FONTCONFIG_FILE="${home_dir}/.config/fontconfig/fonts.conf"
+    export FONTCONFIG_PATH="${home_dir}/.config/fontconfig:${fontconfig_path}/etc/fonts"
+    EOFBASH
+      fi
+      
+      # Create environment file for current session
+      cat > ~/.wine_env <<EOFENV
+    export FONTCONFIG_FILE="${home_dir}/.config/fontconfig/fonts.conf"
+    export FONTCONFIG_PATH="${home_dir}/.config/fontconfig:${fontconfig_path}/etc/fonts"
+    EOFENV
+      
+      echo "Fontconfig configured at ~/.config/fontconfig/fonts.conf"
+    fi
+  when: nix_store_stat.stat.exists
+  register: fontconfig_setup
+  changed_when: "'Fontconfig configured' in fontconfig_setup.stdout"
