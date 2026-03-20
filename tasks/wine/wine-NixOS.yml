@@ -157,3 +157,12 @@
   when: nix_store_stat.stat.exists
   register: fontconfig_setup
   changed_when: "'Fontconfig configured' in fontconfig_setup.stdout"
+
+- name: Ensures ~/.wine is initialized
+  ansible.builtin.command: wineboot --init
+  environment:
+    WINEARCH: win64
+    FONTCONFIG_FILE: "{{ ansible_facts.env.HOME }}/.config/fontconfig/fonts.conf"
+    FONTCONFIG_PATH: "{{ ansible_facts.env.HOME }}/.config/fontconfig"
+  changed_when: false
+  when: nix_store_stat.stat.exists

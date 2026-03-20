@@ -104,9 +104,12 @@
         state: present
         update_cache: true
       with_items:
+        - fontconfig
+        - fonts-freefont-ttf
         - wine
         - wine32:i386
         - wine64
+        - winbind
       when: lsb_release_dist_id.stdout in ["Debian"]
     - name: Ensures Wine package is present (Ubuntu)
       ansible.builtin.apt:
@@ -114,6 +117,9 @@
         allow_downgrade: true
         install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
         name:
+          - fontconfig
+          - fonts-freefont-ttf
+          - winbind
           - "{{ wine_package_name }}"
           - "wine-stable{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
           - "wine-stable-amd64{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
@@ -127,6 +133,9 @@
         allow_downgrade: true
         install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
         name:
+          - fontconfig
+          - fonts-freefont-ttf
+          - winbind
           - "{{ wine_package_name }}"
           - "wine-stable{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
           - "wine-stable-amd64{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
@@ -143,7 +152,7 @@
         update_cache: true
 
 - name: Ensures ~/.wine is initialized
-  ansible.builtin.command: wineboot -u
+  ansible.builtin.command: wineboot --init
   environment:
     WINEARCH: win64
   changed_when: false

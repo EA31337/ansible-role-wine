@@ -33,13 +33,23 @@
         name: wine
         state: present
 
+    - name: Ensures fontconfig package is present
+      ansible.builtin.package:
+        name: fontconfig
+        state: present
+
+    - name: Ensures font packages are present
+      ansible.builtin.package:
+        name: ttf-freefont
+        state: present
+
     - name: Ensures p7zip package is present
       ansible.builtin.package:
         name: p7zip
         state: present
 
 - name: Ensures ~/.wine is initialized
-  ansible.builtin.command: wineboot -u
+  ansible.builtin.command: wineboot --init
   environment:
     WINEARCH: win64
   changed_when: false
