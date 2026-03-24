@@ -76,22 +76,21 @@
         wine_ubuntu_version: >-
           {% if wine_version -%}
           {%- if wine_version is search('~') -%}
-          {{ wine_version }}
-          {%- else -%}
-          {{ wine_version }}.0.0~{{ wine_release_codename if wine_release_codename else lsb_release_code_name.stdout }}-1
-          {%- endif -%}
+          {{ wine_version }}{%- else -%}
+          {{ wine_version }}.0.0~{{ wine_release_codename or lsb_release_code_name.stdout }}-1{%- endif -%}
           {%- endif %}
     - name: Debug wine_ubuntu_version
       ansible.builtin.debug:
-        msg: "wine_version={{ wine_version }}, wine_release_codename={{ wine_release_codename }}, computed wine_ubuntu_version={{ wine_ubuntu_version }}"
+        msg: >-
+          wine_version={{ wine_version }},
+          wine_release_codename={{ wine_release_codename }},
+          computed wine_ubuntu_version={{ wine_ubuntu_version }}
     - name: Set wine package name
       ansible.builtin.set_fact:
         wine_package_name: >-
           {% if wine_ubuntu_version -%}
-          winehq-{{ wine_release }}={{ wine_ubuntu_version }}
-          {%- else -%}
-          winehq-{{ wine_release }}
-          {%- endif %}
+          winehq-{{ wine_release }}={{ wine_ubuntu_version }}{%- else -%}
+          winehq-{{ wine_release }}{%- endif %}
     - name: Debug wine package name
       ansible.builtin.debug:
         msg: "Installing wine package: {{ wine_package_name }}"

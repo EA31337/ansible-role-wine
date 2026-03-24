@@ -20,13 +20,15 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           path: ${{ github.repository }}
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
@@ -35,7 +37,9 @@ jobs:
         working-directory: ${{ github.repository }}
 
       - name: Install Ansible Galaxy requirements
-        run: ansible-galaxy install -r requirements.yml
+        run: |
+          ansible-galaxy collection install -r requirements.yml
+          ansible-galaxy install -r requirements.yml
         working-directory: ${{ github.repository }}
 
       - name: Install Ansible Galaxy local requirements

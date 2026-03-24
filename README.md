@@ -90,7 +90,6 @@ Or if you want to specify the exact version:
         wine_version: "10.0.0.0~jammy-1"  # Full version string
 ```
 
-
 ## Testing
 
 ### Docker
