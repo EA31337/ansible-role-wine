@@ -22,12 +22,10 @@ on:
         required: false
         type: string
       agent:
-        default: cogni-ai-architect
         description: Agent to use
         required: false
         type: string
       model:
-        default: opencode/grok-code
         description: Model to use for OpenCode
         required: false
         type: string
