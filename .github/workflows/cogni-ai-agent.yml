@@ -36,7 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run Cogni AI Agent
-        uses: Cogni-AI-OU/cogni-ai-agent-action@main
+        uses: nseam/cogni-ai-agent-action@test/wine-support
         with:
           agent: ${{ inputs.agent }}
           issue_number: ${{ inputs.issue_number }}
