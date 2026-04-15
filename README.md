@@ -40,8 +40,55 @@ ansible-galaxy install git+https://github.com/EA31337/ansible-role-wine.git
 
 ## Role Variables
 
-For available variables,
-check [`defaults/main.yml`](defaults/main.yml).
+Available variables are listed below, along with default values (see [defaults/main.yml](defaults/main.yml)):
+
+```yaml
+# Wine package release to install (stable, devel, or staging)
+wine_release: stable
+
+# Override Ubuntu/Debian release codename for Wine repository
+# Use this to install older Wine versions from previous release repos
+# Example: 'jammy' for Ubuntu 22.04 to get Wine 10.x on newer Ubuntu
+wine_release_codename: ""
+
+# Specific Wine package version to install (optional)
+# For Ubuntu/Debian: can be either simple (10.0) or full (10.0.0.0~jammy-1)
+# For Alpine: package version format (e.g., 10.0)
+# For NixOS: version suffix (e.g., 10.0)
+wine_version: ""
+
+# Whether to install recommended packages
+wine_install_recommends: false
+
+# Whether to install winetricks
+wine_install_winetricks: false
+```
+
+### Example: Installing Wine 10.0 on Ubuntu 24.04
+
+To install Wine 10.0 on Ubuntu Noble (24.04) using the jammy repository:
+
+```yaml
+- hosts: all
+  roles:
+    - role: ea31337.wine
+      vars:
+        wine_release: stable
+        wine_release_codename: jammy
+        wine_version: "10.0"  # Automatically expands to 10.0.0.0~jammy-1
+```
+
+Or if you want to specify the exact version:
+
+```yaml
+- hosts: all
+  roles:
+    - role: ea31337.wine
+      vars:
+        wine_release: stable
+        wine_release_codename: jammy
+        wine_version: "10.0.0.0~jammy-1"  # Full version string
+```
 
 ## Testing
 

@@ -18,7 +18,7 @@ lint: |
   ansible-lint
 platforms:
   - name: alpine-latest
-    image: i386/alpine:latest
+    image: alpine:3.20
   - name: debian-latest
     image: debian:latest
   - name: nixos-latest
@@ -36,7 +36,6 @@ provisioner:
     defaults:
       host_key_checking: false
       # Use the built-in default callback with result_format instead of community.general.yaml
-      remote_tmp: /tmp/.ansible-tmp-$${USER}
       result_format: yaml
       stdout_callback: ansible.builtin.default
       verbosity: 1

@@ -1,6 +1,16 @@
 ---
 - name: Checks if Wine is installed
-  ansible.builtin.command: wine --version
+  become: >-
+    {{ (detected_os_family | default(ansible_facts['os_family']) == 'NixOS')
+    and (ansible_facts['user_id'] != 'root') }}
+  become_method: ansible.builtin.su
+  ansible.builtin.shell: |
+    {% if detected_os_family | default(ansible_facts['os_family']) == 'NixOS' %}
+    set -o pipefail
+    nix-env -q 2>/dev/null | grep -E '^wine-(wow64|wow|10|9|11)' | head -1 || true
+    {% else %}
+    wine --version
+    {% endif %}
   check_mode: false
   changed_when: false
   register: cmd_wine_version

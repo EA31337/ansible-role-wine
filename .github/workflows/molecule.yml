@@ -29,6 +29,8 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -39,7 +41,7 @@ jobs:
           - winetricks
       max-parallel: 1
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           path: ${{ github.repository }}
       - name: Show disk usage before cache cleanup
@@ -67,6 +69,7 @@ jobs:
           ANSIBLE_FORCE_COLOR: '1'
           ANSIBLE_STDOUT_CALLBACK: ${{ runner.debug == '1' && 'debug' || 'ansible.builtin.default' }}
           ANSIBLE_CALLBACK_RESULT_FORMAT: yaml
+          DOCKER_API_VERSION: '1.44'
           MOLECULE_REPORT: molecule-${{ matrix.scenario }}-report.html
         with:
           molecule_args: >-
@@ -130,4 +133,4 @@ jobs:
         working-directory: ${{ github.repository }}
       - if: ${{ failure() && runner.debug == '1' }}
         uses: mxschmitt/action-tmate@v3
-    timeout-minutes: 20
+    timeout-minutes: 30

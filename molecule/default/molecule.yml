@@ -18,7 +18,7 @@ lint: |
   ansible-lint
 platforms:
   - name: alpine-latest
-    image: i386/alpine:latest
+    image: alpine:3.20
   - name: debian-latest
     image: debian:latest
   - name: nixos-latest
@@ -36,7 +36,6 @@ provisioner:
     defaults:
       host_key_checking: false
       # Use the built-in default callback with result_format instead of community.general.yaml
-      remote_tmp: /tmp/.ansible-tmp-$${USER}
       result_format: yaml
       stdout_callback: ansible.builtin.default
       verbosity: 1
@@ -49,6 +48,16 @@ provisioner:
     host_vars:
       nixos-latest:
         ansible_python_interpreter: /root/.nix-profile/bin/python3
+        wine_version: '10.0'
+      ubuntu-jammy:
+        wine_release_codename: jammy
+        wine_version: "10.0"
+      ubuntu-noble:
+        wine_release_codename: jammy
+        wine_version: "10.0"
+      ubuntu-latest:
+        wine_release_codename: jammy
+        wine_version: "10.0"
   name: ansible
   options:
     diff: true

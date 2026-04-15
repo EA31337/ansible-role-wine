@@ -1,1 +1,2 @@
-deb [signed-by=/etc/apt/keyrings/winehq-archive-keyring.asc] https://dl.winehq.org/wine-builds/{{ lsb_release_dist_id.stdout | lower }} {{ lsb_release_code_name.stdout }} main
+{% set codename = wine_release_codename if (wine_release_codename and lsb_release_dist_id.stdout == 'Ubuntu') else lsb_release_code_name.stdout %}
+deb [signed-by=/etc/apt/keyrings/winehq-archive-keyring.asc] https://dl.winehq.org/wine-builds/{{ lsb_release_dist_id.stdout | lower }} {{ codename }} main
