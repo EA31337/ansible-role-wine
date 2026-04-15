@@ -1,0 +1,45 @@
+---
+name: Cogni AI Agent
+
+# yamllint disable-line rule:truthy
+on:
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: Prompt for the agent
+        required: true
+        type: string
+      issue_number:
+        description: Issue or PR number this request relates to
+        required: false
+        type: string
+      agent:
+        default: cogni-ai-architect
+        description: Agent to use
+        required: false
+        type: string
+      model:
+        default: opencode/gemini-3.1-pro
+        description: Model to use for OpenCode
+        required: false
+        type: string
+
+jobs:
+  cogni-ai-agent:
+    name: Run Cogni AI agent
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Cogni AI Agent
+        uses: Cogni-AI-OU/cogni-ai-agent-action@v1
+        with:
+          agent: ${{ inputs.agent }}
+          issue_number: ${{ inputs.issue_number }}
+          model: ${{ inputs.model }}
+          opencode-api-key: ${{ secrets.OPENCODE_API_KEY }}
+          prompt: ${{ inputs.prompt }}
