@@ -3,6 +3,14 @@ name: Cogni AI Agent
 
 # yamllint disable-line rule:truthy
 on:
+  issue_comment:
+    types:
+      - created
+      - edited
+  pull_request_review_comment:
+    types:
+      - created
+      - edited
   workflow_dispatch:
     inputs:
       prompt:
@@ -26,6 +34,23 @@ on:
 
 jobs:
   cogni-ai-agent:
+    if: |
+      github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call' || (
+        github.event.sender.type != 'Bot' &&
+        contains(fromJson('["COLLABORATOR","CONTRIBUTOR","MEMBER","OWNER"]'), github.event.comment.author_association)
+        && (
+          contains(github.event.comment.body, ' /oc ') ||
+          startsWith(github.event.comment.body, '/oc ') ||
+          endsWith(github.event.comment.body, ' /oc') ||
+          github.event.comment.body == '/oc' ||
+          contains(github.event.comment.body, ' /opencode ') ||
+          startsWith(github.event.comment.body, '/opencode ') ||
+          endsWith(github.event.comment.body, ' /opencode') ||
+          github.event.comment.body == '/opencode' ||
+          contains(github.event.comment.body, '@opencode-agent') ||
+          contains(github.event.comment.body, '@OpenCode-Agent')
+        )
+      )
     name: Run Cogni AI agent
     runs-on: ubuntu-latest
     permissions:
@@ -34,7 +59,7 @@ jobs:
       issues: write
       pull-requests: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Run Cogni AI Agent
         uses: Cogni-AI-OU/cogni-ai-agent-action@main
         with:
