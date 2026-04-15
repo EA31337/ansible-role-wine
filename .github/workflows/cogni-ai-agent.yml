@@ -6,28 +6,18 @@ on:
   issue_comment:
     types:
       - created
-      - edited
   pull_request_review_comment:
     types:
       - created
-      - edited
   workflow_dispatch:
     inputs:
-      prompt:
-        description: Prompt for the agent
-        required: true
-        type: string
-      issue_number:
-        description: Issue or PR number this request relates to
-        required: false
-        type: string
-      agent:
-        description: Agent to use
-        required: false
-        type: string
       model:
         description: Model to use for OpenCode
         required: false
+        type: string
+      prompt:
+        description: Prompt for the agent
+        required: true
         type: string
 
 jobs:
@@ -61,8 +51,6 @@ jobs:
       - name: Run Cogni AI Agent
         uses: Cogni-AI-OU/cogni-ai-agent-action@main
         with:
-          agent: ${{ inputs.agent }}
-          issue_number: ${{ inputs.issue_number }}
           model: ${{ inputs.model }}
           opencode-api-key: ${{ secrets.OPENCODE_API_KEY }}
           prompt: ${{ inputs.prompt }}
