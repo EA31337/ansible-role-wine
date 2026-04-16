@@ -128,5 +128,3 @@ jobs:
       - name: Install dependencies
         if: steps.cache-dependencies.outputs.cache-hit != 'true'
         run: if [ -f .devcontainer/requirements.txt ]; then pip install -r .devcontainer/requirements.txt; fi
-      - name: Verify Molecule availability
-        run: molecule --version
