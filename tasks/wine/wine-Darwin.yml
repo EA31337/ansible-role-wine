@@ -1,10 +1,8 @@
 ---
 - name: Ensures Wine is present (Homebrew Cast)
-  become: "{{ ansible_user_id is defined and ansible_user_id != 'root' }}"
-  become_method: "{{ wine_become_method.get(ansible_os_family, wine_become_method['_default']) }}"
+  become: "{{ ansible_facts['user_id'] is defined and ansible_facts['user_id'] != 'root' }}"
+  become_method: ansible.builtin.sudo
   block:
     - name: Ensures Wine is present (Homebrew Cast)
       community.general.homebrew_cask:
-        name: "{{ item }}"
-      loop:
-        - wine-{{ wine_release }}
+        name: "wine-{{ wine_release }}{% if wine_version %}-{{ wine_version }}{% endif %}"

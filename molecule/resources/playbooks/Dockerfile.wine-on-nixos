@@ -1,6 +1,4 @@
-{% set base_image = item.base_image | default(item.image) %}
-{% if 'nixos' in base_image %}
-FROM {{ base_image }}
+FROM nixos/nix:latest
 
 # Workaround for containerd 2.2.0+ / Go 1.24 "path escapes from parent" error.
 # Convert absolute symlinks (/nix/store/...) to relative ones.
@@ -14,5 +12,3 @@ RUN ln --symbolic --force \
 # Include pip to avoid nix-env inside the running container.
 RUN nix-channel --update && \
     nix-env -iA nixpkgs.procps nixpkgs.python3 nixpkgs.python3Packages.pip
-
-{% endif %}

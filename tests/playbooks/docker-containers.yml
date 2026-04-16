@@ -1,9 +1,45 @@
 ---
+- name: Build NixOS Docker image
+  hosts: localhost
+  gather_facts: false
+  tags: always
+  vars:
+    controller_python: "{{ ansible_playbook_python }}"
+    nixos_built_image: wine-nixos:latest
+    nixos_dockerfile_output: >-
+      {{ playbook_dir }}/../../molecule/resources/playbooks/Dockerfile.wine-on-nixos
+    nixos_dockerfile_template: >-
+      {{ playbook_dir }}/../../molecule/resources/playbooks/Dockerfile.j2
+  tasks:
+    - name: Render Dockerfile for NixOS image
+      ansible.builtin.template:
+        src: "{{ nixos_dockerfile_template }}"
+        dest: "{{ nixos_dockerfile_output }}"
+        mode: "0644"
+      vars:
+        item:
+          name: wine-on-nixos-latest
+          image: nixos/nix:latest
+        ansible_python_interpreter: "{{ controller_python }}"
+      when: "'wine-on-nixos-latest' in groups['docker_containers']"
+
+    - name: Build NixOS image with Python preinstalled
+      community.docker.docker_image:
+        name: "{{ nixos_built_image }}"
+        build:
+          path: "{{ nixos_dockerfile_output | dirname }}"
+          dockerfile: "{{ nixos_dockerfile_output | basename }}"
+        source: build
+        force_source: true
+      when: "'wine-on-nixos-latest' in groups['docker_containers']"
+      vars:
+        ansible_python_interpreter: "{{ controller_python }}"
+
 - name: Configure Docker container
   # Note: Since facts are not gathered, we're checking for ansible_user_id, connection_user or UID instead.
   become: >-
     {{ (connection_user is defined and connection_user != 'root')
-    or (ansible_user_id is defined and ansible_user_id != 'root')
+    or (ansible_facts['user_id'] is defined and ansible_facts['user_id'] != 'root')
     or (lookup('env', 'UID') | int != 0)
     }}
   # Use su as become_method as sudo is not available in all containers.
@@ -18,7 +54,21 @@
         image: "{{ container_image }}"
         state: started
         command: sleep infinity
+        # NixOS containers require privileged mode due to non-standard filesystem layout.
+        privileged: "{{ container_image is search('nixos') }}"
+        pull: >-
+          {{ not (container_image is search('nixos')) }}
+        # Don't recreate - just restart if needed
+        recreate: false
+        restart: false
+        # Relaxed seccomp/apparmor for NixOS compatibility.
+        security_opts: >-
+          {{ ['seccomp=unconfined', 'apparmor=unconfined']
+          if container_image is search('nixos') else omit }}
       delegate_to: localhost
+      vars:
+        # Use system Python with requests installed for controller-side Docker modules.
+        ansible_python_interpreter: "{{ controller_python }}"
 
     - name: Wait for container to be ready
       community.docker.docker_container_info:
@@ -31,6 +81,9 @@
       delay: 2
       delegate_to: localhost
       retries: 10
+      vars:
+        # Use system Python with requests installed for controller-side Docker modules.
+        ansible_python_interpreter: "{{ controller_python }}"
 
     - name: Install Python 3 on Alpine
       ansible.builtin.raw: |
@@ -38,17 +91,29 @@
       changed_when: false
       when: container_image is search("alpine")
 
-    - name: Install Python 3 on NixOS
-      ansible.builtin.raw: |
-        test -e "{{ ansible_python_interpreter }}" || (nix-env -iA nixpkgs.python3 nixpkgs.python3Packages.pip)
-      changed_when: false
-      when: container_image is search("nixos")
-
     - name: Install Python 3 on Ubuntu/Debian
       ansible.builtin.raw: |
         test -e "{{ ansible_python_interpreter }}" || (apt-get update && apt-get install -y python3 python3-pip)
       changed_when: false
+      register: python_install_result
+      retries: 3
+      delay: 10
+      until: python_install_result.rc == 0
       when: container_image is search("ubuntu") or container_image is search("debian")
+
+    - name: Install or verify Python on NixOS
+      ansible.builtin.raw: |
+        # Check if Python is already installed from Dockerfile
+        if [ -x /root/.nix-profile/bin/python3 ]; then
+          /root/.nix-profile/bin/python3 --version
+          exit 0
+        fi
+        # If not, install it now
+        PATH=/root/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH
+        nix-channel --update
+        nix-env -iA nixpkgs.python3 nixpkgs.python3Packages.pip
+      changed_when: false
+      when: container_image is search("nixos")
 
     - name: Gather facts
       ansible.builtin.setup:
@@ -65,27 +130,28 @@
 
   tags: always
   vars:
+    controller_python: "{{ ansible_playbook_python }}"
+    nixos_built_image: wine-nixos:latest
     container_image_map:
-      wine-on-alpine-latest: alpine:latest
+      wine-on-alpine-latest: alpine:3.20
       wine-on-debian-latest: debian:latest
-      wine-on-nixos-latest: nixos/nix
+      wine-on-nixos-latest: "{{ nixos_built_image }}"
       wine-on-ubuntu-jammy: ubuntu:jammy
       wine-on-ubuntu-latest: ubuntu:latest
       wine-on-ubuntu-noble: ubuntu:noble
     container_image: "{{ container_image_map[inventory_hostname] | default('ubuntu:latest') }}"
-  vars_files:
-    - ../../vars/main.yml
 
 - name: Install ea31337.wine role on all containers
   hosts: docker_containers
   gather_facts: true
   tags: always
+  vars:
+    controller_python: "{{ ansible_playbook_python }}"
+    wine_install_winetricks: true
   tasks:
     - name: Installs ea31337.wine role
       ansible.builtin.import_role:
         name: ea31337.wine
-  vars:
-    wine_install_winetricks: true
 
   post_tasks:
     - name: Stop Docker containers

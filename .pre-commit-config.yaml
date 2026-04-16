@@ -52,6 +52,8 @@ repos:
       - id: forbid-binary
       - id: git-check     # Configure in .gitattributes
       - id: require-ascii
+        exclude: '^\.github/workflows/molecule\.yml$'
+      - id: script-must-have-extension
       - id: script-must-have-extension
 
   - repo: https://github.com/rhysd/actionlint
