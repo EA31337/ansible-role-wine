@@ -69,3 +69,32 @@ jobs:
           model: ${{ inputs.model }}
           opencode-api-key: ${{ secrets.OPENCODE_API_KEY }}  # <https://opencode.ai/auth>
           prompt: ${{ inputs.prompt }}
+  dependencies:
+    name: Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false  # Prevents duplicate Authorization header
+      - uses: actions/cache@v5.0.1
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit|${{ hashFiles('.pre-commit-config.yaml') }}
+          restore-keys: |
+            pre-commit|
+      - uses: actions/setup-python@v6.1.0
+        with:
+          cache: ${{ hashFiles('.devcontainer/requirements.txt') != '' && 'pip' || '' }}
+          cache-dependency-path: .devcontainer/requirements.txt
+          python-version: '3.12'
+      - name: Install pre-commit
+        run: pip install pre-commit
+      - name: Cache installed dependencies
+        id: cache-dependencies
+        uses: actions/cache@v5.0.1
+        with:
+          path: ${{ env.pythonLocation }}
+          key: ${{ runner.os }}-pip-${{ env.pythonLocation }}-${{ hashFiles('.devcontainer/requirements.txt') }}
+      - name: Install dependencies
+        if: steps.cache-dependencies.outputs.cache-hit != 'true'
+        run: if [ -f .devcontainer/requirements.txt ]; then pip install -r .devcontainer/requirements.txt; fi
