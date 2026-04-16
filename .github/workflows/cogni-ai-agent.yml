@@ -68,6 +68,34 @@ jobs:
         with:
           model: ${{ inputs.model }}
           opencode-api-key: ${{ secrets.OPENCODE_API_KEY }}  # <https://opencode.ai/auth>
+          permissions: |-
+            bash:
+              '*': deny
+              ansible*: allow
+              ansible-galaxy*: allow
+              ansible-playbook*: allow
+              awk*: allow
+              continue*: allow
+              cp*: allow
+              ex*: allow
+              gh*: allow
+              gh pr review*: deny
+              git*: allow
+              hexdump*: allow
+              jq*: allow
+              links*: allow
+              mawk*: allow
+              molecule*: allow
+              pipx*: allow
+              pre-commit*: allow
+              printf*: allow
+              sed*: allow
+              set*: allow
+              time*: allow
+              timeout*: allow
+              touch*: allow
+              true*: allow
+              vim*: allow
           prompt: ${{ inputs.prompt }}
   dependencies:
     name: Dependencies
