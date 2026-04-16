@@ -62,6 +62,22 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false  # Prevents Duplicate header: "Authorization" error.
+      - uses: actions/setup-python@v6.1.0
+        with:
+          python-version: '3.12'
+      - name: Restore cached Python environment
+        id: cache-python
+        uses: actions/cache@v5.0.1
+        with:
+          path: ${{ env.pythonLocation }}
+          key: ${{ runner.os }}-pip-${{ env.pythonLocation }}-${{ hashFiles('.devcontainer/requirements.txt') }}
+      - name: Install Python dependencies
+        if: steps.cache-python.outputs.cache-hit != 'true'
+        run: if [ -f .devcontainer/requirements.txt ]; then pip install -r .devcontainer/requirements.txt; fi
+      - name: Check Molecule availability
+        run: molecule --version
+      - name: Check GitHub CLI availability
+        run: gh --version
       # See: <https://github.com/Cogni-AI-OU/cogni-ai-agent-action>
       - name: Run Cogni AI Agent
         uses: Cogni-AI-OU/cogni-ai-agent-action@main
