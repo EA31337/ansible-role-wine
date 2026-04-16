@@ -80,7 +80,7 @@ jobs:
         run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       # See: <https://github.com/Cogni-AI-OU/cogni-ai-agent-action>
       - name: Run Cogni AI Agent
-        uses: nseam/cogni-ai-agent-action@test/wine-support
+        uses: Cogni-AI-OU/cogni-ai-agent-action@main
         with:
           model: ${{ inputs.model }}
           opencode-api-key: ${{ secrets.OPENCODE_API_KEY }}  # <https://opencode.ai/auth>
@@ -143,10 +143,16 @@ jobs:
         run: python -m pip install --user pre-commit
       - name: Install dependencies
         if: steps.cache-dependencies.outputs.cache-hit != 'true'
-        run: if [ -f .devcontainer/requirements.txt ]; then python -m pip install --user -r .devcontainer/requirements.txt; fi
+        run: |
+          if [ -f .devcontainer/requirements.txt ]; then
+            python -m pip install --user -r .devcontainer/requirements.txt
+          fi
+      - name: Set local bin path
+        run: echo "PYTHON_USER_SITE=$HOME/.local" >> "$GITHUB_ENV"
       - name: Share Python user site with agent
         uses: actions/upload-artifact@v4
         with:
           name: python-user-site
-          path: ~/.local
+          path: ${{ env.PYTHON_USER_SITE }}
           if-no-files-found: error
+          include-hidden-files: true
