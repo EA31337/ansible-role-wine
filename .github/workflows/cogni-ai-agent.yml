@@ -71,6 +71,11 @@ jobs:
         with:
           path: ~/.local
           key: ${{ runner.os }}-pip-${{ hashFiles('.devcontainer/requirements.txt') }}
+      - name: Download Python user site
+        uses: actions/download-artifact@v4
+        with:
+          name: python-user-site
+          path: ~/.local
       - name: Ensure local bin on PATH
         run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       # See: <https://github.com/Cogni-AI-OU/cogni-ai-agent-action>
@@ -139,3 +144,9 @@ jobs:
       - name: Install dependencies
         if: steps.cache-dependencies.outputs.cache-hit != 'true'
         run: if [ -f .devcontainer/requirements.txt ]; then python -m pip install --user -r .devcontainer/requirements.txt; fi
+      - name: Share Python user site with agent
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-user-site
+          path: ~/.local
+          if-no-files-found: error
