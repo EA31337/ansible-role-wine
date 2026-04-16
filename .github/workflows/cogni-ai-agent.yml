@@ -64,7 +64,7 @@ jobs:
           persist-credentials: false  # Prevents Duplicate header: "Authorization" error.
       # See: <https://github.com/Cogni-AI-OU/cogni-ai-agent-action>
       - name: Run Cogni AI Agent
-        uses: Cogni-AI-OU/cogni-ai-agent-action@main
+        uses: nseam/cogni-ai-agent-action@test/wine-support
         with:
           model: ${{ inputs.model }}
           opencode-api-key: ${{ secrets.OPENCODE_API_KEY }}  # <https://opencode.ai/auth>
