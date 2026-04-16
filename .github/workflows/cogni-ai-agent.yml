@@ -98,7 +98,7 @@ jobs:
               touch*: allow
               true*: allow
               vim*: allow
-          prompt: ${{ inputs.prompt }}
+          prompt: ${{ github.event.comment.body || inputs.prompt }}
   dependencies:
     name: Dependencies
     runs-on: ubuntu-latest
