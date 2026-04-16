@@ -83,9 +83,10 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false  # Prevents Duplicate header: "Authorization" error.
+      # See: <https://github.com/Cogni-AI-OU/cogni-ai-agent-action>
       - name: Run Cogni AI Agent
         uses: Cogni-AI-OU/cogni-ai-agent-action@main
         with:
           model: ${{ inputs.model }}
-          opencode-api-key: ${{ secrets.OPENCODE_API_KEY }}
+          opencode-api-key: ${{ secrets.OPENCODE_API_KEY }}  # <https://opencode.ai/auth>
           prompt: ${{ inputs.prompt }}
