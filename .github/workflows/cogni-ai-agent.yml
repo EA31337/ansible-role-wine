@@ -94,7 +94,7 @@ jobs:
               docker*: allow
               ex*: allow
               gh*: allow
-              gh pr review*: deny
+              gh pr review*: allow
               git*: allow
               hexdump*: allow
               jq*: allow
