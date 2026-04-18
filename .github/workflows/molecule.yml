@@ -44,26 +44,6 @@ jobs:
       - uses: actions/checkout@v6
         with:
           path: ${{ github.repository }}
-      - name: Show disk usage before cache cleanup
-        run: |
-          echo "=== Disk usage before cache cleanup ==="
-          df -h
-      - name: Free up disk space by removing unused tools
-        run: |
-          echo "=== Removing unused tools and caches ==="
-          sudo rm -rf /usr/local/lib/android || true
-          sudo rm -rf /opt/hostedtoolcache/CodeQL || true
-          sudo rm -rf /opt/hostedtoolcache/go || true
-          sudo rm -rf /opt/hostedtoolcache/Ruby || true
-          sudo rm -rf /opt/hostedtoolcache/PyPy || true
-          sudo rm -rf /opt/microsoft/msedge || true
-          sudo rm -rf /opt/az || true
-          sudo rm -rf /opt/google/chrome || true
-        continue-on-error: true
-      - name: Show disk usage after cache cleanup
-        run: |
-          echo "=== Disk usage after cache cleanup ==="
-          df -h
       - uses: gofrolist/molecule-action@v2
         env:
           ANSIBLE_FORCE_COLOR: '1'
@@ -92,6 +72,10 @@ jobs:
         run: |
           if [ ! -f "molecule-${{ matrix.scenario }}-report.html" ]; then
             echo "Report file not found, skipping conversion"
+            exit 0
+          fi
+          if ! command -v pandoc >/dev/null 2>&1; then
+            echo "pandoc not found, skipping conversion"
             exit 0
           fi
           # Process the HTML file, remove the first table, and convert to Markdown

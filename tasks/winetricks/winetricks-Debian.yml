@@ -17,7 +17,6 @@
 
     - name: Ensures Winetricks is present (Ubuntu)
       ansible.builtin.apt:
-        allow_unauthenticated: true
         install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
         name: winetricks
         state: present
