@@ -22,7 +22,7 @@ galaxy_info:
     - windows
     - wine
   license: GPL-3.0-or-later
-  min_ansible_version: "2.7"
+  min_ansible_version: "2.13"
   namespace: ea31337
   platforms:
     - name: Alpine
@@ -39,7 +39,5 @@ galaxy_info:
   #     - all
   role_name: wine
 collections:
-  - name: community.docker
-    version: ">=3.0.0"
-  - name: community.general
-    version: ">=6.0.0"
+  - community.docker
+  - community.general

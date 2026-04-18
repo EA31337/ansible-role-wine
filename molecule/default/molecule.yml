@@ -7,8 +7,8 @@ dependency:
   options:
     ignore-certs: false
     ignore-errors: false
-    role-file: requirements.yml
     requirements-file: requirements.yml
+    role-file: requirements.yml
 driver:
   name: docker
 lint: |
@@ -70,12 +70,10 @@ provisioner:
     diff: true
     force-handlers: true
   playbooks:
-    cleanup: cleanup.yml
     converge: converge.yml
     create: create.yml
     destroy: destroy.yml
     prepare: prepare.yml
-    side_effect: side_effect.yml
     verify: verify.yml
   ssh_connection:
     pipelining: true
@@ -84,16 +82,13 @@ scenario:
   name: default
   test_sequence:
     - dependency
-    - cleanup
     - destroy
     - syntax
     - create
     - prepare
     - converge
     - idempotence
-    - side_effect
     - verify
-    - cleanup
     - destroy
 verifier:
   name: ansible

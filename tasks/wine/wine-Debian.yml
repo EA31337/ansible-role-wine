@@ -69,7 +69,6 @@
     - name: Update Apt cache after adding Wine repositories
       ansible.builtin.apt:
         update_cache: true
-        cache_valid_time: 0
 
 - name: Ensures Wine is present
   become: true
@@ -85,7 +84,7 @@
           {% if wine_version -%}
           {%- if wine_version is search('~') -%}
           {{ wine_version }}{%- else -%}
-          {{ wine_version }}.0.0~{{ wine_release_codename or lsb_release_code_name.stdout }}-1{%- endif -%}
+          {{ wine_version }}.0.0.0~{{ wine_release_codename or lsb_release_code_name.stdout }}-1{%- endif -%}
           {%- endif %}
     - name: Debug wine_ubuntu_version
       ansible.builtin.debug:
@@ -126,9 +125,9 @@
           - fonts-freefont-ttf
           - winbind
           - "{{ wine_package_name }}"
-          - "wine-stable{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
-          - "wine-stable-amd64{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
-          - "wine-stable-i386:i386{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
+          - "wine-{{ wine_release }}{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
+          - "wine-{{ wine_release }}-amd64{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
+          - "wine-{{ wine_release }}-i386:i386{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
         state: present
         update_cache: true
       when: lsb_release_dist_id.stdout in ["Ubuntu"]
@@ -141,9 +140,9 @@
           - fonts-freefont-ttf
           - winbind
           - "{{ wine_package_name }}"
-          - "wine-stable{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
-          - "wine-stable-amd64{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
-          - "wine-stable-i386:i386{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
+          - "wine-{{ wine_release }}{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
+          - "wine-{{ wine_release }}-amd64{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
+          - "wine-{{ wine_release }}-i386:i386{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
         state: present
         update_cache: true
       when: lsb_release_dist_id.stdout not in ["Debian", "Ubuntu"]
@@ -162,6 +161,7 @@
     WINEDLLOVERRIDES: "{{ wine_dlloverrides | default('mscoree,mshtml=') }}"
   args:
     creates: "{{ ansible_env.HOME }}/.wine/system.reg"
+  timeout: 120
 
 - name: Apt cleanup ({{ ansible_os_family }})
   become: true

@@ -39,7 +39,7 @@
         nixos_early_check.rc == 0 and
         (
           (
-            'wine-wow64-' ~ (((wine_version | default('') | string) | regex_search('^[0-9]{1,2}$')) or '9')
+            'wine-wow64-' ~ ((wine_version | default('') | string | regex_replace('^([0-9]{1,2})[.\\-].*$', '\\1') | regex_search('^[0-9]{1,2}$')) or '9')
             not in (nixos_wine_version_check.stdout | default(''))
           )
           or
@@ -110,9 +110,10 @@
     wine --version
     {% endif %}
   register: wine_version_res
+  when: cmd_which_wine_res.rc == 0 or (wine_version_mismatch | default(false) | bool) or (nixos_early_check.rc | default(1) == 0)
   tags: wine
 
 - name: Display wine version
   ansible.builtin.debug:
-    msg: "{{ wine_version_res.stdout }}"
+    msg: "{{ wine_version_res.stdout | default('Wine not found or installation skipped') }}"
   tags: wine

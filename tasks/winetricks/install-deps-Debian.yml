@@ -12,16 +12,3 @@
         state: present
         update_cache: true
         install_recommends: false
-
-    - name: Apt cleanup
-      block:
-
-        - name: Removes dependencies that are no longer required
-          ansible.builtin.apt:
-            autoremove: true
-            purge: true
-
-        - name: Cleans Apt cache
-          ansible.builtin.apt:
-            autoclean: true
-            clean: true

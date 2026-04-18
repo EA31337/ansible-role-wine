@@ -8,10 +8,13 @@
     # Use controller Python (Ansible's interpreter)
     ansible_python_interpreter: "{{ ansible_playbook_python }}"
   pre_tasks:
-    - name: Ensure requests is installed on controller
+    - name: Ensure Python dependencies are installed on controller
       ansible.builtin.pip:
-        name: requests
+        name:
+          - docker>=7.1
+          - requests
         state: present
+        extra_args: --user
       register: pip_install_result
 
   tasks:
@@ -47,7 +50,7 @@
           {{ ['seccomp=unconfined', 'apparmor=unconfined']
           if 'nixos' in item.name else omit }}
         recreate: true
-        pull: "{{ false if 'nixos' in item.name else true }}"
+        pull: "{{ false if (item.dockerfile is defined or 'nixos' in item.name) else true }}"
       loop: "{{ molecule_yml.platforms }}"
 
     - name: Build instance config entries

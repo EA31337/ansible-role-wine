@@ -27,6 +27,7 @@
       ansible.builtin.assert:
         that:
           - wine_alpine_major is defined
+          - wine_alpine_major == ((wine_version | default('') | string | regex_replace('^([0-9]{1,2})[.\\-].*$', '\\1') | regex_search('^[0-9]{1,2}$')) or '9')
           - wine_alpine_major in ['9', '10', '11']
         fail_msg: >-
           Available wine version {{ wine_alpine_major | default('unknown') }}
@@ -34,31 +35,15 @@
         success_msg: "Wine version {{ wine_alpine_major }} is acceptable"
       when: wine_version is defined and wine_version | length > 0
 
-    - name: Ensures Wine is present ({{ ansible_os_family }})
-      ansible.builtin.package:
-        name: wine
-        state: present
-
-    - name: Ensures fontconfig package is present
-      ansible.builtin.package:
-        name: fontconfig
-        state: present
-
-    - name: Ensures font packages are present
-      ansible.builtin.package:
-        name: ttf-freefont
-        state: present
-
-    - name: Ensures p7zip package is present
-      ansible.builtin.package:
-        name: p7zip
-        state: present
-
-    - name: Ensures Xvfb packages are present (headless Wine init)
+    - name: Ensures Wine and runtime dependencies are present ({{ ansible_os_family }})
       ansible.builtin.package:
         name:
-          - xvfb-run
+          - fontconfig
+          - p7zip
+          - ttf-freefont
+          - wine
           - xauth
+          - xvfb-run
         state: present
 
 - name: Ensure fontconfig directories are present (Alpine)
@@ -127,3 +112,4 @@
     WINEDLLOVERRIDES: "{{ wine_dlloverrides | default('mscoree,mshtml=') }}"
   args:
     creates: "{{ ansible_env.HOME }}/.wine/system.reg"
+  timeout: 120

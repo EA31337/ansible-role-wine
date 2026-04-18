@@ -6,9 +6,9 @@
   register: lsb_release_dist_id
 
 - name: Ensures Winetricks is installed ({{ ansible_os_family }})
-  become: >
+  become: >-
     {{ (ansible_user_id is defined and ansible_user_id != 'root')
-    or (lookup('env', 'UID') | int != 0) }}
+    or (ansible_user_id is not defined and (lookup('env', 'UID') | int != 0)) }}
   become_method: >
     {{ wine_become_method.get(ansible_os_family,
     wine_become_method["_default"]) }}
