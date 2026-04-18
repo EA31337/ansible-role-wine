@@ -38,9 +38,16 @@
 - name: Configure Docker container
   # Note: Since facts are not gathered, we're checking for ansible_user_id, connection_user or UID instead.
   become: >-
-    {{ (connection_user is defined and connection_user != 'root')
-    or (ansible_facts['user_id'] is defined and ansible_facts['user_id'] != 'root')
-    or (lookup('env', 'UID') | int != 0)
+    {{
+      (connection_user | default('root')) != 'root'
+      or (ansible_user_id | default('root')) != 'root'
+      or (ansible_user_uid | default(0) | int) != 0
+      or (((ansible_env | default({}))['UID'] | default(0) | int) != 0)
+      or (
+        ((ansible_env | default({}))['USER']
+        | default(((ansible_env | default({}))['LOGNAME'] | default('root'))) )
+        != 'root'
+      )
     }}
   # Use su as become_method as sudo is not available in all containers.
   become_method: ansible.builtin.su
@@ -126,6 +133,8 @@
           - python3-setuptools
         state: present
         update_cache: true
+      environment:
+        DEBIAN_FRONTEND: noninteractive
       when: container_image is search("ubuntu") or container_image is search("debian")
 
   tags: always
