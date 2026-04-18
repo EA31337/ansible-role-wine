@@ -16,7 +16,9 @@
 
 - name: Set detected OS family for task inclusion
   ansible.builtin.set_fact:
-    detected_os_family: "{{ 'NixOS' if (nixos_early_check.rc == 0 or ansible_os_family == 'NixOS') else ansible_os_family }}"
+    detected_os_family: >-
+      {{ 'NixOS' if (nixos_early_check.rc == 0 or ansible_os_family == 'NixOS')
+      else ansible_os_family }}
     cacheable: true
   tags:
     - always

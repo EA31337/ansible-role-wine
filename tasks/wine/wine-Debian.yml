@@ -2,6 +2,8 @@
 - name: Ensures Wine repository is configured
   become: true
   become_method: ansible.builtin.su
+  environment:
+    DEBIAN_FRONTEND: noninteractive
   block:
     - name: Ensures lsb_release command is present
       ansible.builtin.package:
@@ -70,6 +72,8 @@
 - name: Ensures Wine is present
   become: true
   become_method: ansible.builtin.su
+  environment:
+    DEBIAN_FRONTEND: noninteractive
   block:
     - name: Set wine package name for Ubuntu
       ansible.builtin.set_fact:
@@ -150,11 +154,16 @@
   ansible.builtin.command: wineboot --init
   environment:
     WINEARCH: win64
-  changed_when: false
+    WINEDEBUG: "{{ wine_debug | default('-all') }}"
+    WINEDLLOVERRIDES: "{{ wine_dlloverrides | default('mscoree,mshtml=') }}"
+  args:
+    creates: "{{ ansible_facts.env.HOME }}/.wine/system.reg"
 
 - name: Apt cleanup ({{ ansible_os_family }})
   become: true
   become_method: ansible.builtin.su
+  environment:
+    DEBIAN_FRONTEND: noninteractive
   when: wine_install_winetricks | bool
   block:
 

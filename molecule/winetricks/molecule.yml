@@ -19,18 +19,25 @@ lint: |
 platforms:
   - name: alpine-latest
     image: alpine:3.20
+    init: true
   - name: debian-latest
     image: debian:latest
+    init: true
   - name: nixos-latest
     dockerfile: ../resources/playbooks/Dockerfile.j2
     image: nixos/nix:latest
     pre_build_image: false
+    privileged: true
+    init: true
   - name: ubuntu-jammy
     image: ubuntu:jammy
+    init: true
   - name: ubuntu-noble
     image: ubuntu:noble
+    init: true
   - name: ubuntu-latest
     image: ubuntu:latest
+    init: true
 provisioner:
   config_options:
     defaults:
@@ -58,6 +65,8 @@ provisioner:
     force-handlers: true
   playbooks:
     converge: ../default/converge.yml
+    create: ../default/create.yml
+    destroy: ../default/destroy.yml
     prepare: ../default/prepare.yml
     verify: ../default/verify.yml
 verifier:

@@ -121,6 +121,7 @@
     HOME: "{{ ansible_facts.env.HOME }}"
     FONTCONFIG_FILE: "{{ ansible_facts.env.HOME }}/.config/fontconfig/fonts.conf"
     FONTCONFIG_PATH: "{{ ansible_facts.env.HOME }}/.config/fontconfig:/etc/fonts"
+    WINEDEBUG: "{{ wine_debug | default('-all') }}"
+    WINEDLLOVERRIDES: "{{ wine_dlloverrides | default('mscoree,mshtml=') }}"
   args:
     creates: "{{ ansible_facts.env.HOME }}/.wine/system.reg"
-  changed_when: false
