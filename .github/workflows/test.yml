@@ -63,7 +63,7 @@ jobs:
         run: >-
             ansible-playbook --syntax-check
             -i tests/inventory/docker-containers.yml tests/playbooks/docker-containers.yml
-            --limit "${TARGET_CONTAINER}"
+            --limit "${TARGET_CONTAINER},localhost"
             --verbose
         working-directory: ${{ github.repository }}
 
@@ -74,14 +74,14 @@ jobs:
       - name: Run Ansible playbook
         run: >-
           ansible-playbook -i tests/inventory/docker-containers.yml
-          --limit "${TARGET_CONTAINER}"
+          --limit "${TARGET_CONTAINER},localhost"
           tests/playbooks/docker-containers.yml
         working-directory: ${{ github.repository }}
 
       - name: Run Ansible playbook with wine-verify tag
         run: >-
           ansible-playbook -i tests/inventory/docker-containers.yml
-          --limit "${TARGET_CONTAINER}"
+          --limit "${TARGET_CONTAINER},localhost"
           tests/playbooks/tags/wine-verify.yml
         working-directory: ${{ github.repository }}
 
