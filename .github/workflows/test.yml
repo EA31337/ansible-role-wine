@@ -72,13 +72,17 @@ jobs:
         working-directory: ${{ github.repository }}
 
       - name: Run Ansible playbook
-        run: |
-          ansible-playbook -i tests/inventory/docker-containers.yml --limit "${TARGET_CONTAINER}" tests/playbooks/docker-containers.yml
+        run: >-
+          ansible-playbook -i tests/inventory/docker-containers.yml
+          --limit "${TARGET_CONTAINER}"
+          tests/playbooks/docker-containers.yml
         working-directory: ${{ github.repository }}
 
       - name: Run Ansible playbook with wine-verify tag
-        run: |
-          ansible-playbook -i tests/inventory/docker-containers.yml --limit "${TARGET_CONTAINER}" tests/playbooks/tags/wine-verify.yml
+        run: >-
+          ansible-playbook -i tests/inventory/docker-containers.yml
+          --limit "${TARGET_CONTAINER}"
+          tests/playbooks/tags/wine-verify.yml
         working-directory: ${{ github.repository }}
 
       # Debug with tmate on failure when debug logging is enabled.
