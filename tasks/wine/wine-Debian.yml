@@ -29,10 +29,14 @@
     - name: Ensures Apt cache is up-to-date
       ansible.builtin.apt:
         update_cache: true
+      environment:
+        DEBIAN_FRONTEND: noninteractive
     - name: Ensures CA certificates are installed
       ansible.builtin.apt:
         name: ca-certificates
         state: present
+      environment:
+        DEBIAN_FRONTEND: noninteractive
     - name: Ensures GPG key directory exists
       ansible.builtin.file:
         path: /etc/apt/keyrings
@@ -66,6 +70,8 @@
       ansible.builtin.apt:
         update_cache: true
         cache_valid_time: 0
+      environment:
+        DEBIAN_FRONTEND: noninteractive
 
 - name: Ensures Wine is present
   become: true
@@ -102,6 +108,8 @@
         name: '{{ item }}'
         state: present
         update_cache: true
+      environment:
+        DEBIAN_FRONTEND: noninteractive
       with_items:
         - fontconfig
         - fonts-freefont-ttf
@@ -125,6 +133,8 @@
           - "wine-stable-i386:i386{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
         state: present
         update_cache: true
+      environment:
+        DEBIAN_FRONTEND: noninteractive
       when: lsb_release_dist_id.stdout in ["Ubuntu"]
     - name: Ensures Wine package is present (non-Debian)
       ansible.builtin.apt:
@@ -141,6 +151,8 @@
           - "wine-stable-i386:i386{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
         state: present
         update_cache: true
+      environment:
+        DEBIAN_FRONTEND: noninteractive
       when: lsb_release_dist_id.stdout not in ["Debian", "Ubuntu"]
     - name: Ensures p7zip package is present
       ansible.builtin.apt:
@@ -149,6 +161,8 @@
         name: p7zip-full
         state: present
         update_cache: true
+      environment:
+        DEBIAN_FRONTEND: noninteractive
 
 - name: Ensures ~/.wine is initialized
   ansible.builtin.command: wineboot --init
@@ -166,8 +180,12 @@
       ansible.builtin.apt:
         autoremove: true
         purge: true
+      environment:
+        DEBIAN_FRONTEND: noninteractive
 
     - name: Cleans Apt cache
       ansible.builtin.apt:
         autoclean: true
         clean: true
+      environment:
+        DEBIAN_FRONTEND: noninteractive
