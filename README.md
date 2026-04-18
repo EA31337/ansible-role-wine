@@ -107,6 +107,7 @@ Steps to test role on Docker containers.
     Alternatively, for development purposes, you can use a symbolic link, e.g.
 
     ```shell
+    mkdir -p ~/.ansible/roles
     ln -vs "$PWD" ~/.ansible/roles/ea31337.wine
     ```
 

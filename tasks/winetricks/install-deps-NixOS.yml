@@ -9,9 +9,15 @@
         path: /nix/store
       register: nix_store_stat
 
+    - name: Get HOME of the privileged user
+      ansible.builtin.command: echo $HOME
+      register: privileged_home
+      changed_when: false
+      check_mode: false
+
     - name: Ensures dependencies are present
       ansible.builtin.command:
         cmd: nix-env -iA nixpkgs.{{ item }}
-        creates: "{{ ansible_env.HOME }}/.nix-profile/bin/{{ item }}"
+        creates: "{{ privileged_home.stdout }}/.nix-profile/bin/{{ item }}"
       loop: "{{ wine_install_winetricks_dependencies }}"
       when: nix_store_stat.stat.exists

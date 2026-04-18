@@ -27,7 +27,7 @@
       ansible.builtin.assert:
         that:
           - wine_alpine_major is defined
-          - wine_alpine_major == ((wine_version | default('') | string | regex_replace('^([0-9]{1,2})[.\\-].*$', '\\1') | regex_search('^[0-9]{1,2}$')) or '9')
+          - wine_alpine_major == (wine_version | default('') | regex_replace('^(\\d+).*', '\\1') | default('9'))
           - wine_alpine_major in ['9', '10', '11']
         fail_msg: >-
           Available wine version {{ wine_alpine_major | default('unknown') }}
@@ -52,15 +52,16 @@
     state: directory
     mode: '0755'
   loop:
-    - "{{ ansible_env.HOME }}/.config/fontconfig"
     - "{{ ansible_env.HOME }}/.cache/fontconfig"
+    - "{{ ansible_env.HOME }}/.config/fontconfig"
     - "{{ ansible_env.HOME }}/.fonts"
+    - "{{ ansible_env.HOME }}/.local/share/fonts"
 
 - name: Write fontconfig config for Alpine
   ansible.builtin.copy:
     dest: "{{ ansible_env.HOME }}/.config/fontconfig/fonts.conf"
     mode: '0644'
-    force: false
+    force: true
     content: |
       <?xml version="1.0"?>
       {{ '<!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">' }}
@@ -96,15 +97,14 @@
     fc-cache -f
     {{ ansible_env.HOME }}/.fonts
     {{ ansible_env.HOME }}/.local/share/fonts
-    {{ ansible_env.HOME }}/.cache/fontconfig
   changed_when: false
-  failed_when: false
 
 - name: Ensures ~/.wine is initialized
   ansible.builtin.command: xvfb-run -a wineboot --init
   environment:
-    # WoW64 wine (amd64) only supports win64; 32-bit wine (i686) only supports win32.
-    WINEARCH: "{{ 'win32' if ansible_facts.architecture == 'i686' else 'win64' }}"
+    # WoW64 wine (amd64) only supports win64; 32-bit wine (i686/x86/etc) only supports win32.
+    WINEARCH: >-
+      {{ 'win32' if ansible_facts.architecture in ['i386', 'i486', 'i586', 'i686', 'x86'] else 'win64' }}
     HOME: "{{ ansible_env.HOME }}"
     FONTCONFIG_FILE: "{{ ansible_env.HOME }}/.config/fontconfig/fonts.conf"
     FONTCONFIG_PATH: "{{ ansible_env.HOME }}/.config/fontconfig:/etc/fonts"

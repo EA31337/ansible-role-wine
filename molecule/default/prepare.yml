@@ -14,6 +14,11 @@
           apt-get update -qq && apt-get install -y -q sudo
         elif command -v dnf >/dev/null 2>&1; then
           dnf install -y sudo
+        elif command -v zypper >/dev/null 2>&1; then
+          zypper --non-interactive install sudo
+        else
+          echo "No supported package manager found to install sudo" >&2
+          exit 1
         fi
       changed_when: false
 
@@ -46,7 +51,12 @@
           exit 0
         fi
         mkdir -p /etc/nix
-        printf "sandbox = false\n" > /etc/nix/nix.conf
+        touch /etc/nix/nix.conf
+        if grep -q '^sandbox =' /etc/nix/nix.conf; then
+          sed -i 's/^sandbox =.*/sandbox = false/' /etc/nix/nix.conf
+        else
+          printf "sandbox = false\n" >> /etc/nix/nix.conf
+        fi
         export NIX_CONFIG="sandbox = false"
         nix-env --option sandbox false \
           -iA nixpkgs.python3 nixpkgs.python3Packages.pip

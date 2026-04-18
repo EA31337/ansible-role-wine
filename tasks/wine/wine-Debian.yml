@@ -61,7 +61,8 @@
         - lsb_release_dist_id.stdout in ["Ubuntu"]
     - name: Download Ubuntu backports GPG key
       ansible.builtin.get_url:
-        url: "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xbbb8bd3bbe6ad3419048edc50795a9a788a59c82"
+        url: >-
+          https://keyserver.ubuntu.com/pks/lookup?op=get&options=mr&search=0xbbb8bd3bbe6ad3419048edc50795a9a788a59c82
         dest: /etc/apt/keyrings/ubuntu-backports-keyring.asc
         mode: "0644"
       when:
@@ -81,10 +82,13 @@
     - name: Set wine package name for Ubuntu
       ansible.builtin.set_fact:
         wine_ubuntu_version: >-
-          {% if wine_version -%}
-          {%- if wine_version is search('~') -%}
-          {{ wine_version }}{%- else -%}
-          {{ wine_version }}.0.0.0~{{ wine_release_codename or lsb_release_code_name.stdout }}-1{%- endif -%}
+          {% set raw_wine_version = wine_version | default('') | string -%}
+          {% if raw_wine_version -%}
+          {%- if raw_wine_version is search('~') -%}
+          {{ raw_wine_version }}{%- else -%}
+          {%- set version_parts = raw_wine_version.split('.') -%}
+          {{ (version_parts + ['0', '0', '0', '0'])[:4] | join('.') }}~{{
+          wine_release_codename or lsb_release_code_name.stdout }}-1{%- endif -%}
           {%- endif %}
     - name: Debug wine_ubuntu_version
       ansible.builtin.debug:
@@ -103,18 +107,18 @@
         msg: "Installing wine package: {{ wine_package_name }}"
     - name: Ensures Wine package is present (Debian)
       ansible.builtin.apt:
-        autoclean: true
+        allow_downgrade: true
         install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
-        name: '{{ item }}'
+        name:
+          - fontconfig
+          - fonts-freefont-ttf
+          - winbind
+          - "{{ wine_package_name }}"
+          - "wine-{{ wine_release }}{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
+          - "wine-{{ wine_release }}-amd64{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
+          - "wine-{{ wine_release }}-i386:i386{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
         state: present
         update_cache: true
-      with_items:
-        - fontconfig
-        - fonts-freefont-ttf
-        - wine
-        - wine32:i386
-        - wine64
-        - winbind
       when: lsb_release_dist_id.stdout in ["Debian"]
     - name: Ensures Wine package is present (Ubuntu)
       ansible.builtin.apt:

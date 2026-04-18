@@ -34,9 +34,7 @@
       # Strings with no leading integer default to '9'.
       ansible.builtin.set_fact:
         wine_version_nixos: >-
-          {{ (wine_version | default('') | string
-          | regex_replace('^([0-9]{1,2})[.\-].*$', '\\1')
-          | regex_search('^[0-9]{1,2}$')) or '9' }}
+          {{ wine_version | default('') | regex_replace('^(\\d+).*', '\\1') | default('9') }}
       when: nix_store_stat.stat.exists
 
     - name: Determine if Wine needs installation
@@ -89,6 +87,19 @@
         - wine_version_check.stdout != 'not_installed'
       register: wine_remove_old
       changed_when: "'Removing old' in (wine_remove_old.stdout | default(''))"
+
+    - name: Ensure Wine runtime dependencies installed
+      ansible.builtin.shell: |
+        set -eo pipefail
+        nix-env -iA \
+          nixpkgs.fontconfig \
+          nixpkgs.freetype \
+          nixpkgs.xorg.libX11 \
+          nixpkgs.xorg.libxcb
+      when:
+        - nix_store_stat.stat.exists
+      register: nix_deps_install
+      changed_when: "'installing' in nix_deps_install.stdout or 'building' in nix_deps_install.stdout"
 
     - name: Ensure Wine package is installed on Nix image
       ansible.builtin.shell: |
@@ -221,7 +232,11 @@
 - name: Ensures ~/.wine is initialized
   ansible.builtin.command: wineboot --init
   environment:
+    PATH: >-
+      {{ ansible_env.HOME }}/.nix-profile/bin:
+      {{ ansible_env.PATH | default('/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:/usr/bin:/bin') }}
     WINEARCH: win64
+    WINEPREFIX: "{{ ansible_env.HOME }}/.wine"
     FONTCONFIG_FILE: "{{ ansible_env.HOME }}/.config/fontconfig/fonts.conf"
     FONTCONFIG_PATH: "{{ ansible_env.HOME }}/.config/fontconfig"
     WINEDEBUG: "{{ wine_debug | default('-all') }}"

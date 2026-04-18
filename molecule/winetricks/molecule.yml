@@ -61,13 +61,13 @@ provisioner:
   options:
     diff: true
     force-handlers: true
-  ssh_connection:
-    pipelining: true
   playbooks:
     converge: ../default/converge.yml
     create: ../default/create.yml
     destroy: ../default/destroy.yml
     prepare: ../default/prepare.yml
     verify: ../default/verify.yml
+  ssh_connection:
+    pipelining: true
 verifier:
   name: ansible

@@ -39,7 +39,7 @@
         nixos_early_check.rc == 0 and
         (
           (
-            'wine-wow64-' ~ ((wine_version | default('') | string | regex_replace('^([0-9]{1,2})[.\\-].*$', '\\1') | regex_search('^[0-9]{1,2}$')) or '9')
+            'wine-wow64-' ~ (wine_version | default('') | regex_replace('^(\\d+).*', '\\1') | default('9'))
             not in (nixos_wine_version_check.stdout | default(''))
           )
           or
@@ -105,12 +105,19 @@
   ansible.builtin.shell: |
     {% if detected_os_family | default(ansible_os_family) == 'NixOS' %}
     set -o pipefail
-    nix-env -q 2>/dev/null | grep -Em1 '^wine-(wow64|wow|10|9|11)'
+    installed=$(nix-env -q 2>/dev/null | grep -Em1 '^wine-(wow64|wow|10|9|11)' || echo "")
+    if [ -z "$installed" ]; then
+      echo "not_installed"
+    else
+      echo "$installed"
+    fi
     {% else %}
     wine --version
     {% endif %}
   register: wine_version_res
-  when: cmd_which_wine_res.rc == 0 or (wine_version_mismatch | default(false) | bool) or (nixos_early_check.rc | default(1) == 0)
+  when:
+    - cmd_which_wine_res.rc == 0 or (wine_version_mismatch | default(false) | bool)
+      or (nixos_early_check.rc | default(1) == 0)
   tags: wine
 
 - name: Display wine version

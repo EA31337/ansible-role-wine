@@ -35,8 +35,8 @@ galaxy_info:
         - buster
         - stretch
     # - name: NixOS
-  #   versions:
-  #     - all
+    #   versions:
+    #     - all
   role_name: wine
 collections:
   - community.docker
