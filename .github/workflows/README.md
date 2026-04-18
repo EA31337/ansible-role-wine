@@ -6,7 +6,7 @@ This directory contains GitHub Actions workflows, agent prompts, and related con
 
 ### Check Workflow
 
-The `check.yml` workflow runs on pull requests, pushes, and weekly schedule to
+The `check.yml` workflow runs on pull requests, pushes, and a weekly schedule to
 ensure code quality and correctness.
 
 Jobs:
