@@ -23,5 +23,5 @@ permissions:
 
 jobs:
   devcontainer:
-    uses: Cogni-AI-OU/.github/.github/workflows/devcontainer-ci.yml@main
+    uses: EA31337/.github/.github/workflows/devcontainer-ci.yml@master
     secrets: inherit
