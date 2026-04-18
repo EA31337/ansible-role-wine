@@ -7,7 +7,7 @@
 
 - name: Ensures Winetricks is installed ({{ ansible_facts["os_family"] }})
   become: >
-    {{ (ansible_facts['user_id'] is defined and ansible_facts['user_id'] != 'root')
+    {{ (ansible_user_id is defined and ansible_user_id != 'root')
     or (lookup('env', 'UID') | int != 0) }}
   become_method: >
     {{ wine_become_method.get(ansible_facts["os_family"],

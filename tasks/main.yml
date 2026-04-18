@@ -87,7 +87,7 @@
 - name: Checking wine version
   become: >-
     {{ (detected_os_family | default(ansible_facts['os_family']) == 'NixOS')
-    and (ansible_facts['user_id'] != 'root') }}
+    and (ansible_user_id != 'root') }}
   become_method: ansible.builtin.su
   changed_when: false
   ansible.builtin.shell: |

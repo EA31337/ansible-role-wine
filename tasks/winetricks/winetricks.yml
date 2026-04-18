@@ -11,7 +11,7 @@
     cacheable: true
 
 - name: Ensures winetricks and dependencies are present
-  become: "{{ ansible_facts['user_id'] != 'root' }}"
+  become: "{{ ansible_user_id != 'root' }}"
   become_method: '{{ wine_become_method.get(detected_os_family, wine_become_method["_default"]) }}'
   when: wine_install_winetricks | bool
   block:
