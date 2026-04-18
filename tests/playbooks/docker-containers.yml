@@ -1,4 +1,40 @@
 ---
+- name: Build NixOS Docker image
+  hosts: localhost
+  gather_facts: false
+  tags: always
+  vars:
+    controller_python: "{{ ansible_playbook_python }}"
+    nixos_built_image: wine-nixos:latest
+    nixos_dockerfile_output: >-
+      {{ playbook_dir }}/../../molecule/resources/playbooks/Dockerfile.wine-on-nixos
+    nixos_dockerfile_template: >-
+      {{ playbook_dir }}/../../molecule/resources/playbooks/Dockerfile.j2
+  tasks:
+    - name: Render Dockerfile for NixOS image
+      ansible.builtin.template:
+        src: "{{ nixos_dockerfile_template }}"
+        dest: "{{ nixos_dockerfile_output }}"
+        mode: "0644"
+      vars:
+        item:
+          name: wine-on-nixos-latest
+          image: nixos/nix:latest
+        ansible_python_interpreter: "{{ controller_python }}"
+      when: "'wine-on-nixos-latest' in groups['docker_containers']"
+
+    - name: Build NixOS image with Python preinstalled
+      community.docker.docker_image:
+        name: "{{ nixos_built_image }}"
+        build:
+          path: "{{ nixos_dockerfile_output | dirname }}"
+          dockerfile: "{{ nixos_dockerfile_output | basename }}"
+        source: build
+        force_source: true
+      when: "'wine-on-nixos-latest' in groups['docker_containers']"
+      vars:
+        ansible_python_interpreter: "{{ controller_python }}"
+
 - name: Configure Docker container
   hosts: docker_containers
   # Note: Since facts are not gathered, we're checking for ansible_user_id, connection_user or UID instead.
