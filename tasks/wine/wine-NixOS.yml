@@ -222,5 +222,6 @@
     FONTCONFIG_PATH: "{{ ansible_facts.env.HOME }}/.config/fontconfig"
     WINEDEBUG: "{{ wine_debug | default('-all') }}"
     WINEDLLOVERRIDES: "{{ wine_dlloverrides | default('mscoree,mshtml=') }}"
-  changed_when: false
+  args:
+    creates: "{{ ansible_facts.env.HOME }}/.wine/system.reg"
   when: nix_store_stat.stat.exists

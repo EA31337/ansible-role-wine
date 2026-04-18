@@ -2,29 +2,26 @@
 - name: Ensure Winetricks dependencies are installed
   become: "{{ ansible_user_id != 'root' }}"
   become_method: '{{ wine_become_method.get(ansible_os_family, wine_become_method["_default"]) }}'
-  ansible.builtin.apt:
-    name: "{{ wine_install_winetricks_dependencies }}"
-    state: present
-    update_cache: true
-    install_recommends: false
-  environment:
-    DEBIAN_FRONTEND: noninteractive
-  when: wine_install_winetricks | bool
-
-- name: Apt cleanup
-  become: "{{ ansible_user_id != 'root' }}"
-  become_method: '{{ wine_become_method.get(ansible_os_family, wine_become_method["_default"]) }}'
   environment:
     DEBIAN_FRONTEND: noninteractive
   when: wine_install_winetricks | bool
   block:
-
-    - name: Removes dependencies that are no longer required
+    - name: Ensure Winetricks dependencies are installed
       ansible.builtin.apt:
-        autoremove: true
-        purge: true
+        name: "{{ wine_install_winetricks_dependencies }}"
+        state: present
+        update_cache: true
+        install_recommends: false
 
-    - name: Cleans Apt cache
-      ansible.builtin.apt:
-        autoclean: true
-        clean: true
+    - name: Apt cleanup
+      block:
+
+        - name: Removes dependencies that are no longer required
+          ansible.builtin.apt:
+            autoremove: true
+            purge: true
+
+        - name: Cleans Apt cache
+          ansible.builtin.apt:
+            autoclean: true
+            clean: true

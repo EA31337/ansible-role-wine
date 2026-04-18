@@ -125,4 +125,3 @@
     WINEDLLOVERRIDES: "{{ wine_dlloverrides | default('mscoree,mshtml=') }}"
   args:
     creates: "{{ ansible_facts.env.HOME }}/.wine/system.reg"
-  changed_when: false
