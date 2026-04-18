@@ -51,7 +51,7 @@
       ansible.builtin.template:
         dest: /etc/apt/sources.list.d/winehq.list
         mode: "0644"
-        src: 'winehq.{{ ansible_facts["os_family"] }}.list.j2'
+        src: 'winehq.{{ ansible_os_family }}.list.j2'
     - name: Ensures Wine backports repo is present
       ansible.builtin.template:
         dest: /etc/apt/sources.list.d/ubuntu.list
@@ -102,7 +102,6 @@
         msg: "Installing wine package: {{ wine_package_name }}"
     - name: Ensures Wine package is present (Debian)
       ansible.builtin.apt:
-        allow_unauthenticated: true
         autoclean: true
         install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
         name: '{{ item }}'
@@ -120,7 +119,6 @@
       when: lsb_release_dist_id.stdout in ["Debian"]
     - name: Ensures Wine package is present (Ubuntu)
       ansible.builtin.apt:
-        allow_unauthenticated: true
         allow_downgrade: true
         install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
         name:
@@ -138,7 +136,6 @@
       when: lsb_release_dist_id.stdout in ["Ubuntu"]
     - name: Ensures Wine package is present (non-Debian)
       ansible.builtin.apt:
-        allow_unauthenticated: true
         allow_downgrade: true
         install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
         name:
@@ -156,7 +153,6 @@
       when: lsb_release_dist_id.stdout not in ["Debian", "Ubuntu"]
     - name: Ensures p7zip package is present
       ansible.builtin.apt:
-        allow_unauthenticated: true
         install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
         name: p7zip-full
         state: present
@@ -172,7 +168,7 @@
     WINEDLLOVERRIDES: "mscoree,mshtml="
   changed_when: false
 
-- name: Apt cleanup ({{ ansible_facts["os_family"] }})
+- name: Apt cleanup ({{ ansible_os_family }})
   become: true
   become_method: ansible.builtin.su
   when: wine_install_winetricks | bool

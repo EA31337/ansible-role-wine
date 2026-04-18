@@ -2,17 +2,6 @@
 - name: Gather facts
   ansible.builtin.setup:
 
-- name: Check for NixOS (via nix-env command)
-  ansible.builtin.command: which nix-env
-  register: nixos_check
-  changed_when: false
-  failed_when: false
-
-- name: Set detected OS family for task inclusion
-  ansible.builtin.set_fact:
-    detected_os_family: "{{ 'NixOS' if (nixos_check.rc == 0) else ansible_facts['os_family'] }}"
-    cacheable: true
-
-- name: Includes operating system specific tasks ({{ detected_os_family }})
+- name: Includes operating system specific tasks ({{ detected_os_family | default(ansible_os_family) }})
   ansible.builtin.include_tasks:
-    file: '{{ role_path }}/tasks/wine/wine-{{ detected_os_family }}.yml'
+    file: '{{ role_path }}/tasks/wine/wine-{{ detected_os_family | default(ansible_os_family) }}.yml'

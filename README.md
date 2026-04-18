@@ -104,7 +104,7 @@ Steps to test role on Docker containers.
     ansible-galaxy install -r requirements-local.yml
     ```
 
-    Alternatively, for development purposes, you can consider using symbolic link, e.g.
+    Alternatively, for development purposes, you can use a symbolic link, e.g.
 
     ```shell
     ln -vs "$PWD" ~/.ansible/roles/ea31337.wine

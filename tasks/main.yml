@@ -11,7 +11,15 @@
   register: nixos_early_check
   changed_when: false
   failed_when: false
-  tags: wine
+  tags:
+    - always
+
+- name: Set detected OS family for task inclusion
+  ansible.builtin.set_fact:
+    detected_os_family: "{{ 'NixOS' if (nixos_early_check.rc == 0 or ansible_os_family == 'NixOS') else ansible_os_family }}"
+    cacheable: true
+  tags:
+    - always
 
 - name: Check current Wine version on NixOS
   ansible.builtin.shell: |
@@ -86,12 +94,12 @@
 
 - name: Checking wine version
   become: >-
-    {{ (detected_os_family | default(ansible_facts['os_family']) == 'NixOS')
-    and (ansible_facts['user_id'] != 'root') }}
+    {{ (detected_os_family | default(ansible_os_family) == 'NixOS')
+    and (ansible_user_id != 'root') }}
   become_method: ansible.builtin.su
   changed_when: false
   ansible.builtin.shell: |
-    {% if detected_os_family | default(ansible_facts['os_family']) == 'NixOS' %}
+    {% if detected_os_family | default(ansible_os_family) == 'NixOS' %}
     set -o pipefail
     nix-env -q 2>/dev/null | grep -E '^wine-(wow64|wow|10|9|11)' | head -1 || true
     {% else %}
