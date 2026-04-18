@@ -6,6 +6,10 @@
   vars:
     controller_python: "{{ ansible_playbook_python }}"
     nixos_built_image: wine-nixos:latest
+    target_container: "{{ lookup('env', 'TARGET_CONTAINER') | default('', true) }}"
+    is_nixos_target: "{{ target_container in ['', 'wine-on-nixos-latest'] }}"
+    nixos_in_inventory: "{{ 'wine-on-nixos-latest' in groups.get('docker_containers', []) }}"
+    should_build_nixos: "{{ is_nixos_target and nixos_in_inventory }}"
     nixos_dockerfile_output: >-
       {{ playbook_dir }}/../../molecule/resources/playbooks/Dockerfile.wine-on-nixos
     nixos_dockerfile_template: >-
@@ -21,9 +25,7 @@
           name: wine-on-nixos-latest
           image: nixos/nix:latest
         ansible_python_interpreter: "{{ controller_python }}"
-      when:
-        - "'wine-on-nixos-latest' in groups.get('docker_containers', [])"
-        - "lookup('env', 'TARGET_CONTAINER') in ['', 'wine-on-nixos-latest']"
+      when: should_build_nixos
 
     - name: Build NixOS image with Python preinstalled
       community.docker.docker_image:
@@ -33,9 +35,7 @@
           dockerfile: "{{ nixos_dockerfile_output | basename }}"
         source: build
         force_source: true
-      when:
-        - "'wine-on-nixos-latest' in groups.get('docker_containers', [])"
-        - "lookup('env', 'TARGET_CONTAINER') in ['', 'wine-on-nixos-latest']"
+      when: should_build_nixos
       vars:
         ansible_python_interpreter: "{{ controller_python }}"
 
