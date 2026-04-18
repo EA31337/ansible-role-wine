@@ -167,7 +167,7 @@
     creates: "{{ ansible_env.HOME }}/.wine/system.reg"
   timeout: 120
 
-- name: Apt cleanup ({{ ansible_os_family }})
+- name: Apt cleanup ({{ detected_os_family | default(ansible_os_family) }})
   become: true
   become_method: >-
     {{ wine_become_method.get(detected_os_family | default(ansible_os_family),

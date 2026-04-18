@@ -11,14 +11,20 @@
       ansible.builtin.include_tasks:
         apply:
           tags: winetricks
-        file: 'winetricks-{{ detected_os_family | default(ansible_os_family) }}.yml'
+        file: >-
+          winetricks-{{
+          'Debian' if (detected_os_family | default(ansible_os_family)) == 'Ubuntu'
+          else (detected_os_family | default(ansible_os_family)) }}.yml
       tags: winetricks
 
     - name: Install dependencies required by winetricks ({{ detected_os_family | default(ansible_os_family) }})
       ansible.builtin.include_tasks:
         apply:
           tags: winetricks-deps
-        file: 'install-deps-{{ detected_os_family | default(ansible_os_family) }}.yml'
+        file: >-
+          install-deps-{{
+          'Debian' if (detected_os_family | default(ansible_os_family)) == 'Ubuntu'
+          else (detected_os_family | default(ansible_os_family)) }}.yml
       tags: winetricks-deps
       when:
         - wine_install_winetricks_dependencies | length > 0

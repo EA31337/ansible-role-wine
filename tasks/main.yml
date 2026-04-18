@@ -116,7 +116,7 @@
     {% endif %}
   register: wine_version_res
   when:
-    - cmd_which_wine_res.rc == 0 or (wine_version_mismatch | default(false) | bool)
+    - (cmd_which_wine_res.rc | default(1)) == 0 or (wine_version_mismatch | default(false) | bool)
       or (nixos_early_check.rc | default(1) == 0)
   tags: wine
 
