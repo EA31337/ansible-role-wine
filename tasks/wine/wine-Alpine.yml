@@ -32,7 +32,7 @@
         success_msg: "Wine version {{ wine_alpine_major }} is acceptable"
       when: wine_version is defined and wine_version | length > 0
 
-    - name: Ensures Wine is present ({{ ansible_facts["os_family"] }})
+    - name: Ensures Wine is present ({{ ansible_os_family }})
       ansible.builtin.package:
         name: wine
         state: present
