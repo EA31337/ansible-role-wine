@@ -220,7 +220,6 @@
     WINEARCH: win64
     FONTCONFIG_FILE: "{{ ansible_env.HOME }}/.config/fontconfig/fonts.conf"
     FONTCONFIG_PATH: "{{ ansible_env.HOME }}/.config/fontconfig"
-    WINEARCH: win64
     WINEDEBUG: "{{ wine_debug | default('-all') }}"
     WINEDLLOVERRIDES: "{{ wine_dlloverrides | default('mscoree,mshtml=') }}"
   args:

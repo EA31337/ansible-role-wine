@@ -21,7 +21,9 @@
           name: wine-on-nixos-latest
           image: nixos/nix:latest
         ansible_python_interpreter: "{{ controller_python }}"
-      when: "'wine-on-nixos-latest' in groups.get('docker_containers', [])"
+      when:
+        - "'wine-on-nixos-latest' in groups.get('docker_containers', [])"
+        - "lookup('env', 'TARGET_CONTAINER') in ['', 'wine-on-nixos-latest']"
 
     - name: Build NixOS image with Python preinstalled
       community.docker.docker_image:
@@ -31,7 +33,9 @@
           dockerfile: "{{ nixos_dockerfile_output | basename }}"
         source: build
         force_source: true
-      when: "'wine-on-nixos-latest' in groups.get('docker_containers', [])"
+      when:
+        - "'wine-on-nixos-latest' in groups.get('docker_containers', [])"
+        - "lookup('env', 'TARGET_CONTAINER') in ['', 'wine-on-nixos-latest']"
       vars:
         ansible_python_interpreter: "{{ controller_python }}"
 
