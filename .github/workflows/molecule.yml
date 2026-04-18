@@ -49,7 +49,6 @@ jobs:
           ANSIBLE_FORCE_COLOR: '1'
           ANSIBLE_STDOUT_CALLBACK: ${{ runner.debug == '1' && 'debug' || 'ansible.builtin.default' }}
           ANSIBLE_CALLBACK_RESULT_FORMAT: yaml
-          DOCKER_API_VERSION: '1.44'
           MOLECULE_REPORT: molecule-${{ matrix.scenario }}-report.html
         with:
           molecule_args: >-
@@ -61,17 +60,17 @@ jobs:
       - if: always()
         name: Ensure report file permissions are correct
         run: |
-          if [ -f "molecule-${{ matrix.scenario }}-report.html" ]; then
+          if [ -f molecule-${{ matrix.scenario }}-report.html ]; then
             sudo chmod 644 molecule-${{ matrix.scenario }}-report.html
           else
-            echo "Report file not found, skipping permission change"
+            echo "No report produced by Molecule for scenario ${{ matrix.scenario }}"
           fi
         working-directory: ${{ github.repository }}
       - if: always()
         name: Converts test report
         run: |
-          if [ ! -f "molecule-${{ matrix.scenario }}-report.html" ]; then
-            echo "Report file not found, skipping conversion"
+          if [ ! -s "molecule-${{ matrix.scenario }}-report.html" ]; then
+            echo "Report file not found or empty, skipping conversion"
             exit 0
           fi
           if ! command -v pandoc >/dev/null 2>&1; then
@@ -117,4 +116,4 @@ jobs:
         working-directory: ${{ github.repository }}
       - if: ${{ failure() && runner.debug == '1' }}
         uses: mxschmitt/action-tmate@v3
-    timeout-minutes: 30
+    timeout-minutes: 40

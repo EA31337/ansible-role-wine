@@ -39,8 +39,9 @@
         name: "{{ item.name }}"
         image: "{{ item.image }}"
         command: sleep infinity
+        init: "{{ item.init | default(omit) }}"
         # NixOS containers require privileged mode due to non-standard filesystem layout.
-        privileged: "{{ 'nixos' in item.name }}"
+        privileged: "{{ item.privileged | default('nixos' in item.name) }}"
         # Relaxed seccomp/apparmor for NixOS compatibility.
         security_opts: >-
           {{ ['seccomp=unconfined', 'apparmor=unconfined']
