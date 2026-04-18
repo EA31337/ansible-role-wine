@@ -168,6 +168,8 @@
   ansible.builtin.command: wineboot --init
   environment:
     WINEARCH: win64
+    WINEDEBUG: -all
+    WINEDLLOVERRIDES: "mscoree,mshtml="
   changed_when: false
 
 - name: Apt cleanup ({{ ansible_facts["os_family"] }})

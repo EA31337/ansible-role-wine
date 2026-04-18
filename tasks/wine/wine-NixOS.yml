@@ -220,5 +220,7 @@
     WINEARCH: win64
     FONTCONFIG_FILE: "{{ ansible_facts.env.HOME }}/.config/fontconfig/fonts.conf"
     FONTCONFIG_PATH: "{{ ansible_facts.env.HOME }}/.config/fontconfig"
+    WINEDEBUG: -all
+    WINEDLLOVERRIDES: "mscoree,mshtml="
   changed_when: false
   when: nix_store_stat.stat.exists
