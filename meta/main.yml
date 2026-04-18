@@ -39,5 +39,7 @@ galaxy_info:
   #     - all
   role_name: wine
 collections:
-  - community.docker
-  - community.general
+  - name: community.docker
+    version: ">=3.0.0"
+  - name: community.general
+    version: ">=6.0.0"

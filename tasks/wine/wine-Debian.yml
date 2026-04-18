@@ -1,7 +1,9 @@
 ---
 - name: Ensures Wine repository is configured
   become: true
-  become_method: ansible.builtin.su
+  become_method: >-
+    {{ wine_become_method.get(detected_os_family | default(ansible_os_family),
+    wine_become_method["_default"]) }}
   environment:
     DEBIAN_FRONTEND: noninteractive
   block:
@@ -71,7 +73,9 @@
 
 - name: Ensures Wine is present
   become: true
-  become_method: ansible.builtin.su
+  become_method: >-
+    {{ wine_become_method.get(detected_os_family | default(ansible_os_family),
+    wine_become_method["_default"]) }}
   environment:
     DEBIAN_FRONTEND: noninteractive
   block:
@@ -161,7 +165,9 @@
 
 - name: Apt cleanup ({{ ansible_os_family }})
   become: true
-  become_method: ansible.builtin.su
+  become_method: >-
+    {{ wine_become_method.get(detected_os_family | default(ansible_os_family),
+    wine_become_method["_default"]) }}
   environment:
     DEBIAN_FRONTEND: noninteractive
   when: wine_install_winetricks | bool

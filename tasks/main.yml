@@ -18,7 +18,7 @@
   ansible.builtin.set_fact:
     detected_os_family: >-
       {{ 'NixOS' if (nixos_early_check.rc == 0 or ansible_os_family == 'NixOS')
-      else ansible_os_family }}
+      else (ansible_distribution if ansible_distribution == 'Ubuntu' else ansible_os_family) }}
     cacheable: true
   tags:
     - always
@@ -98,12 +98,14 @@
   become: >-
     {{ (detected_os_family | default(ansible_os_family) == 'NixOS')
     and (ansible_user_id != 'root') }}
-  become_method: ansible.builtin.su
+  become_method: >-
+    {{ wine_become_method.get(detected_os_family | default(ansible_os_family),
+    wine_become_method["_default"]) }}
   changed_when: false
   ansible.builtin.shell: |
     {% if detected_os_family | default(ansible_os_family) == 'NixOS' %}
     set -o pipefail
-    nix-env -q 2>/dev/null | grep -E '^wine-(wow64|wow|10|9|11)' | head -1 || true
+    nix-env -q 2>/dev/null | grep -Em1 '^wine-(wow64|wow|10|9|11)'
     {% else %}
     wine --version
     {% endif %}

@@ -6,7 +6,9 @@
 
 - name: Ensure Wine is installed (Nix)
   become: "{{ ansible_user_id != 'root' }}"
-  become_method: ansible.builtin.su
+  become_method: >-
+    {{ wine_become_method.get(detected_os_family | default(ansible_os_family),
+    wine_become_method["_default"]) }}
   block:
 
     - name: Check current Wine version
@@ -107,7 +109,7 @@
         # ("path '/nix/store' is not in the Nix store") inside Docker containers.
         nix-env \
           -f https://github.com/NixOS/nixpkgs/archive/nixos-24.05.tar.gz -iA \
-          wineWow64Packages.stable \
+          {{ wine_pkg }} \
           fontconfig \
           freetype \
           xorg.libX11 \
@@ -128,7 +130,7 @@
         # ("path '/nix/store' is not in the Nix store") inside Docker containers.
         nix-env \
           -f https://github.com/NixOS/nixpkgs/archive/nixos-25.05.tar.gz -iA \
-          wineWow64Packages.stable \
+          {{ wine_pkg }} \
           fontconfig \
           freetype \
           xorg.libX11 \
@@ -149,7 +151,9 @@
 
 - name: Configure fontconfig for NixOS
   become: "{{ ansible_user_id != 'root' }}"
-  become_method: ansible.builtin.su
+  become_method: >-
+    {{ wine_become_method.get(detected_os_family | default(ansible_os_family),
+    wine_become_method["_default"]) }}
   ansible.builtin.shell: |
     set -e
     # Get fontconfig path from nix profile
