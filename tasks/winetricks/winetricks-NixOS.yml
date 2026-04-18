@@ -21,14 +21,14 @@
 
     - name: Check if nix profile directory exists
       ansible.builtin.stat:
-        path: "{{ ansible_facts['env']['HOME'] }}/.nix-profile"
+        path: "{{ ansible_env.HOME }}/.nix-profile"
       register: nix_profile_dir
 
     - name: Ensures Winetricks is present via URL
       ansible.builtin.get_url:
         dest: >-
           {{ nix_profile_dir.stat.exists
-          | ternary(ansible_facts['env']['HOME'] + '/.nix-profile/bin', '/usr/local/bin') ~ '/winetricks' }}
+          | ternary(ansible_env.HOME + '/.nix-profile/bin', '/usr/local/bin') ~ '/winetricks' }}
         force: false
         mode: "0755"
         url: '{{ wine_winetricks_url }}'
