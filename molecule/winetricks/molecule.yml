@@ -57,6 +57,8 @@ provisioner:
     diff: true
     force-handlers: true
   playbooks:
+    create: ../default/create.yml
+    destroy: ../default/destroy.yml
     converge: ../default/converge.yml
     prepare: ../default/prepare.yml
     verify: ../default/verify.yml
