@@ -218,10 +218,11 @@
   ansible.builtin.command: wineboot --init
   environment:
     WINEARCH: win64
-    FONTCONFIG_FILE: "{{ ansible_facts.env.HOME }}/.config/fontconfig/fonts.conf"
-    FONTCONFIG_PATH: "{{ ansible_facts.env.HOME }}/.config/fontconfig"
+    FONTCONFIG_FILE: "{{ ansible_env.HOME }}/.config/fontconfig/fonts.conf"
+    FONTCONFIG_PATH: "{{ ansible_env.HOME }}/.config/fontconfig"
+    WINEARCH: win64
     WINEDEBUG: "{{ wine_debug | default('-all') }}"
     WINEDLLOVERRIDES: "{{ wine_dlloverrides | default('mscoree,mshtml=') }}"
   args:
-    creates: "{{ ansible_facts.env.HOME }}/.wine/system.reg"
+    creates: "{{ ansible_env.HOME }}/.wine/system.reg"
   when: nix_store_stat.stat.exists
