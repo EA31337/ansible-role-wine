@@ -21,7 +21,7 @@
           name: wine-on-nixos-latest
           image: nixos/nix:latest
         ansible_python_interpreter: "{{ controller_python }}"
-      when: "'wine-on-nixos-latest' in groups['docker_containers']"
+      when: "'wine-on-nixos-latest' in groups.get('docker_containers', [])"
 
     - name: Build NixOS image with Python preinstalled
       community.docker.docker_image:
@@ -31,25 +31,26 @@
           dockerfile: "{{ nixos_dockerfile_output | basename }}"
         source: build
         force_source: true
-      when: "'wine-on-nixos-latest' in groups['docker_containers']"
+      when: "'wine-on-nixos-latest' in groups.get('docker_containers', [])"
       vars:
         ansible_python_interpreter: "{{ controller_python }}"
 
 - name: Configure Docker container
   hosts: docker_containers
-  # Note: Since facts are not gathered, we're checking for ansible_user_id, connection_user or UID instead.
-  become: >-
-    {{
-      (connection_user | default('root')) != 'root'
-      or (ansible_user_id | default('root')) != 'root'
-      or (ansible_user_uid | default(0) | int) != 0
-      or (((ansible_env | default({}))['UID'] | default(0) | int) != 0)
-      or (
-        ((ansible_env | default({}))['USER']
-        | default(((ansible_env | default({}))['LOGNAME'] | default('root'))) )
-        != 'root'
-      )
-    }}
+  vars:
+    wine_should_become: >-
+      {{
+        (connection_user | default('root')) != 'root'
+        or (ansible_user_id | default('root')) != 'root'
+        or (ansible_user_uid | default(0) | int) != 0
+        or (((ansible_env | default({}))['UID'] | default(0) | int) != 0)
+        or (
+          ((ansible_env | default({}))['USER']
+          | default(((ansible_env | default({}))['LOGNAME'] | default('root'))) )
+          != 'root'
+        )
+      }}
+  become: "{{ wine_should_become }}"
   # Use su as become_method as sudo is not available in all containers.
   become_method: ansible.builtin.su
   gather_facts: false

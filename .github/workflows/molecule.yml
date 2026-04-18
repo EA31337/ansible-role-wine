@@ -60,14 +60,17 @@ jobs:
       - if: always()
         name: Ensure report file permissions are correct
         run: |
-          sudo touch molecule-${{ matrix.scenario }}-report.html
-          sudo chmod 644 molecule-${{ matrix.scenario }}-report.html
+          if [ -f molecule-${{ matrix.scenario }}-report.html ]; then
+            sudo chmod 644 molecule-${{ matrix.scenario }}-report.html
+          else
+            echo "No report produced by Molecule for scenario ${{ matrix.scenario }}"
+          fi
         working-directory: ${{ github.repository }}
       - if: always()
         name: Converts test report
         run: |
-          if [ ! -f "molecule-${{ matrix.scenario }}-report.html" ]; then
-            echo "Report file not found, skipping conversion"
+          if [ ! -s "molecule-${{ matrix.scenario }}-report.html" ]; then
+            echo "Report file not found or empty, skipping conversion"
             exit 0
           fi
           if ! command -v pandoc >/dev/null 2>&1; then

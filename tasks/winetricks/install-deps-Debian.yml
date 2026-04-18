@@ -14,6 +14,8 @@
 - name: Apt cleanup
   become: "{{ ansible_user_id != 'root' }}"
   become_method: '{{ wine_become_method.get(ansible_os_family, wine_become_method["_default"]) }}'
+  environment:
+    DEBIAN_FRONTEND: noninteractive
   when: wine_install_winetricks | bool
   block:
 
@@ -21,12 +23,8 @@
       ansible.builtin.apt:
         autoremove: true
         purge: true
-      environment:
-        DEBIAN_FRONTEND: noninteractive
 
     - name: Cleans Apt cache
       ansible.builtin.apt:
         autoclean: true
         clean: true
-      environment:
-        DEBIAN_FRONTEND: noninteractive

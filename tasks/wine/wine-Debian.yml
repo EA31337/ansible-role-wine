@@ -2,6 +2,8 @@
 - name: Ensures Wine repository is configured
   become: true
   become_method: ansible.builtin.su
+  environment:
+    DEBIAN_FRONTEND: noninteractive
   block:
     - name: Ensures lsb_release command is present
       ansible.builtin.package:
@@ -29,14 +31,10 @@
     - name: Ensures Apt cache is up-to-date
       ansible.builtin.apt:
         update_cache: true
-      environment:
-        DEBIAN_FRONTEND: noninteractive
     - name: Ensures CA certificates are installed
       ansible.builtin.apt:
         name: ca-certificates
         state: present
-      environment:
-        DEBIAN_FRONTEND: noninteractive
     - name: Ensures GPG key directory exists
       ansible.builtin.file:
         path: /etc/apt/keyrings
@@ -70,12 +68,12 @@
       ansible.builtin.apt:
         update_cache: true
         cache_valid_time: 0
-      environment:
-        DEBIAN_FRONTEND: noninteractive
 
 - name: Ensures Wine is present
   become: true
   become_method: ansible.builtin.su
+  environment:
+    DEBIAN_FRONTEND: noninteractive
   block:
     - name: Set wine package name for Ubuntu
       ansible.builtin.set_fact:
@@ -107,8 +105,6 @@
         name: '{{ item }}'
         state: present
         update_cache: true
-      environment:
-        DEBIAN_FRONTEND: noninteractive
       with_items:
         - fontconfig
         - fonts-freefont-ttf
@@ -131,8 +127,6 @@
           - "wine-stable-i386:i386{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
         state: present
         update_cache: true
-      environment:
-        DEBIAN_FRONTEND: noninteractive
       when: lsb_release_dist_id.stdout in ["Ubuntu"]
     - name: Ensures Wine package is present (non-Debian)
       ansible.builtin.apt:
@@ -148,8 +142,6 @@
           - "wine-stable-i386:i386{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
         state: present
         update_cache: true
-      environment:
-        DEBIAN_FRONTEND: noninteractive
       when: lsb_release_dist_id.stdout not in ["Debian", "Ubuntu"]
     - name: Ensures p7zip package is present
       ansible.builtin.apt:
@@ -157,20 +149,22 @@
         name: p7zip-full
         state: present
         update_cache: true
-      environment:
-        DEBIAN_FRONTEND: noninteractive
 
 - name: Ensures ~/.wine is initialized
   ansible.builtin.command: wineboot --init
   environment:
     WINEARCH: win64
-    WINEDEBUG: -all
-    WINEDLLOVERRIDES: "mscoree,mshtml="
+    WINEDEBUG: "{{ wine_debug | default('-all') }}"
+    WINEDLLOVERRIDES: "{{ wine_dlloverrides | default('mscoree,mshtml=') }}"
+  args:
+    creates: "{{ ansible_facts.env.HOME }}/.wine/system.reg"
   changed_when: false
 
 - name: Apt cleanup ({{ ansible_os_family }})
   become: true
   become_method: ansible.builtin.su
+  environment:
+    DEBIAN_FRONTEND: noninteractive
   when: wine_install_winetricks | bool
   block:
 
@@ -178,12 +172,8 @@
       ansible.builtin.apt:
         autoremove: true
         purge: true
-      environment:
-        DEBIAN_FRONTEND: noninteractive
 
     - name: Cleans Apt cache
       ansible.builtin.apt:
         autoclean: true
         clean: true
-      environment:
-        DEBIAN_FRONTEND: noninteractive

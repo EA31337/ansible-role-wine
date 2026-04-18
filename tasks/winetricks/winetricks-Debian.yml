@@ -12,6 +12,8 @@
   become_method: >
     {{ wine_become_method.get(ansible_os_family,
     wine_become_method["_default"]) }}
+  environment:
+    DEBIAN_FRONTEND: noninteractive
   when: wine_install_winetricks | bool
   block:
 
@@ -21,8 +23,6 @@
         name: winetricks
         state: present
         update_cache: true
-      environment:
-        DEBIAN_FRONTEND: noninteractive
       when: lsb_release_dist_id.stdout in ["Ubuntu"]
 
     - name: Ensures Winetricks is present via URL
