@@ -157,7 +157,7 @@
     WINEDEBUG: "{{ wine_debug | default('-all') }}"
     WINEDLLOVERRIDES: "{{ wine_dlloverrides | default('mscoree,mshtml=') }}"
   args:
-    creates: "{{ ansible_facts.env.HOME }}/.wine/system.reg"
+    creates: "{{ ansible_env.HOME }}/.wine/system.reg"
 
 - name: Apt cleanup ({{ ansible_os_family }})
   become: true
