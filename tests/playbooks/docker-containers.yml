@@ -37,23 +37,21 @@
 
 - name: Configure Docker container
   hosts: docker_containers
-  vars:
-    wine_should_become: >-
-      {{
-        (connection_user | default('root')) != 'root'
-        or (ansible_user_id | default('root')) != 'root'
-        or (ansible_user_uid | default(0) | int) != 0
-        or (((ansible_env | default({}))['UID'] | default(0) | int) != 0)
-        or (
-          ((ansible_env | default({}))['USER']
-          | default(((ansible_env | default({}))['LOGNAME'] | default('root'))) )
-          != 'root'
-        )
-      }}
-  become: "{{ wine_should_become }}"
-  # Use su as become_method as sudo is not available in all containers.
-  become_method: ansible.builtin.su
   gather_facts: false
+  become_method: ansible.builtin.su
+  vars:
+    controller_python: "{{ ansible_playbook_python }}"
+    nixos_built_image: wine-nixos:latest
+    container_image_map:
+      wine-on-alpine-latest: alpine:3.20
+      wine-on-debian-latest: debian:latest
+      wine-on-nixos-latest: "{{ nixos_built_image }}"
+      wine-on-ubuntu-jammy: ubuntu:jammy
+      wine-on-ubuntu-latest: ubuntu:latest
+      wine-on-ubuntu-noble: ubuntu:noble
+    container_image: "{{ container_image_map[inventory_hostname] | default('ubuntu:latest') }}"
+  environment:
+    DEBIAN_FRONTEND: noninteractive
 
   pre_tasks:
     - name: Ensure container is started
@@ -126,6 +124,20 @@
     - name: Gather facts
       ansible.builtin.setup:
 
+    - name: Determine if we should become root
+      ansible.builtin.set_fact:
+        wine_should_become: >-
+          {{
+            (ansible_user_id | default('root')) != 'root'
+            or (ansible_user_uid | default(0) | int) != 0
+            or (((ansible_env | default({}))['UID'] | default(0) | int) != 0)
+            or (
+              ((ansible_env | default({}))['USER']
+              | default(((ansible_env | default({}))['LOGNAME'] | default('root'))) )
+              != 'root'
+            )
+          }}
+
     - name: Install Python packages for Ubuntu/Debian
       ansible.builtin.apt:
         name:
@@ -134,26 +146,16 @@
           - python3-setuptools
         state: present
         update_cache: true
-      environment:
-        DEBIAN_FRONTEND: noninteractive
+      become: "{{ wine_should_become }}"
       when: container_image is search("ubuntu") or container_image is search("debian")
 
   tags: always
-  vars:
-    controller_python: "{{ ansible_playbook_python }}"
-    nixos_built_image: wine-nixos:latest
-    container_image_map:
-      wine-on-alpine-latest: alpine:3.20
-      wine-on-debian-latest: debian:latest
-      wine-on-nixos-latest: "{{ nixos_built_image }}"
-      wine-on-ubuntu-jammy: ubuntu:jammy
-      wine-on-ubuntu-latest: ubuntu:latest
-      wine-on-ubuntu-noble: ubuntu:noble
-    container_image: "{{ container_image_map[inventory_hostname] | default('ubuntu:latest') }}"
 
 - name: Install ea31337.wine role on all containers
   hosts: docker_containers
   gather_facts: true
+  become: "{{ wine_should_become | default(false) }}"
+  become_method: ansible.builtin.su
   tags: always
   vars:
     controller_python: "{{ ansible_playbook_python }}"
