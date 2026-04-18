@@ -18,10 +18,21 @@ on:
 
 jobs:
   test:
-    name: Test
+    name: Test (${{ matrix.container }})
     runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        container:
+          - wine-on-ubuntu-latest
+          - wine-on-ubuntu-noble
+          - wine-on-ubuntu-jammy
+          - wine-on-debian-latest
+          - wine-on-alpine-latest
+          - wine-on-nixos-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+      TARGET_CONTAINER: ${{ matrix.container }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -52,6 +63,7 @@ jobs:
         run: >-
             ansible-playbook --syntax-check
             -i tests/inventory/docker-containers.yml tests/playbooks/docker-containers.yml
+            --limit "${TARGET_CONTAINER}"
             --verbose
         working-directory: ${{ github.repository }}
 
@@ -61,12 +73,12 @@ jobs:
 
       - name: Run Ansible playbook
         run: |
-          ansible-playbook -i tests/inventory/docker-containers.yml tests/playbooks/docker-containers.yml
+          ansible-playbook -i tests/inventory/docker-containers.yml --limit "${TARGET_CONTAINER}" tests/playbooks/docker-containers.yml
         working-directory: ${{ github.repository }}
 
       - name: Run Ansible playbook with wine-verify tag
         run: |
-          ansible-playbook -i tests/inventory/docker-containers.yml tests/playbooks/tags/wine-verify.yml
+          ansible-playbook -i tests/inventory/docker-containers.yml --limit "${TARGET_CONTAINER}" tests/playbooks/tags/wine-verify.yml
         working-directory: ${{ github.repository }}
 
       # Debug with tmate on failure when debug logging is enabled.
