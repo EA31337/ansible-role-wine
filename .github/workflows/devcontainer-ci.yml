@@ -1,0 +1,27 @@
+---
+# Note: Keep keys and envs in alphabetical order.
+name: Devcontainer CI
+
+# yamllint disable-line rule:truthy
+on:
+  pull_request:
+    paths:
+      - .devcontainer/**
+      - .github/workflows/devcontainer-ci.yml
+  push:
+    branches:
+      - master
+    paths:
+      - .devcontainer/**
+      - .github/workflows/devcontainer-ci.yml
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  devcontainer:
+    uses: Cogni-AI-OU/.github/.github/workflows/devcontainer-ci.yml@main
+    secrets: inherit
