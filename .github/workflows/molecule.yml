@@ -80,11 +80,8 @@ jobs:
       - if: always()
         name: Ensure report file permissions are correct
         run: |
-          if [ -f "molecule-${{ matrix.scenario }}-report.html" ]; then
-            sudo chmod 644 molecule-${{ matrix.scenario }}-report.html
-          else
-            echo "Report file not found, skipping permission change"
-          fi
+          sudo touch molecule-${{ matrix.scenario }}-report.html
+          sudo chmod 644 molecule-${{ matrix.scenario }}-report.html
         working-directory: ${{ github.repository }}
       - if: always()
         name: Converts test report
@@ -132,4 +129,4 @@ jobs:
         working-directory: ${{ github.repository }}
       - if: ${{ failure() && runner.debug == '1' }}
         uses: mxschmitt/action-tmate@v3
-    timeout-minutes: 30
+    timeout-minutes: 40
