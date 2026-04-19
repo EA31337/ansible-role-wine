@@ -23,6 +23,7 @@ repos:
     rev: v2.4.1
     hooks:
       - id: codespell
+        args: ["--ignore-words-list=winetricks,winehq,cabextract,winbind,unzip,p7zip,Xvfb,xauth,fontconfig,freetype,libX11,libxcb"]
 
   - repo: https://github.com/gitleaks/gitleaks
     rev: v8.24.2

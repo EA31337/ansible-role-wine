@@ -12,7 +12,7 @@
       register: nix_store_stat
 
     - name: Get HOME of the privileged user
-      ansible.builtin.command: echo $HOME
+      ansible.builtin.command: printenv HOME
       register: privileged_home
       changed_when: false
       check_mode: false

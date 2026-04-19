@@ -84,34 +84,34 @@ jobs:
           permissions: |-
             bash:
               '*': deny
-              ansible: allow
-              ansible-galaxy: allow
-              ansible-lint: allow
-              ansible-playbook: allow
-              awk: allow
-              cat: allow
-              continue: allow
-              cp: allow
-              docker: allow
-              ex: allow
-              gh: allow
-              gh pr review: allow
-              git: allow
-              grep: allow
-              head: allow
-              hexdump: allow
-              jq: allow
-              links: allow
-              mawk: allow
-              molecule: allow
-              pipx: allow
-              pre-commit: allow
-              printf: allow
-              sed: allow
-              set: allow
-              time: allow
-              timeout: allow
-              touch: allow
-              true: allow
-              vim: allow
+              ansible*: allow
+              ansible-galaxy*: allow
+              ansible-lint*: allow
+              ansible-playbook*: allow
+              awk*: allow
+              cat*: allow
+              continue*: allow
+              cp*: allow
+              docker*: allow
+              ex*: allow
+              gh*: allow
+              gh pr review*: allow
+              git*: allow
+              grep*: allow
+              head*: allow
+              hexdump*: allow
+              jq*: allow
+              links*: allow
+              mawk*: allow
+              molecule*: allow
+              pipx*: allow
+              pre-commit*: allow
+              printf*: allow
+              sed*: allow
+              set*: allow
+              time*: allow
+              timeout*: allow
+              touch*: allow
+              true*: allow
+              vim*: allow
           prompt: ${{ github.event.comment.body || inputs.prompt }}

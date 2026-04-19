@@ -41,7 +41,7 @@
           - fontconfig
           - p7zip
           - ttf-freefont
-          - wine
+          - "{{ 'wine=' ~ wine_alpine_major ~ '.0' if (wine_alpine_major is defined and wine_alpine_major | length > 0) else 'wine' }}"
           - xauth
           - xvfb-run
         state: present
@@ -52,14 +52,14 @@
     state: directory
     mode: '0755'
   loop:
-    - "{{ ansible_env.HOME }}/.cache/fontconfig"
-    - "{{ ansible_env.HOME }}/.config/fontconfig"
-    - "{{ ansible_env.HOME }}/.fonts"
-    - "{{ ansible_env.HOME }}/.local/share/fonts"
+    - "{{ ansible_facts.env.HOME }}/.cache/fontconfig"
+    - "{{ ansible_facts.env.HOME }}/.config/fontconfig"
+    - "{{ ansible_facts.env.HOME }}/.fonts"
+    - "{{ ansible_facts.env.HOME }}/.local/share/fonts"
 
 - name: Write fontconfig config for Alpine
   ansible.builtin.copy:
-    dest: "{{ ansible_env.HOME }}/.config/fontconfig/fonts.conf"
+    dest: "{{ ansible_facts.env.HOME }}/.config/fontconfig/fonts.conf"
     mode: '0644'
     force: true
     content: |
@@ -67,36 +67,36 @@
       {{ '<!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">' }}
       <fontconfig>
         <dir>/usr/share/fonts</dir>
-        <dir prefix="default">{{ ansible_env.HOME }}/.fonts</dir>
-        <dir prefix="default">{{ ansible_env.HOME }}/.local/share/fonts</dir>
-        <cachedir prefix="default">{{ ansible_env.HOME }}/.cache/fontconfig</cachedir>
+        <dir prefix="default">{{ ansible_facts.env.HOME }}/.fonts</dir>
+        <dir prefix="default">{{ ansible_facts.env.HOME }}/.local/share/fonts</dir>
+        <cachedir prefix="default">{{ ansible_facts.env.HOME }}/.cache/fontconfig</cachedir>
         <include ignore_missing="yes">/etc/fonts/fonts.conf</include>
         <config><rescan><int>30</int></rescan></config>
       </fontconfig>
 
 - name: Set fontconfig environment in ~/.bashrc (Alpine)
   ansible.builtin.blockinfile:
-    path: "{{ ansible_env.HOME }}/.bashrc"
+    path: "{{ ansible_facts.env.HOME }}/.bashrc"
     marker: "# {mark} ANSIBLE MANAGED BLOCK - Wine fontconfig"
     block: |
-      export FONTCONFIG_FILE={{ ansible_env.HOME }}/.config/fontconfig/fonts.conf
-      export FONTCONFIG_PATH={{ ansible_env.HOME }}/.config/fontconfig:/etc/fonts
+      export FONTCONFIG_FILE={{ ansible_facts.env.HOME }}/.config/fontconfig/fonts.conf
+      export FONTCONFIG_PATH={{ ansible_facts.env.HOME }}/.config/fontconfig:/etc/fonts
     create: true
     mode: '0644'
 
 - name: Write wine_env for Alpine
   ansible.builtin.copy:
-    dest: "{{ ansible_env.HOME }}/.wine_env"
+    dest: "{{ ansible_facts.env.HOME }}/.wine_env"
     mode: '0644'
     content: |
-      export FONTCONFIG_FILE={{ ansible_env.HOME }}/.config/fontconfig/fonts.conf
-      export FONTCONFIG_PATH={{ ansible_env.HOME }}/.config/fontconfig:/etc/fonts
+      export FONTCONFIG_FILE={{ ansible_facts.env.HOME }}/.config/fontconfig/fonts.conf
+      export FONTCONFIG_PATH={{ ansible_facts.env.HOME }}/.config/fontconfig:/etc/fonts
 
 - name: Rebuild fontconfig cache for Alpine
   ansible.builtin.command: >-
     fc-cache -f
-    {{ ansible_env.HOME }}/.fonts
-    {{ ansible_env.HOME }}/.local/share/fonts
+    {{ ansible_facts.env.HOME }}/.fonts
+    {{ ansible_facts.env.HOME }}/.local/share/fonts
   changed_when: false
 
 - name: Ensures ~/.wine is initialized
@@ -105,11 +105,11 @@
     # WoW64 wine (amd64) only supports win64; 32-bit wine (i686/x86/etc) only supports win32.
     WINEARCH: >-
       {{ 'win32' if ansible_facts.architecture in ['i386', 'i486', 'i586', 'i686', 'x86'] else 'win64' }}
-    HOME: "{{ ansible_env.HOME }}"
-    FONTCONFIG_FILE: "{{ ansible_env.HOME }}/.config/fontconfig/fonts.conf"
-    FONTCONFIG_PATH: "{{ ansible_env.HOME }}/.config/fontconfig:/etc/fonts"
+    HOME: "{{ ansible_facts.env.HOME }}"
+    FONTCONFIG_FILE: "{{ ansible_facts.env.HOME }}/.config/fontconfig/fonts.conf"
+    FONTCONFIG_PATH: "{{ ansible_facts.env.HOME }}/.config/fontconfig:/etc/fonts"
     WINEDEBUG: "{{ wine_debug | default('-all') }}"
     WINEDLLOVERRIDES: "{{ wine_dlloverrides | default('mscoree,mshtml=') }}"
   args:
-    creates: "{{ ansible_env.HOME }}/.wine/system.reg"
+    creates: "{{ ansible_facts.env.HOME }}/.wine/system.reg"
   timeout: 120

@@ -10,8 +10,8 @@
     is_nixos_target: "{{ target_container in ['', 'wine-on-nixos-latest'] }}"
     nixos_in_inventory: "{{ 'wine-on-nixos-latest' in groups.get('docker_containers', []) }}"
     should_build_nixos: "{{ is_nixos_target and nixos_in_inventory }}"
-    nixos_dockerfile_output: >-
-      {{ playbook_dir }}/../../molecule/resources/playbooks/Dockerfile.wine-on-nixos
+    nixos_build_dir: "{{ lookup('env', 'RUNNER_TEMP') | default('/tmp', true) }}"
+    nixos_dockerfile_output: "{{ nixos_build_dir }}/Dockerfile.wine-on-nixos"
     nixos_dockerfile_template: >-
       {{ playbook_dir }}/../../molecule/resources/playbooks/Dockerfile.j2
   tasks:
@@ -53,8 +53,6 @@
       wine-on-ubuntu-latest: ubuntu:latest
       wine-on-ubuntu-noble: ubuntu:noble
     container_image: "{{ container_image_map[inventory_hostname] | default('ubuntu:latest') }}"
-  environment:
-    DEBIAN_FRONTEND: noninteractive
 
   pre_tasks:
     - name: Ensure container is started
@@ -85,7 +83,7 @@
       register: container_info
       until:
         - container_info is defined
-        - container_info.container.State.Running | default(false) | bool
+        - (container_info.container | default({})).get('State', {}).get('Running', false) | bool
       changed_when: false
       delay: 2
       delegate_to: localhost
@@ -130,16 +128,8 @@
     - name: Determine if we should become root
       ansible.builtin.set_fact:
         wine_should_become: >-
-          {{
-            (ansible_user_id | default('root')) != 'root'
-            or (ansible_user_uid | default(0) | int) != 0
-            or (((ansible_env | default({}))['UID'] | default(0) | int) != 0)
-            or (
-              ((ansible_env | default({}))['USER']
-              | default(((ansible_env | default({}))['LOGNAME'] | default('root'))) )
-              != 'root'
-            )
-          }}
+          {{ (ansible_user_uid | default(0) | int) != 0 }}
+        cacheable: true
 
     - name: Install Python packages for Ubuntu/Debian
       ansible.builtin.apt:
@@ -150,6 +140,8 @@
         state: present
         update_cache: true
       become: "{{ wine_should_become }}"
+      environment:
+        DEBIAN_FRONTEND: noninteractive
       when: container_image is search("ubuntu") or container_image is search("debian")
 
   tags: always

@@ -1,6 +1,8 @@
 ---
 - name: Ensures Wine repository is configured
-  become: true
+  become: >-
+    {{ (ansible_user_id is defined and ansible_user_id != 'root')
+    or (ansible_user_id is not defined and (lookup('env', 'UID') | int != 0)) }}
   become_method: >-
     {{ wine_become_method.get(detected_os_family | default(ansible_os_family),
     wine_become_method["_default"]) }}
@@ -72,7 +74,9 @@
         update_cache: true
 
 - name: Ensures Wine is present
-  become: true
+  become: >-
+    {{ (ansible_user_id is defined and ansible_user_id != 'root')
+    or (ansible_user_id is not defined and (lookup('env', 'UID') | int != 0)) }}
   become_method: >-
     {{ wine_become_method.get(detected_os_family | default(ansible_os_family),
     wine_become_method["_default"]) }}
@@ -164,11 +168,13 @@
     WINEDEBUG: "{{ wine_debug | default('-all') }}"
     WINEDLLOVERRIDES: "{{ wine_dlloverrides | default('mscoree,mshtml=') }}"
   args:
-    creates: "{{ ansible_env.HOME }}/.wine/system.reg"
+    creates: "{{ ansible_facts.env.HOME }}/.wine/system.reg"
   timeout: 120
 
 - name: Apt cleanup ({{ detected_os_family | default(ansible_os_family) }})
-  become: true
+  become: >-
+    {{ (ansible_user_id is defined and ansible_user_id != 'root')
+    or (ansible_user_id is not defined and (lookup('env', 'UID') | int != 0)) }}
   become_method: >-
     {{ wine_become_method.get(detected_os_family | default(ansible_os_family),
     wine_become_method["_default"]) }}
@@ -181,8 +187,10 @@
       ansible.builtin.apt:
         autoremove: true
         purge: true
+      when: wine_apt_cleanup | default(false) | bool
 
     - name: Cleans Apt cache
       ansible.builtin.apt:
         autoclean: true
         clean: true
+      when: wine_apt_cleanup | default(false) | bool

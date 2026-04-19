@@ -24,12 +24,12 @@ jobs:
       max-parallel: 4
       matrix:
         container:
+          - wine-on-alpine-latest
+          - wine-on-debian-latest
+          - wine-on-nixos-latest
+          - wine-on-ubuntu-jammy
           - wine-on-ubuntu-latest
           - wine-on-ubuntu-noble
-          - wine-on-ubuntu-jammy
-          - wine-on-debian-latest
-          - wine-on-alpine-latest
-          - wine-on-nixos-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
       TARGET_CONTAINER: ${{ matrix.container }}
@@ -64,13 +64,15 @@ jobs:
       - name: Check Ansible syntax
         run: >-
             ansible-playbook --syntax-check
-            -i tests/inventory/docker-containers.yml tests/playbooks/docker-containers.yml
+            -i tests/inventory/docker-containers.yml
+            tests/playbooks/docker-containers.yml
+            tests/playbooks/tags/wine-verify.yml
             --limit "${TARGET_CONTAINER},localhost"
             --verbose
         working-directory: ${{ github.repository }}
 
       - name: Run Ansible lint
-        run: ansible-lint tests/playbooks/docker-containers.yml
+        run: ansible-lint tests/playbooks/docker-containers.yml tests/playbooks/tags/wine-verify.yml
         working-directory: ${{ github.repository }}
 
       - name: Run Ansible playbook
