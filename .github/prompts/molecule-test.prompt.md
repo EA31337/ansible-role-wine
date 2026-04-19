@@ -22,9 +22,9 @@ Run all Molecule scenarios and report results as a table.
    molecule destroy -s <scenario>
    ```
 
-3. Record every step outcome (✅ pass, ❌ fail, ⏭️ skipped).
+3. Record every step outcome (pass, fail, skipped).
 
-4. Report results in a **Scenario ✕ Platform** table (see template below).
+4. Report results in a **Scenario x Platform** table (see template below).
 
 ## Scenarios
 
@@ -49,7 +49,7 @@ Run all Molecule scenarios and report results as a table.
 ## Results Template
 
 Fill in each cell after running the tests.
-Use ✅ for pass, ❌ for fail, ⏭️ for skipped.
+Use PASS for pass, FAIL for fail, SKIPPED for skipped.
 
 ### Step-Level Results (per scenario)
 

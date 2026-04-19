@@ -17,9 +17,11 @@
 
     - name: Discover proxy CA certificates on the host
       ansible.builtin.set_fact:
-        host_ca_certs: "{{ lookup('ansible.builtin.fileglob', '/usr/local/share/ca-certificates/*.crt', wantlist=True) }}"
+        host_ca_certs: >-
+          {{ lookup('ansible.builtin.fileglob', '/usr/local/share/ca-certificates/*.crt', wantlist=True) }}
 
     - name: Prepare build context for custom images
+      when: molecule_yml.platforms | selectattr('dockerfile', 'defined') | list | length > 0
       block:
         - name: Ensure build context directory exists
           ansible.builtin.file:
@@ -51,7 +53,6 @@
             source: build
             force_source: true
           loop: "{{ molecule_yml.platforms | selectattr('dockerfile', 'defined') | list }}"
-      when: molecule_yml.platforms | selectattr('dockerfile', 'defined') | list | length > 0
 
     - name: Ensure test containers are running
       community.docker.docker_container:
