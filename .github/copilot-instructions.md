@@ -99,38 +99,38 @@ To verify locally, run `pre-commit run markdownlint -a`.
 
 ```text
 .
-├── .devcontainer/            # Codespaces / devcontainer configuration
-├── .github/
-│   ├── prompts/              # Copilot prompt files
-│   ├── workflows/            # GitHub Actions (molecule, check, test)
-│   └── copilot-instructions.md
-├── defaults/
-│   └── main.yml              # Default role variables (public API)
-├── meta/
-│   └── main.yml              # Role metadata (Galaxy, dependencies)
-├── molecule/
-│   ├── default/              # Default Molecule scenario
-│   │   ├── molecule.yml      # Scenario config (platforms, provisioner)
-│   │   ├── converge.yml      # Converge playbook
-│   │   ├── create.yml        # Custom Docker create (proxy CA injection)
-│   │   ├── destroy.yml       # Custom Docker destroy
-│   │   ├── prepare.yml       # Container preparation (sudo, Python, certs)
-│   │   └── verify.yml        # Verification playbook
-│   └── resources/playbooks/
-│       └── Dockerfile.j2     # NixOS container Dockerfile template
-├── tasks/
-│   ├── main.yml              # Role entry point
-│   └── wine/
-│       ├── wine.yml          # OS-family dispatcher
-│       ├── wine-Alpine.yml   # Alpine-specific Wine install
-│       ├── wine-Debian.yml   # Debian/Ubuntu Wine install (WineHQ repo)
-│       └── wine-NixOS.yml    # Nix-based Wine install
-├── templates/                # Jinja2 templates (apt sources)
-├── vars/
-│   └── main.yml              # Internal variables (become methods, pkg maps)
-├── AGENTS.md                 # AI agent guidance and troubleshooting
-├── README.md                 # Project documentation
-└── requirements.yml          # Galaxy collection requirements
+|-- .devcontainer/            # Codespaces / devcontainer configuration
+|-- .github/
+|   |-- prompts/              # Copilot prompt files
+|   |-- workflows/            # GitHub Actions (molecule, check, test)
+|   `-- copilot-instructions.md
+|-- defaults/
+|   `-- main.yml              # Default role variables (public API)
+|-- meta/
+|   `-- main.yml              # Role metadata (Galaxy, dependencies)
+|-- molecule/
+|   |-- default/              # Default Molecule scenario
+|   |   |-- molecule.yml      # Scenario config (platforms, provisioner)
+|   |   |-- converge.yml      # Converge playbook
+|   |   |-- create.yml        # Custom Docker create (proxy CA injection)
+|   |   |-- destroy.yml       # Custom Docker destroy
+|   |   |-- prepare.yml       # Container preparation (sudo, Python, certs)
+|   |   `-- verify.yml        # Verification playbook
+|   `-- resources/playbooks/
+|       `-- Dockerfile.j2     # NixOS container Dockerfile template
+|-- tasks/
+|   |-- main.yml              # Role entry point
+|   `-- wine/
+|       |-- wine.yml          # OS-family dispatcher
+|       |-- wine-Alpine.yml   # Alpine-specific Wine install
+|       |-- wine-Debian.yml   # Debian/Ubuntu Wine install (WineHQ repo)
+|       `-- wine-NixOS.yml    # Nix-based Wine install
+|-- templates/                # Jinja2 templates (apt sources)
+|-- vars/
+|   `-- main.yml              # Internal variables (become methods, pkg maps)
+|-- AGENTS.md                 # AI agent guidance and troubleshooting
+|-- README.md                 # Project documentation
+`-- requirements.yml          # Galaxy collection requirements
 ```
 
 ### Key Variables
@@ -205,9 +205,10 @@ pre-commit run -a
 
 2. **Common error patterns:**
    - **NixOS SSL/channel errors**: Proxy CA certs must be injected via
-     `Dockerfile.j2` and `prepare.yml`. Combined cert bundle is stored
-     at `/etc/nix/ca-bundle.crt` (NOT `/etc/ssl/certs/` — files there
-     vanish across Docker overlay layers in the NixOS image).
+      `Dockerfile.j2` and `prepare.yml`. Combined cert bundle is stored
+      at `/etc/nix/ca-bundle.crt` (NOT `/etc/ssl/certs/` - files there
+      vanish across Docker overlay layers in the NixOS image).
+
    - **NixOS firewall**: `channels.nixos.org`, `releases.nixos.org`, and
      `cache.nixos.org` must all be in the firewall allowlist.
    - **Wine GPG key failures**: `dl.winehq.org` must be in the firewall

@@ -20,13 +20,18 @@
 
     - name: Extract version info from available wine
       ansible.builtin.set_fact:
-        wine_alpine_major: >-
-          {{ wine_available_version.stdout
-          | regex_search('wine-([0-9]+)', '\1') | first }}
         wine_alpine_version: >-
           {{ wine_available_version.stdout
-          | regex_search('wine-([\d.]+-r\d+)', '\1') | first }}
+          | regex_search('wine-([\d.]+-r\d+)', '\1') | first | default('') }}
       when: wine_available_version.stdout | length > 0
+
+    - name: Extract major version from wine_alpine_version
+      ansible.builtin.set_fact:
+        wine_alpine_major: >-
+          {{ wine_alpine_version | regex_replace('^(\d+).*', '\1') }}
+      when:
+        - wine_alpine_version is defined
+        - wine_alpine_version | length > 0
 
     - name: Validate wine major version (9, 10, or 11)
       ansible.builtin.assert:

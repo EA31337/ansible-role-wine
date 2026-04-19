@@ -24,4 +24,4 @@ permissions:
 jobs:
   devcontainer:
     uses: EA31337/.github/.github/workflows/devcontainer-ci.yml@master
-    secrets: inherit
+    secrets: inherit  # pragma: allowlist secret
