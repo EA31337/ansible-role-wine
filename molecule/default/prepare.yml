@@ -89,9 +89,17 @@
     - name: Trust proxy CA certificates on NixOS (if mounted)
       ansible.builtin.raw: |
         if ls /usr/local/share/ca-certificates/*.crt >/dev/null 2>&1; then
-          export NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+          nix_bundle="/nix/var/nix/profiles/default/etc/ssl/certs/ca-bundle.crt"
+          combined="/etc/nix/ca-bundle.crt"
+          mkdir -p /etc/nix
+          if [ ! -f "$combined" ]; then
+            cp "$nix_bundle" "$combined"
+          fi
           for cert in /usr/local/share/ca-certificates/*.crt; do
-            cat "$cert" >> /etc/ssl/certs/ca-certificates.crt 2>/dev/null || true
+            cat "$cert" >> "$combined" 2>/dev/null || true
           done
+          if ! grep -q 'ssl-cert-file' /etc/nix/nix.conf 2>/dev/null; then
+            printf "ssl-cert-file = %s\n" "$combined" >> /etc/nix/nix.conf
+          fi
         fi
       changed_when: false
