@@ -90,23 +90,23 @@
         <config><rescan><int>30</int></rescan></config>
       </fontconfig>
 
-- name: Set fontconfig environment in ~/.bashrc (Alpine)
-  ansible.builtin.blockinfile:
-    path: "{{ ansible_facts.env.HOME }}/.bashrc"
-    marker: "# {mark} ANSIBLE MANAGED BLOCK - Wine fontconfig"
-    block: |
-      export FONTCONFIG_FILE={{ ansible_facts.env.HOME }}/.config/fontconfig/fonts.conf
-      export FONTCONFIG_PATH={{ ansible_facts.env.HOME }}/.config/fontconfig:/etc/fonts
-    create: true
-    mode: '0644'
-
-- name: Write wine_env for Alpine
+- name: Write fontconfig and wine environment config for Alpine
   ansible.builtin.copy:
-    dest: "{{ ansible_facts.env.HOME }}/.wine_env"
+    dest: "{{ item.dest }}"
     mode: '0644'
     content: |
       export FONTCONFIG_FILE={{ ansible_facts.env.HOME }}/.config/fontconfig/fonts.conf
       export FONTCONFIG_PATH={{ ansible_facts.env.HOME }}/.config/fontconfig:/etc/fonts
+  loop:
+    - { dest: "{{ ansible_facts.env.HOME }}/.wine_env" }
+    - { dest: "/etc/profile.d/wine.sh" }
+
+- name: Set fontconfig environment in ~/.bashrc (Alpine)
+  ansible.builtin.lineinfile:
+    path: "{{ ansible_facts.env.HOME }}/.bashrc"
+    line: "[[ -f ~/.wine_env ]] && source ~/.wine_env"
+    create: true
+    mode: '0644'
 
 - name: Rebuild fontconfig cache for Alpine
   ansible.builtin.command: >-

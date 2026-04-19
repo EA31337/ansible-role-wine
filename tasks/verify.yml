@@ -31,19 +31,24 @@
     - wine_install_winetricks_dependencies | length > 0
   block:
     - name: Check if required tools are installed
-      ansible.builtin.command: which "{{ wine_package_command_map[item] | default(item) }}"
+      ansible.builtin.shell: |
+        set -o pipefail
+        cmd="{{ wine_package_command_map[item] | default(item) }}"
+        path=$(which "$cmd")
+        version=$("$cmd" --version 2>&1 | head -n 1 || echo "unknown version")
+        echo "$path ($version)"
       changed_when: false
       register: dependency_check_results
       loop: "{{ wine_install_winetricks_dependencies }}"
       failed_when: false
 
-    - name: Display dependency check results (debug)
+    - name: Display dependency check results
       ansible.builtin.debug:
-        msg: "Dependency check for {{ item.item }}: {{ 'Successful' if item.rc == 0 else 'Failed' }}"
+        msg: "Dependency {{ item.item }}: {{ item.stdout if item.rc == 0 else 'NOT FOUND' }}"
       loop: "{{ dependency_check_results.results }}"
-      when: ansible_verbosity > 0
+      when: ansible_verbosity >= 0
 
-    - name: Verify dependency installation status (with improved checking)
+    - name: Verify dependency installation status
       ansible.builtin.assert:
         that: >-
           dependency_check_results.results |
@@ -52,7 +57,7 @@
           length == (wine_install_winetricks_dependencies | length)
         fail_msg: >-
           Some winetricks dependencies failed verification.
-          Please install:
+          Missing tools:
           {{ dependency_check_results.results |
              selectattr('rc', 'ne', 0) |
              map(attribute='item') |

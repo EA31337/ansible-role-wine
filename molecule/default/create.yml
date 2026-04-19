@@ -21,7 +21,7 @@
 
     - name: Prepare build context for custom images
       block:
-        - name: Ensure ca-certificates directory exists in build context
+        - name: Ensure build context directory exists
           ansible.builtin.file:
             path: "{{ molecule_ephemeral_directory }}/ca-certificates"
             state: directory
@@ -30,7 +30,7 @@
         - name: Copy host CA certificates to build context
           ansible.builtin.copy:
             src: "{{ item }}"
-            dest: "{{ molecule_ephemeral_directory }}/ca-certificates/{{ item | basename }}"
+            dest: "{{ molecule_ephemeral_directory }}/ca-certificates/"
             mode: "0644"
           loop: "{{ host_ca_certs }}"
 

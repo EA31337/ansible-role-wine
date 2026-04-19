@@ -20,6 +20,6 @@
     - name: Ensures dependencies are present
       ansible.builtin.command:
         cmd: nix-env -iA nixpkgs.{{ item }}
-        creates: "{{ privileged_home.stdout }}/.nix-profile/bin/{{ item }}"
+        creates: "{{ privileged_home.stdout }}/.nix-profile/bin/{{ wine_package_command_map[item] | default(item) }}"
       loop: "{{ wine_install_winetricks_dependencies }}"
       when: nix_store_stat.stat.exists

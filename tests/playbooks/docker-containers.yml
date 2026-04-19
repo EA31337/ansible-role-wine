@@ -36,7 +36,7 @@
 
     - name: Build NixOS image with Python preinstalled
       community.docker.docker_image:
-        name: "{{ nixos_built_image }}"
+        name: wine-nixos:molecule
         build:
           path: "{{ nixos_dockerfile_output | dirname }}"
           dockerfile: "{{ nixos_dockerfile_output | basename }}"
@@ -51,11 +51,10 @@
   gather_facts: false
   vars:
     controller_python: "{{ ansible_playbook_python }}"
-    nixos_built_image: wine-nixos:latest
     container_image_map:
       wine-on-alpine-latest: alpine:3.20
       wine-on-debian-latest: debian:latest
-      wine-on-nixos-latest: "{{ nixos_built_image }}"
+      wine-on-nixos-latest: wine-nixos:molecule
       wine-on-ubuntu-jammy: ubuntu:jammy
       wine-on-ubuntu-latest: ubuntu:latest
       wine-on-ubuntu-noble: ubuntu:noble
