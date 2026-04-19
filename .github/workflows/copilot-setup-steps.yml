@@ -1,4 +1,6 @@
 ---
+# GitHub Copilot cloud agent customization.
+# <https://docs.github.com/en/copilot/how-tos/use-copilot-agents/cloud-agent/customize-the-agent-environment>
 name: Copilot Setup Steps
 
 # yamllint disable-line rule:truthy
