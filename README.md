@@ -1,11 +1,12 @@
 # Ansible Role: Wine
 
-[![License](https://img.shields.io/badge/license-GPLv3-brightgreen.svg)](./LICENSE)
-[![Check](https://img.shields.io/github/actions/workflow/status/EA31337/ansible-role-wine/check.yml?label=Check)](https://github.com/EA31337/ansible-role-wine/actions/workflows/check.yml)
-[![Dev](https://img.shields.io/github/actions/workflow/status/EA31337/ansible-role-wine/devcontainer-ci.yml?label=Dev)](https://github.com/EA31337/ansible-role-wine/actions/workflows/devcontainer-ci.yml)
-[![Molecule](https://img.shields.io/github/actions/workflow/status/EA31337/ansible-role-wine/molecule.yml?label=Molecule)](https://github.com/EA31337/ansible-role-wine/actions/workflows/molecule.yml)
-[![Pull Requests](https://img.shields.io/github/issues-pr/EA31337/ansible-role-wine.svg)](https://github.com/EA31337/ansible-role-wine/pulls)
-[![Test](https://img.shields.io/github/actions/workflow/status/EA31337/ansible-role-wine/test.yml?label=Test)](https://github.com/EA31337/ansible-role-wine/actions/workflows/test.yml)
+[![License][license-badge]][license-link]
+[![Check][check-badge]][check-link]
+[![Dev][dev-badge]][dev-link]
+[![Molecule][molecule-badge]][molecule-link]
+[![Pull Requests][pr-badge]][pr-link]
+[![Test][test-badge]][test-link]
+[![Edit][gh-edit-badge]][gh-edit-link]
 
 Ansible role to install Wine on UNIX-like platforms.
 Wine (originally an acronym for "Wine Is Not an Emulator")
@@ -44,7 +45,7 @@ ansible-galaxy install git+https://github.com/EA31337/ansible-role-wine.git
 
 ## Role Variables
 
-Available variables are listed below, along with default values (see [defaults/main.yml](defaults/main.yml)):
+Available variables are listed below, along with default values (see [defaults/main.yml][defaults-link]):
 
 ```yaml
 # Wine package release to install (stable, devel, or staging)
@@ -134,6 +135,22 @@ molecule test
 
 GNU GPL v3
 
-See: [LICENSE](./LICENSE)
+See: [LICENSE][license-link]
 
 <!-- Named links -->
+
+[license-badge]: https://img.shields.io/badge/license-GPLv3-brightgreen.svg
+[license-link]: ./LICENSE
+[check-badge]: https://img.shields.io/github/actions/workflow/status/EA31337/ansible-role-wine/check.yml?label=Check
+[check-link]: https://github.com/EA31337/ansible-role-wine/actions/workflows/check.yml
+[dev-badge]: https://img.shields.io/github/actions/workflow/status/EA31337/ansible-role-wine/devcontainer-ci.yml?label=Dev
+[dev-link]: https://github.com/EA31337/ansible-role-wine/actions/workflows/devcontainer-ci.yml
+[molecule-badge]: https://img.shields.io/github/actions/workflow/status/EA31337/ansible-role-wine/molecule.yml?label=Molecule
+[molecule-link]: https://github.com/EA31337/ansible-role-wine/actions/workflows/molecule.yml
+[pr-badge]: https://img.shields.io/github/issues-pr/EA31337/ansible-role-wine.svg
+[pr-link]: https://github.com/EA31337/ansible-role-wine/pulls
+[test-badge]: https://img.shields.io/github/actions/workflow/status/EA31337/ansible-role-wine/test.yml?label=Test
+[test-link]: https://github.com/EA31337/ansible-role-wine/actions/workflows/test.yml
+[gh-edit-badge]: https://img.shields.io/badge/GitHub-edit-purple.svg?logo=github
+[gh-edit-link]: https://github.dev/EA31337/ansible-role-wine
+[defaults-link]: defaults/main.yml
