@@ -73,6 +73,9 @@ For project overview and install instructions, see [README.md](README.md).
 
 ### Running Tests
 
+If asked to run Molecule tests, MUST follow the instructions in
+[.github/prompts/molecule-test.prompt.md](.github/prompts/molecule-test.prompt.md).
+
 ```bash
 # Full test (all scenarios)
 molecule test
