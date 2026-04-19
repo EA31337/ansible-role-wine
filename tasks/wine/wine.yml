@@ -1,4 +1,18 @@
 ---
-- name: Includes operating system specific tasks ({{ ansible_os_family }})
+- name: Gather facts
+  ansible.builtin.setup:
+
+- name: Ensure the detected OS family is supported by this role
+  ansible.builtin.assert:
+    that:
+      - (detected_os_family | default(ansible_os_family)) in ['Alpine', 'Darwin', 'Debian', 'NixOS', 'Ubuntu']
+    fail_msg: >-
+      Unsupported OS family: {{ detected_os_family | default(ansible_os_family) }}.
+      Supported: Alpine, Darwin, Debian, NixOS, Ubuntu.
+
+- name: Includes operating system specific tasks ({{ detected_os_family | default(ansible_os_family) }})
   ansible.builtin.include_tasks:
-    file: "wine-{{ ansible_os_family }}.yml"
+    file: >-
+      {{ role_path }}/tasks/wine/wine-{{
+      'Debian' if (detected_os_family | default(ansible_os_family)) == 'Ubuntu'
+      else (detected_os_family | default(ansible_os_family)) }}.yml

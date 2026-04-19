@@ -1,19 +1,54 @@
 ---
+# Note: Keep keys and envs in alphabetical order.
 name: Check
 
 # yamllint disable-line rule:truthy
 on:
   pull_request:
   push:
+  schedule:
+    - cron: 0 0 * * 1  # Run every Monday at 00:00 UTC
+  workflow_call:
+    inputs:
+      actionlint-matcher-path:
+        description: >
+          Path to actionlint problem matcher JSON file. If not specified,
+          uses the default from EA31337/.github repository.
+        required: false
+        type: string
+        default: ''
+      pre-commit-matcher-path:
+        description: >
+          Path to pre-commit problem matcher JSON file. If not specified,
+          uses the default from EA31337/.github repository.
+        required: false
+        type: string
+        default: ''
+      submodules:
+        default: 'false'
+        description: Whether to checkout submodules
+        required: false
+        type: string
+  workflow_dispatch:
+    inputs:
+      submodules:
+        default: 'false'
+        description: Whether to checkout submodules
+        options:
+          - 'false'
+          - 'true'
+          - recursive
+        required: false
+        type: choice
+
+permissions:
+  contents: read
 
 jobs:
-  Pre-commit:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/cache@v4
-        with:
-          path: ~/.cache/pre-commit
-          key: pre-commit|${{ hashFiles('.pre-commit-config.yaml') }}
-      - uses: actions/setup-python@v5
-      - uses: pre-commit/action@v3.0.1
+  check:
+    uses: EA31337/.github/.github/workflows/check.yml@master
+    with:
+      actionlint-matcher-path: ${{ inputs.actionlint-matcher-path || '' }}
+      pre-commit-matcher-path: ${{ inputs.pre-commit-matcher-path || '' }}
+      submodules: ${{ inputs.submodules || 'false' }}
+    secrets: inherit  # pragma: allowlist secret

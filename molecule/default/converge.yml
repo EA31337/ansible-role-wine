@@ -1,7 +1,6 @@
 ---
 - name: Converge
   hosts: all
-  tasks:
-    - name: Include main role
-      ansible.builtin.include_role:
-        name: ea31337.wine
+  gather_facts: true
+  roles:
+    - role: ea31337.wine

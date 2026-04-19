@@ -1,25 +1,36 @@
 ---
+# Note: Keep keys and envs in alphabetical order.
 name: Molecule
 
 # yamllint disable-line rule:truthy
 on:
   pull_request:
     paths-ignore:
-      - '**/*.cfg'
-      - '**/*.md'
+      - '!.github/workflows/**'
+      - '**.cfg'
+      - '**.md'
       - '.*'
+      - LICENSE
       - Pipfile*
   push:
     paths-ignore:
-      - '**/*.cfg'
-      - '**/*.md'
+      - '!.github/workflows/**'
+      - '**.cfg'
+      - '**.md'
       - '.*'
+      - LICENSE
       - Pipfile*
+
+permissions:
+  actions: write
+  contents: read
 
 jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -28,30 +39,86 @@ jobs:
           - devel
           - staging
           - winetricks
+      max-parallel: 1
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           path: ${{ github.repository }}
+      - name: Install Ansible collections
+        run: |
+          pip install ansible-core
+          ansible-galaxy collection install -r requirements.yml -p collections
+        working-directory: ${{ github.repository }}
       - uses: gofrolist/molecule-action@v2
         env:
+          ANSIBLE_COLLECTIONS_PATH: ${{ github.workspace }}/${{ github.repository }}/collections
           ANSIBLE_FORCE_COLOR: '1'
-          ANSIBLE_STDOUT_CALLBACK: ${{ runner.debug == '1' && 'debug' || 'yaml' }}
+          ANSIBLE_STDOUT_CALLBACK: ${{ runner.debug == '1' && 'debug' || 'ansible.builtin.default' }}
+          ANSIBLE_CALLBACK_RESULT_FORMAT: yaml
           MOLECULE_REPORT: molecule-${{ matrix.scenario }}-report.html
         with:
-          molecule_args: --scenario-name ${{ matrix.scenario }}
+          molecule_args: >-
+            --scenario-name ${{ matrix.scenario }}
           molecule_command: test
           molecule_options: ${{ runner.debug == '1' && '--verbose' || '' }}
           molecule_working_dir: ${{ github.repository }}
       - if: always()
         name: Ensure report file permissions are correct
-        run: sudo chmod 644 molecule-${{ matrix.scenario }}-report.html
+        run: |
+          if [ -f molecule-${{ matrix.scenario }}-report.html ]; then
+            sudo chmod 644 molecule-${{ matrix.scenario }}-report.html
+          else
+            echo "No report produced by Molecule for scenario ${{ matrix.scenario }}"
+          fi
         working-directory: ${{ github.repository }}
       - if: always()
         name: Converts test report
-        uses: patrick-werner/fhir-html-validation-to-markdown@1.0.0
-        with:
-          input_file: ${{ github.repository }}/molecule-${{ matrix.scenario }}-report.html
-      # Debug with tmate on failure when debug logging is enabled.
+        run: |
+          if [ ! -s "molecule-${{ matrix.scenario }}-report.html" ]; then
+            echo "Report file not found or empty, skipping conversion"
+            exit 0
+          fi
+          if ! command -v pandoc >/dev/null 2>&1; then
+            echo "pandoc not found, skipping conversion"
+            exit 0
+          fi
+          # Process the HTML file, remove the first table, and convert to Markdown
+          awk '
+            BEGIN {skip=0; table_removed=0}
+
+            /<table class="grid">/ {
+                if (table_removed == 0) {
+                    skip=1
+                    next
+                }
+            }
+
+            skip && /<\/table>/ {
+                if (table_removed == 0) {
+                    skip=0
+                    table_removed=1
+                    next
+                }
+            }
+
+            skip {next}
+
+            {print}
+          ' "molecule-${{ matrix.scenario }}-report.html" | pandoc -f html -t markdown_strict | awk '
+            /^## / {gsub(/^## /, "#### ")}
+
+            {gsub(/<strong>/, ""); gsub(/<\/strong>/, "")}
+
+            /error/ {gsub("error", "❌ error")}
+            /warning/ {gsub("warning", "⚠️ warning")}
+            /information/ {gsub("information", "ℹ️ information")}
+            /hint/ {gsub("hint", "ℹ️ hint")}
+            /Process Info/ {gsub("Process Info", "🔹 Process Info")}
+            /Slicing Information/ {gsub("Slicing Information", "✂️ Slicing Info")}
+
+            {print}
+          ' >> "$GITHUB_STEP_SUMMARY"
+        working-directory: ${{ github.repository }}
       - if: ${{ failure() && runner.debug == '1' }}
         uses: mxschmitt/action-tmate@v3
-    timeout-minutes: 20
+    timeout-minutes: 120

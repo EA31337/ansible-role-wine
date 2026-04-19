@@ -1,7 +1,12 @@
 # Ansible Role: Wine
 
-[![CodeRabbit PR Reviews](https://img.shields.io/coderabbit/prs/github/EA31337/ansible-role-wine?utm_source=oss&utm_medium=github&utm_campaign=EA31337%2Fansible-role-wine&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+PR+Reviews)](https://github.com/EA31337/ansible-role-wine/pulls)
-[![License](https://img.shields.io/badge/license-GPLv3-brightgreen.svg)](LICENSE)
+[![License][license-badge]][license-link]
+[![Check][check-badge]][check-link]
+[![Dev][dev-badge]][dev-link]
+[![Molecule][molecule-badge]][molecule-link]
+[![Pull Requests][pr-badge]][pr-link]
+[![Test][test-badge]][test-link]
+[![Edit][gh-edit-badge]][gh-edit-link]
 
 Ansible role to install Wine on UNIX-like platforms.
 Wine (originally an acronym for "Wine Is Not an Emulator")
@@ -22,16 +27,73 @@ This role requires:
 
 ## Install
 
-To install this role, you can use the following terminal command:
+### Install from Ansible Galaxy
 
-```shell
+To install this role from Ansible Galaxy, run the following command:
+
+```console
+ansible-galaxy install ea31337.wine
+```
+
+### Install from GitHub
+
+To install this role from GitHub, run:
+
+```console
 ansible-galaxy install git+https://github.com/EA31337/ansible-role-wine.git
 ```
 
 ## Role Variables
 
-For available variables,
-check [`defaults/main.yml`](defaults/main.yml).
+Available variables are listed below, along with default values (see [defaults/main.yml][defaults-link]):
+
+```yaml
+# Wine package release to install (stable, devel, or staging)
+wine_release: stable
+
+# Override Ubuntu/Debian release codename for Wine repository
+# Use this to install older Wine versions from previous release repos
+# Example: 'jammy' for Ubuntu 22.04 to get Wine 10.x on newer Ubuntu
+wine_release_codename: ""
+
+# Specific Wine package version to install (optional)
+# For Ubuntu/Debian: can be either simple (10.0) or full (10.0.0.0~jammy-1)
+# For Alpine: package version format (e.g., 10.0)
+# For NixOS: version suffix (e.g., 10.0)
+wine_version: ""
+
+# Whether to install recommended packages
+wine_install_recommends: false
+
+# Whether to install winetricks
+wine_install_winetricks: false
+```
+
+### Example: Installing Wine 10.0 on Ubuntu 24.04
+
+To install Wine 10.0 on Ubuntu Noble (24.04) using the jammy repository:
+
+```yaml
+- hosts: all
+  roles:
+    - role: ea31337.wine
+      vars:
+        wine_release: stable
+        wine_release_codename: jammy
+        wine_version: "10.0"  # Automatically expands to 10.0.0.0~jammy-1
+```
+
+Or if you want to specify the exact version:
+
+```yaml
+- hosts: all
+  roles:
+    - role: ea31337.wine
+      vars:
+        wine_release: stable
+        wine_release_codename: jammy
+        wine_version: "10.0.0.0~jammy-1"  # Full version string
+```
 
 ## Testing
 
@@ -45,6 +107,13 @@ Steps to test role on Docker containers.
     ansible-galaxy install -r requirements.yml
     jinja2 requirements-local.yml.j2 -D "pwd=$PWD" -o requirements-local.yml
     ansible-galaxy install -r requirements-local.yml
+    ```
+
+    Alternatively, for development purposes, you can use a symbolic link, e.g.
+
+    ```shell
+    mkdir -p ~/.ansible/roles
+    ln -vs "$PWD" ~/.ansible/roles/ea31337.wine
     ```
 
 2. Ensure Docker service (e.g. Docker Desktop) is running.
@@ -66,6 +135,22 @@ molecule test
 
 GNU GPL v3
 
-See: [LICENSE](./LICENSE)
+See: [LICENSE][license-link]
 
 <!-- Named links -->
+
+[license-badge]: https://img.shields.io/badge/license-GPLv3-brightgreen.svg
+[license-link]: ./LICENSE
+[check-badge]: https://img.shields.io/github/actions/workflow/status/EA31337/ansible-role-wine/check.yml?label=Check
+[check-link]: https://github.com/EA31337/ansible-role-wine/actions/workflows/check.yml
+[dev-badge]: https://img.shields.io/github/actions/workflow/status/EA31337/ansible-role-wine/devcontainer-ci.yml?label=Dev
+[dev-link]: https://github.com/EA31337/ansible-role-wine/actions/workflows/devcontainer-ci.yml
+[molecule-badge]: https://img.shields.io/github/actions/workflow/status/EA31337/ansible-role-wine/molecule.yml?label=Molecule
+[molecule-link]: https://github.com/EA31337/ansible-role-wine/actions/workflows/molecule.yml
+[pr-badge]: https://img.shields.io/github/issues-pr/EA31337/ansible-role-wine.svg
+[pr-link]: https://github.com/EA31337/ansible-role-wine/pulls
+[test-badge]: https://img.shields.io/github/actions/workflow/status/EA31337/ansible-role-wine/test.yml?label=Test
+[test-link]: https://github.com/EA31337/ansible-role-wine/actions/workflows/test.yml
+[gh-edit-badge]: https://img.shields.io/badge/GitHub-edit-purple.svg?logo=github
+[gh-edit-link]: https://github.dev/EA31337/ansible-role-wine
+[defaults-link]: defaults/main.yml
