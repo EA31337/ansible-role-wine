@@ -112,6 +112,15 @@ molecule syntax
   (channels.nixos.org redirects to releases.nixos.org; cache.nixos.org serves binaries)
 - Prevention: All three Nix hosts must be in firewall allowlist
 
+> NixOS: files in `/etc/ssl/certs/` vanish across Docker build layers
+
+- Root cause: containerd/overlayfs bug causes files written to `/etc/ssl/certs/`
+  in one Docker `RUN` layer to disappear in subsequent layers (NixOS image only)
+- Isolation: `docker build` with separate RUN steps writing + reading a file there
+- Fix: Store combined CA bundle in `/etc/nix/ca-bundle.crt` instead;
+  `/etc/nix/` persists correctly across layers
+- Prevention: NEVER store persistent files under `/etc/ssl/certs/` in NixOS containers
+
 > `community.docker.docker_container` not found during molecule run
 
 - Root cause: Collections installed to `./collections` but not on Ansible search path
