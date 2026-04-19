@@ -103,6 +103,7 @@ jobs:
                 per_page: 100,
               });
 
+            // Keep in sync with the strategy.matrix above.
             const scenarios = ['default', 'devel', 'staging', 'winetricks'];
             const platforms = [
               'alpine-latest',
