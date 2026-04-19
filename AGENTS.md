@@ -106,8 +106,11 @@ molecule syntax
 
 - Root cause: `nix-channel --update` inside Docker can fail with sandbox or SSL issues
 - Isolation: Check `molecule/resources/playbooks/Dockerfile.j2`
-- Fix: Dockerfile converts absolute symlinks to relative; sets `sandbox = false`
-- Prevention: Pin nixpkgs archive URLs with `-f <tarball>` instead of channels
+- Fix: Dockerfile injects proxy CA certs into Nix cert bundle via `ssl-cert-file`
+  in `nix.conf`; cert setup and `nix-channel --update` are in a single `RUN` layer
+- Required hosts: `channels.nixos.org`, `releases.nixos.org`, `cache.nixos.org`
+  (channels.nixos.org redirects to releases.nixos.org; cache.nixos.org serves binaries)
+- Prevention: All three Nix hosts must be in firewall allowlist
 
 > `community.docker.docker_container` not found during molecule run
 
@@ -176,6 +179,16 @@ If network requests fail during molecule tests (e.g. `dl.winehq.org`,
 - Refer to <https://gh.io/copilot/firewall-config> for agent firewall setup.
 - Do not work around blocked URLs; request allowlisting instead.
 - Document required hosts in `.github/agents/FIREWALL.md`.
+
+### Required Hosts
+
+| Host | Purpose |
+| ---- | ------- |
+| `dl.winehq.org` | WineHQ APT repository and GPG key |
+| `channels.nixos.org` | Nix channel metadata (redirects to releases.nixos.org) |
+| `releases.nixos.org` | Nix channel tarballs (redirect target) |
+| `cache.nixos.org` | Nix binary cache (pre-built packages) |
+| `galaxy.ansible.com` | Ansible Galaxy collections |
 
 ## References
 

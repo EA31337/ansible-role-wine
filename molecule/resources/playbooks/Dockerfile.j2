@@ -10,8 +10,9 @@ RUN ln --symbolic --force \
     ln --symbolic --force \
       "$(realpath --relative-to=/etc /etc/group)" /etc/group
 
-# Trust proxy CA certificates (if present on the host during build).
-# Nix uses its own cert store; we append proxy CAs and configure via nix.conf.
+# Trust proxy CA certificates (if present on the host during build),
+# then install required packages for Ansible to work on NixOS.
+# Combined into a single RUN so ssl-cert-file takes effect for nix-channel.
 COPY ca-certificates/ /tmp/host-ca/
 RUN combined="/etc/ssl/certs/ca-bundle-combined.crt" && \
     nix_bundle="/nix/var/nix/profiles/default/etc/ssl/certs/ca-bundle.crt" && \
@@ -21,11 +22,8 @@ RUN combined="/etc/ssl/certs/ca-bundle-combined.crt" && \
       mkdir -p /etc/nix && \
       printf "ssl-cert-file = %s\n" "$combined" >> /etc/nix/nix.conf; \
     fi && \
-    rm -rf /tmp/host-ca
-
-# Install required packages for Ansible to work on NixOS.
-# Include pip to avoid nix-env inside the running container.
-RUN nix-channel --update && \
+    rm -rf /tmp/host-ca && \
+    nix-channel --update && \
     nix-env -iA nixpkgs.procps nixpkgs.python3 nixpkgs.python3Packages.pip
 
 {% endif %}
