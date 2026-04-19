@@ -61,7 +61,7 @@ provisioner:
         wine_release: stable
     host_vars:
       debian-latest:
-        wine_release_codename: jammy
+        wine_release_codename: bookworm
         wine_version: "10.0"
       nixos-latest:
         ansible_python_interpreter: /root/.nix-profile/bin/python3
