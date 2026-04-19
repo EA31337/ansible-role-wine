@@ -18,16 +18,28 @@
       changed_when: false
       failed_when: false
 
-    - name: Extract major version from available wine
+    - name: Extract version info from available wine
       ansible.builtin.set_fact:
-        wine_alpine_major: "{{ wine_available_version.stdout | regex_search('wine-([0-9]+)', '\\1') | first }}"
+        wine_alpine_version: >-
+          {{ wine_available_version.stdout
+          | regex_search('wine-([\d.]+-r\d+)', '\1') | first | default('') }}
       when: wine_available_version.stdout | length > 0
+
+    - name: Extract major version from wine_alpine_version
+      ansible.builtin.set_fact:
+        wine_alpine_major: >-
+          {{ wine_alpine_version | regex_replace('^(\d+).*', '\1') }}
+      when:
+        - wine_alpine_version is defined
+        - wine_alpine_version | length > 0
 
     - name: Validate wine major version (9, 10, or 11)
       ansible.builtin.assert:
         that:
           - wine_alpine_major is defined
-          - wine_alpine_major == (wine_version | default('') | regex_replace('^(\\d+).*', '\\1') | default('9'))
+          - >-
+            wine_alpine_major == (wine_version | default('')
+            | regex_replace('^(\d+).*', '\1') | default('9'))
           - wine_alpine_major in ['9', '10', '11']
         fail_msg: >-
           Available wine version {{ wine_alpine_major | default('unknown') }}
@@ -41,7 +53,11 @@
           - fontconfig
           - p7zip
           - ttf-freefont
-          - "{{ 'wine=' ~ wine_alpine_major ~ '.0' if (wine_alpine_major is defined and wine_alpine_major | length > 0) else 'wine' }}"
+          - >-
+            {{ 'wine=' ~ wine_alpine_version
+            if (wine_alpine_version is defined
+            and wine_alpine_version | length > 0)
+            else 'wine' }}
           - xauth
           - xvfb-run
         state: present

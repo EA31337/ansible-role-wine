@@ -46,7 +46,7 @@ provisioner:
       # See: https://github.com/ansible-community/molecule-plugins/issues/295
       allow_broken_conditionals: true
       # Ensure collections installed to ./collections are found by ansible-playbook.
-      collections_path: ./collections:~/.ansible/collections:/usr/share/ansible/collections
+      collections_path: ${MOLECULE_PROJECT_DIRECTORY}/collections:~/.ansible/collections:/usr/share/ansible/collections
       host_key_checking: false
       # Use the built-in default callback with result_format instead of community.general.yaml
       result_format: yaml

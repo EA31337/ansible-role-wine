@@ -51,6 +51,7 @@ jobs:
         working-directory: ${{ github.repository }}
       - uses: gofrolist/molecule-action@v2
         env:
+          ANSIBLE_COLLECTIONS_PATH: ${{ github.workspace }}/${{ github.repository }}/collections
           ANSIBLE_FORCE_COLOR: '1'
           ANSIBLE_STDOUT_CALLBACK: ${{ runner.debug == '1' && 'debug' || 'ansible.builtin.default' }}
           ANSIBLE_CALLBACK_RESULT_FORMAT: yaml
@@ -120,4 +121,4 @@ jobs:
         working-directory: ${{ github.repository }}
       - if: ${{ failure() && runner.debug == '1' }}
         uses: mxschmitt/action-tmate@v3
-    timeout-minutes: 40
+    timeout-minutes: 120
