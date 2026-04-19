@@ -5,7 +5,7 @@
   tags: always
   vars:
     controller_python: "{{ ansible_playbook_python }}"
-    nixos_built_image: wine-nixos:latest
+    nixos_built_image: wine-nixos:molecule
     target_container: "{{ lookup('env', 'TARGET_CONTAINER') | default('', true) }}"
     is_nixos_target: "{{ target_container in ['', 'wine-on-nixos-latest'] }}"
     nixos_in_inventory: "{{ 'wine-on-nixos-latest' in groups.get('docker_containers', []) }}"
