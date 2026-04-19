@@ -1,7 +1,11 @@
 # Ansible Role: Wine
 
-[![CodeRabbit PR Reviews](https://img.shields.io/coderabbit/prs/github/EA31337/ansible-role-wine?utm_source=oss&utm_medium=github&utm_campaign=EA31337%2Fansible-role-wine&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+PR+Reviews)](https://github.com/EA31337/ansible-role-wine/pulls)
-[![License](https://img.shields.io/badge/license-GPLv3-brightgreen.svg)](LICENSE)
+[![Check](https://img.shields.io/github/actions/workflow/status/EA31337/ansible-role-wine/check.yml?label=Check)](https://github.com/EA31337/ansible-role-wine/actions/workflows/check.yml)
+[![Dev](https://img.shields.io/github/actions/workflow/status/EA31337/ansible-role-wine/devcontainer-ci.yml?label=Dev)](https://github.com/EA31337/ansible-role-wine/actions/workflows/devcontainer-ci.yml)
+[![License](https://img.shields.io/badge/license-GPLv3-brightgreen.svg)](./LICENSE)
+[![Molecule](https://img.shields.io/github/actions/workflow/status/EA31337/ansible-role-wine/molecule.yml?label=Molecule)](https://github.com/EA31337/ansible-role-wine/actions/workflows/molecule.yml)
+[![Pull Requests](https://img.shields.io/github/issues-pr/EA31337/ansible-role-wine.svg)](https://github.com/EA31337/ansible-role-wine/pulls)
+[![Test](https://img.shields.io/github/actions/workflow/status/EA31337/ansible-role-wine/test.yml?label=Test)](https://github.com/EA31337/ansible-role-wine/actions/workflows/test.yml)
 
 Ansible role to install Wine on UNIX-like platforms.
 Wine (originally an acronym for "Wine Is Not an Emulator")
