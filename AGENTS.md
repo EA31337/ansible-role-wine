@@ -198,6 +198,7 @@ If network requests fail during molecule tests (e.g. `dl.winehq.org`,
 | `releases.nixos.org` | Nix channel tarballs (redirect target) |
 | `cache.nixos.org` | Nix binary cache (pre-built packages) |
 | `galaxy.ansible.com` | Ansible Galaxy collections |
+| `raw.githubusercontent.com` | Winetricks script download |
 
 ## References
 

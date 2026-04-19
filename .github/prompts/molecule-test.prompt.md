@@ -79,6 +79,7 @@ For each scenario, report per-platform step results:
 
 - If NixOS fails with SSL errors, check `Dockerfile.j2` CA cert injection.
 - If Wine GPG key download fails, verify `dl.winehq.org` is reachable.
+- If winetricks download fails, verify `raw.githubusercontent.com` is reachable.
 - If pip fails inside molecule-action, ensure `create.yml`/`destroy.yml`
   use `ansible.builtin.command` instead of `ansible.builtin.pip`.
 - Refer to [AGENTS.md](../../AGENTS.md) for the full troubleshooting matrix.
