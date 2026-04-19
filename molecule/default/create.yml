@@ -18,6 +18,13 @@
       register: pip_install_result
 
   tasks:
+    - name: Check for proxy CA certificates on the host
+      ansible.builtin.find:
+        paths: /usr/local/share/ca-certificates
+        patterns: "*.crt"
+      register: host_ca_certs
+      failed_when: false
+
     - name: Render Dockerfiles for custom images
       ansible.builtin.template:
         src: "{{ item.dockerfile }}"
@@ -25,6 +32,20 @@
         mode: "0644"
       loop: "{{ molecule_yml.platforms }}"
       when: item.dockerfile is defined
+
+    - name: Create ca-certificates directory in build context
+      ansible.builtin.file:
+        path: "{{ molecule_ephemeral_directory }}/ca-certificates"
+        state: directory
+        mode: "0755"
+
+    - name: Copy host CA certificates to build context (for proxy environments)
+      ansible.builtin.copy:
+        src: "{{ item.path }}"
+        dest: "{{ molecule_ephemeral_directory }}/ca-certificates/{{ item.path | basename }}"
+        mode: "0644"
+      loop: "{{ host_ca_certs.files | default([]) }}"
+      when: (host_ca_certs.files | default([])) | length > 0
 
     - name: Build custom images when dockerfile is provided
       community.docker.docker_image:
@@ -51,6 +72,13 @@
           if 'nixos' in item.name else omit }}
         recreate: true
         pull: "{{ false if (item.dockerfile is defined or 'nixos' in item.name) else true }}"
+        # Mount host CA certificates for proxy/firewall SSL interception environments.
+        volumes: >-
+          {{ (host_ca_certs.files | default([]))
+             | map(attribute='path')
+             | map('regex_replace', '^(.*)$', '\1:\1:ro')
+             | list
+             or omit }}
       loop: "{{ molecule_yml.platforms }}"
 
     - name: Build instance config entries

@@ -4,7 +4,3 @@
   gather_facts: true
   roles:
     - role: ea31337.wine
-      vars:
-        wine_release: stable
-        wine_release_codename: jammy
-        wine_version: "10.0.0.0~jammy-1"
