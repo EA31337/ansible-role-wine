@@ -143,7 +143,7 @@ molecule syntax
 
 - Root cause: molecule-docker uses non-boolean `when:` in create/destroy playbooks
 - Fix: Set `allow_broken_conditionals: true` in all scenario configs
-- Ref: <https://github.com/ansible-community/molecule-plugins/issues/295>
+- Ref: <https://github.com/ansible-community/molecule-plugins/issues/311>
 
 > Converge fails on wrong Wine version format for a platform
 
