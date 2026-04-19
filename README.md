@@ -6,6 +6,7 @@
 [![Molecule](https://img.shields.io/github/actions/workflow/status/EA31337/ansible-role-wine/molecule.yml?label=Molecule)](https://github.com/EA31337/ansible-role-wine/actions/workflows/molecule.yml)
 [![Pull Requests](https://img.shields.io/github/issues-pr/EA31337/ansible-role-wine.svg)](https://github.com/EA31337/ansible-role-wine/pulls)
 [![Test](https://img.shields.io/github/actions/workflow/status/EA31337/ansible-role-wine/test.yml?label=Test)](https://github.com/EA31337/ansible-role-wine/actions/workflows/test.yml)
+[![Edit][gh-edit-badge]][gh-edit-link]
 
 Ansible role to install Wine on UNIX-like platforms.
 Wine (originally an acronym for "Wine Is Not an Emulator")
@@ -137,3 +138,6 @@ GNU GPL v3
 See: [LICENSE](./LICENSE)
 
 <!-- Named links -->
+
+[gh-edit-badge]: https://img.shields.io/badge/GitHub-edit-purple.svg?logo=github
+[gh-edit-link]: https://github.dev/EA31337/ansible-role-wine
