@@ -57,7 +57,6 @@
       tags: wine
     file: wine/wine.yml
   tags: wine
-  when: cmd_which_wine_res.rc != 0 or (wine_version_mismatch | default(false) | bool)
 
 - name: Ensures Winetricks is present
   when: wine_install_winetricks | bool
@@ -75,7 +74,6 @@
 
     - name: Ensures Winetricks is present
       ansible.builtin.include_tasks: winetricks/winetricks.yml
-      when: cmd_which_winetricks_res.rc != 0
 
     - name: Sets Windows version via winetricks
       ansible.builtin.command: winetricks -q {{ wine_winetricks_winver }}
@@ -83,7 +81,6 @@
       changed_when: false
       poll: 0
       when:
-        - cmd_which_winetricks_res.rc == 0
         - wine_winetricks_winver is defined
         - wine_winetricks_winver | length > 0
 
