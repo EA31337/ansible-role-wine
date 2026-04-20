@@ -1,4 +1,0 @@
-$(cat <<'DIFF'
-$(webfetch --url https://github.com/EA31337/ansible-role-xvfb/pull/35.diff --format text)
-DIFF
-)
