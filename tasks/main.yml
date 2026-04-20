@@ -23,7 +23,9 @@
 
 - name: OS-specific Wine version detection
   tags: wine
-  when: detected_os_family == 'NixOS'
+  when:
+    - detected_os_family == 'NixOS'
+    - nixos_early_check.rc | default(1) == 0
   block:
     - name: Check current Wine version on NixOS
       ansible.builtin.shell: |
