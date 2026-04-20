@@ -7,6 +7,7 @@
   vars:
     # Use controller Python (Ansible's interpreter)
     ansible_python_interpreter: "{{ ansible_playbook_python }}"
+    host_ca_certs: []
 
   tasks:
     - name: Ensure Python dependencies are installed on controller
@@ -86,9 +87,10 @@
       ansible.builtin.async_status:
         jid: "{{ item.ansible_job_id }}"
       loop: "{{ container_results.results }}"
-      register: async_results
-      until: async_results.finished
+      register: async_job_results
+      until: async_job_results.finished
       retries: 300
+      delay: 5
 
     - name: Write molecule instance config
       ansible.builtin.copy:
