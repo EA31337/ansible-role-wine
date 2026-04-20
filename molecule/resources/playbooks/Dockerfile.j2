@@ -1,6 +1,7 @@
 {% set base_image = item.base_image | default(item.image) %}
-{% if 'nixos' in base_image %}
 FROM {{ base_image }}
+
+{% if 'nixos' in base_image %}
 
 # Workaround for containerd 2.2.0+ / Go 1.24 "path escapes from parent" error.
 # Convert absolute symlinks (/nix/store/...) to relative ones.
@@ -27,5 +28,20 @@ RUN combined="/etc/nix/ca-bundle.crt" && \
 # Install required packages for Ansible to work on NixOS.
 RUN nix-channel --update && \
     nix-env -iA nixpkgs.procps nixpkgs.python3 nixpkgs.python3Packages.pip
+
+{% elif 'alpine' in base_image %}
+
+# Trust proxy CA certificates (if present on the host during build).
+COPY ca-certificates/ /tmp/host-ca/
+RUN if ls /tmp/host-ca/*.crt >/dev/null 2>&1; then \
+      mkdir -p /usr/local/share/ca-certificates && \
+      cp /tmp/host-ca/*.crt /usr/local/share/ca-certificates/ && \
+      # Append to the live bundle so apk can fetch packages immediately.
+      for c in /tmp/host-ca/*.crt; do cat "$c" >> /etc/ssl/certs/ca-certificates.crt; done \
+    fi && \
+    rm -rf /tmp/host-ca
+
+RUN apk update && \
+    apk add --no-cache python3 sudo bash ca-certificates
 
 {% endif %}

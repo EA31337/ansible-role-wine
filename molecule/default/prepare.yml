@@ -11,7 +11,11 @@
         elif command -v apk >/dev/null 2>&1; then
           apk add --no-cache sudo
         elif command -v apt-get >/dev/null 2>&1; then
-          apt-get update -qq && apt-get install -y -q sudo
+          if [ -f /etc/os-release ] && grep -qi '^ID=ubuntu' /etc/os-release; then
+            sed -i -e 's|http://archive.ubuntu.com/ubuntu|http://azure.archive.ubuntu.com/ubuntu|g' \
+              -e 's|http://security.ubuntu.com/ubuntu|http://azure.archive.ubuntu.com/ubuntu|g' /etc/apt/sources.list
+          fi
+          apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -q sudo
         elif command -v dnf >/dev/null 2>&1; then
           dnf install -y sudo
         elif command -v zypper >/dev/null 2>&1; then
@@ -50,7 +54,11 @@
         elif command -v apk >/dev/null 2>&1; then
           apk add --no-cache python3 py3-pip
         elif command -v apt-get >/dev/null 2>&1; then
-          apt-get update -qq && apt-get install -y -q python3-minimal
+          if [ -f /etc/os-release ] && grep -qi '^ID=ubuntu' /etc/os-release; then
+            sed -i -e 's|http://archive.ubuntu.com/ubuntu|http://azure.archive.ubuntu.com/ubuntu|g' \
+              -e 's|http://security.ubuntu.com/ubuntu|http://azure.archive.ubuntu.com/ubuntu|g' /etc/apt/sources.list
+          fi
+          apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -q python3-minimal
         elif command -v dnf >/dev/null 2>&1; then
           dnf install -y python3
         elif command -v zypper >/dev/null 2>&1; then

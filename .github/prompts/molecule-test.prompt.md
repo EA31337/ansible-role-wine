@@ -10,8 +10,11 @@ Run all Molecule scenarios and report results as a table.
    ansible-galaxy collection install -r requirements.yml -p collections
    ```
 
-2. For each scenario below, run each Molecule step individually
-   to isolate failures:
+2. For each platform, run each Molecule step individually
+   to isolate failures. Since Molecule runs all platforms together,
+   if a single platform fails (e.g., Alpine TLS in sandboxed
+   environments), comment it out in `molecule.yml` temporarily and
+   re-run the step for the remaining platforms:
 
    ```bash
    molecule destroy -s <scenario>

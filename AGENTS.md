@@ -38,6 +38,7 @@ For project overview and install instructions, see [README.md](README.md).
 | `requirements.yml` | Galaxy collection requirements |
 | `.github/workflows/molecule.yml` | CI: Molecule test matrix |
 | `.github/workflows/check.yml` | CI: pre-commit / linting |
+| `.github/prompts/molecule-test.prompt.md` | Step-by-step Molecule test runner prompt |
 
 ## Agent Directives
 
