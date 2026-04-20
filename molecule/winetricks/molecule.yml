@@ -75,5 +75,16 @@ provisioner:
     verify: ../default/verify.yml
   ssh_connection:
     pipelining: true
+scenario:
+  name: winetricks
+  test_sequence:
+    - dependency
+    - destroy
+    - syntax
+    - create
+    - prepare
+    - converge
+    - verify
+    - destroy
 verifier:
   name: ansible
