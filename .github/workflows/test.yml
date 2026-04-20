@@ -57,7 +57,7 @@ jobs:
         uses: actions/cache@v4
         with:
           key: galaxy-${{ hashFiles(format('{0}/requirements.yml', github.repository)) }}
-          path: ${{ github.workspace }}/.ansible/collections
+          path: ~/.ansible/collections
       - name: Install Ansible Galaxy requirements
         run: |
           ansible-galaxy collection install -r requirements.yml
