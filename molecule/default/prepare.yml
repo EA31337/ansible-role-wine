@@ -34,6 +34,9 @@
           dnf install -y python3 sudo ca-certificates
         elif command -v zypper >/dev/null 2>&1; then
           zypper --non-interactive install python3 sudo ca-certificates
+        else
+          echo "Unsupported system: no supported package manager found for bootstrapping Python and sudo" >&2
+          exit 1
         fi
       changed_when: false
 
