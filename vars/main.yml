@@ -20,3 +20,14 @@ wine_package_command_map:
   gawk: awk
   p7zip: 7z
   unzip: unzip
+
+# Fontconfig configuration
+wine_fontconfig_cache_dir: ".cache/fontconfig"
+wine_fontconfig_config_dir: ".config/fontconfig"
+wine_fontconfig_config_file: ".config/fontconfig/fonts.conf"
+wine_fontconfig_fonts_dirs:
+  - ".fonts"
+  - ".local/share/fonts"
+wine_fontconfig_system_fonts_dir: "/usr/share/fonts"
+wine_fontconfig_system_config_file: "/etc/fonts/fonts.conf"
+wine_fontconfig_system_config_path: "/etc/fonts"
