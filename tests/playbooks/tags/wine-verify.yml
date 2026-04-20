@@ -25,7 +25,7 @@
 
   tags: always
   vars:
-    nixos_built_image: wine-nixos:latest
+    nixos_built_image: wine-nixos:molecule
     container_image_map:
       wine-on-alpine-latest: alpine:3.20
       wine-on-debian-latest: debian:latest
