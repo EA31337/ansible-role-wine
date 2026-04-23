@@ -10,7 +10,7 @@
   block:
     - name: Ensure Winetricks dependencies are installed
       ansible.builtin.apt:
-        name: "{{ wine_install_winetricks_dependencies }}"
+        name: "{{ wine_selected_winetricks_dependencies }}"
         state: present
         update_cache: true
         install_recommends: false

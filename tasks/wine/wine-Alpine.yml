@@ -59,9 +59,7 @@
             [('wine=' ~ wine_alpine_version
               if (wine_alpine_version is defined and wine_alpine_version | length > 0)
               else 'wine')] +
-            (wine_install_winetricks_dependencies |
-              intersect(wine_winetricks_dependencies_os_family[detected_os_family |
-              default(ansible_os_family)] | default([])))
+            wine_selected_winetricks_dependencies
           }}
         state: present
 

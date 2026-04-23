@@ -17,21 +17,34 @@
       changed_when: false
       check_mode: false
 
-    - name: Ensures dependencies are present
-      ansible.builtin.shell: |
-        set -euo pipefail
-        {% if wine_package_command_map[item] | default('') | length > 0 %}
-        if [ -f "{{ privileged_home.stdout }}/.nix-profile/bin/{{ wine_package_command_map[item] }}" ]; then
-          echo "Package {{ item }} already present via binary check."
-          exit 0
-        fi
-        {% endif %}
-        if nix-env -q | grep -qE "^{{ item }}-|^nixpkgs.{{ item }}$"; then
-          echo "Package {{ item }} already present via nix-env -q."
-          exit 0
-        fi
-        nix-env -iA nixpkgs.{{ item }}
-      loop: "{{ wine_winetricks_dependencies_os_family['NixOS'] | default(wine_install_winetricks_dependencies) }}"
-      register: nix_install
-      changed_when: "'installing' in nix_install.stdout or 'building' in nix_install.stdout"
-      when: nix_store_stat.stat.exists
+    - name: Ensures binary-backed dependencies are present
+      ansible.builtin.command:
+        cmd: nix-env -iA nixpkgs.{{ item }}
+        creates: >-
+          {{ privileged_home.stdout ~ '/.nix-profile/bin/' ~ wine_package_command_map[item] }}
+      loop: "{{ wine_selected_winetricks_dependencies }}"
+      when:
+        - nix_store_stat.stat.exists
+        - wine_package_command_map[item] | default('') | length > 0
+
+    - name: Check if data-only dependencies are already installed
+      ansible.builtin.command:
+        cmd: nix-env -q {{ item }}
+      register: nix_data_dep_check
+      changed_when: false
+      failed_when: false
+      loop: "{{ wine_selected_winetricks_dependencies }}"
+      when:
+        - nix_store_stat.stat.exists
+        - wine_package_command_map[item] | default('') | length == 0
+
+    - name: Ensures data-only dependencies are present
+      ansible.builtin.command:
+        cmd: nix-env -iA nixpkgs.{{ item.item }}
+      register: nix_data_install
+      changed_when: "'installing' in nix_data_install.stdout or 'building' in nix_data_install.stdout"
+      loop: "{{ nix_data_dep_check.results | default([]) }}"
+      when:
+        - nix_store_stat.stat.exists
+        - item.rc is defined
+        - item.rc != 0

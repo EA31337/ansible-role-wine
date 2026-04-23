@@ -43,7 +43,7 @@
     wine_become_method["_default"]) }}
   when:
     - wine_install_winetricks | bool
-    - wine_install_winetricks_dependencies | length > 0
+    - wine_selected_winetricks_dependencies | length > 0
   block:
     - name: Check if required tools are installed  # noqa risky-shell-pipe
       ansible.builtin.shell: |
@@ -59,9 +59,7 @@
         fi
       changed_when: false
       register: dependency_check_results
-      loop: >-
-        {{ wine_winetricks_dependencies_os_family[detected_os_family |
-        default(ansible_os_family)] | default(wine_install_winetricks_dependencies) }}
+      loop: "{{ wine_selected_winetricks_dependencies }}"
       failed_when: false
 
     - name: Display dependency check results
@@ -76,8 +74,7 @@
           dependency_check_results.results |
           selectattr('rc', 'eq', 0) |
           list |
-          length == (wine_winetricks_dependencies_os_family[detected_os_family |
-          default(ansible_os_family)] | default(wine_install_winetricks_dependencies) | length)
+          length == (wine_selected_winetricks_dependencies | length)
         fail_msg: >-
           Some winetricks dependencies failed verification.
           Missing tools:

@@ -4,5 +4,5 @@
   community.general.homebrew:
     name: "{{ item }}"
     state: present
-  loop: "{{ wine_install_winetricks_dependencies }}"
+  loop: "{{ wine_selected_winetricks_dependencies }}"
   when: wine_install_winetricks | bool

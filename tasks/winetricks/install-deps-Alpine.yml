@@ -8,5 +8,5 @@
 
     - name: Install winetricks dependencies (Alpine)
       ansible.builtin.package:
-        name: "{{ wine_install_winetricks_dependencies }}"
+        name: "{{ wine_selected_winetricks_dependencies }}"
         state: present

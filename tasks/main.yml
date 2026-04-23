@@ -26,6 +26,13 @@
           else (ansible_distribution if ansible_distribution == 'Ubuntu' else ansible_os_family) }}
         cacheable: true
 
+    - name: Set wine_selected_winetricks_dependencies fact
+      ansible.builtin.set_fact:
+        wine_selected_winetricks_dependencies: >-
+          {{ wine_winetricks_dependencies_os_family[detected_os_family] |
+          default(wine_install_winetricks_dependencies) }}
+        cacheable: true
+
 - name: OS-specific Wine version detection
   tags: wine
   when:

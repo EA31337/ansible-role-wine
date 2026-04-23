@@ -27,4 +27,4 @@
           else (detected_os_family | default(ansible_os_family)) }}.yml
       tags: winetricks-deps
       when:
-        - wine_install_winetricks_dependencies | length > 0
+        - wine_selected_winetricks_dependencies | length > 0
