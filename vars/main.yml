@@ -40,6 +40,9 @@ wine_winetricks_dependencies_os_family:
     - ttf-freefont
     - xauth
     - xvfb-run
+  Darwin:
+    - cabextract
+    - p7zip
   Debian:
     - cabextract
     - curl
@@ -62,6 +65,21 @@ wine_winetricks_dependencies_os_family:
     - unzip
     - xauth
     - xvfb-run
+  Ubuntu:
+    - cabextract
+    - curl
+    - fontconfig
+    - fonts-freefont-ttf
+    - gawk
+    - p7zip
+    - unzip
+    - winbind
+    - xauth
+    - xvfb
+
+# Maps NixOS attribute names to installed package names for data-only packages
+wine_data_pkg_map:
+  freefont_ttf: freefont-ttf
 
 # Fontconfig configuration
 wine_fontconfig_cache_dir: ".cache/fontconfig"

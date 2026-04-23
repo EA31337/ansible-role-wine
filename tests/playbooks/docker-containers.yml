@@ -100,13 +100,15 @@
 
     - name: Install Python 3 on Alpine
       ansible.builtin.raw: |
-        test -e "{{ ansible_python_interpreter }}" || (apk update && apk add --no-cache python3 py3-pip sudo bash)
+        test -e "{{ ansible_python_interpreter }}" || \
+        (apk update && apk add --no-cache python3 py3-pip sudo bash procps)
       changed_when: false
       when: container_image is search("alpine")
 
     - name: Install Python 3 on Ubuntu/Debian
       ansible.builtin.raw: |
-        test -e "{{ ansible_python_interpreter }}" || (apt-get update && apt-get install -y python3 python3-pip sudo)
+        test -e "{{ ansible_python_interpreter }}" || \
+        (apt-get update && apt-get install -y python3 python3-pip sudo procps)
       changed_when: false
       register: python_install_result
       retries: 3
@@ -116,15 +118,21 @@
 
     - name: Install or verify Python on NixOS
       ansible.builtin.raw: |
-        # Check if Python is already installed from Dockerfile
-        if [ -x /root/.nix-profile/bin/python3 ]; then
-          /root/.nix-profile/bin/python3 --version
-          exit 0
-        fi
-        # If not, install it now
         PATH=/root/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH
-        nix-channel --update
-        nix-env -iA nixpkgs.python3 nixpkgs.python3Packages.pip nixpkgs.sudo nixpkgs.procps
+        missing_packages=""
+        command -v python3 >/dev/null 2>&1 || missing_packages="$missing_packages nixpkgs.python3"
+        if ! command -v pip3 >/dev/null 2>&1 && ! command -v pip >/dev/null 2>&1; then
+          missing_packages="$missing_packages nixpkgs.python3Packages.pip"
+        fi
+        command -v sudo >/dev/null 2>&1 || missing_packages="$missing_packages nixpkgs.sudo"
+        command -v ps >/dev/null 2>&1 || missing_packages="$missing_packages nixpkgs.procps"
+
+        if [ -n "$missing_packages" ]; then
+          nix-channel --update
+          nix-env -iA $missing_packages
+        else
+          python3 --version
+        fi
       changed_when: false
       when: container_image is search("nixos")
 

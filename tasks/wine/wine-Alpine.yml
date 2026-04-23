@@ -20,7 +20,7 @@
       ansible.builtin.set_fact:
         wine_alpine_version: >-
           {{ (wine_available_version.stdout | default('')
-          | regex_search('wine-([\d.]+-r\d+)', '\1')) | first | default('', true) }}
+          | regex_search('wine-([\d.]+-r\d+)', '\1')) | first | default('', true) | trim }}
 
     - name: Fail if wine version could not be parsed from apk output
       ansible.builtin.fail:
@@ -31,7 +31,7 @@
 
     - name: Extract major version from wine_alpine_version
       ansible.builtin.set_fact:
-        wine_alpine_major: "{{ wine_alpine_version | regex_replace('^(\\d+).*', '\\1') | default('9', true) }}"
+        wine_alpine_major: "{{ wine_alpine_version | regex_search('^\\d+') | default('9', true) }}"
       when: wine_alpine_version | length > 0
 
 
@@ -83,15 +83,13 @@
         state: directory
         mode: '0755'
         owner: "{{ ansible_user_id }}"
-      loop:
-        - "{{ wine_fontconfig_cache_dir }}"
-        - "{{ wine_fontconfig_config_dir }}"
-        - "{{ wine_fontconfig_fonts_dirs[0] }}"
-        - "{{ wine_fontconfig_fonts_dirs[1] }}"
+      loop: >-
+        {{ [wine_fontconfig_cache_dir, wine_fontconfig_config_dir]
+           + (wine_fontconfig_fonts_dirs | default([])) }}
 
-    - name: Set fontconfig_path fact for Alpine
+    - name: Set wine_fontconfig_path fact for Alpine
       ansible.builtin.set_fact:
-        fontconfig_path: ""
+        wine_fontconfig_path: ""
 
     - name: Write fontconfig config for Alpine
       ansible.builtin.template:
@@ -114,10 +112,6 @@
         dest: "/etc/profile.d/wine.sh"
         mode: '0644'
         owner: root
-      become: true
-      become_method: >-
-        {{ wine_become_method.get(wine_detected_os_family | default(ansible_os_family),
-        wine_become_method["_default"]) }}
 
     - name: Set fontconfig environment in ~/.bashrc (Alpine)
       ansible.builtin.lineinfile:
@@ -130,8 +124,8 @@
     - name: Rebuild fontconfig cache for Alpine
       ansible.builtin.command: >-
         fc-cache -f
-        {{ ansible_user_dir }}/{{ wine_fontconfig_fonts_dirs[0] }}
-        {{ ansible_user_dir }}/{{ wine_fontconfig_fonts_dirs[1] }}
+        {{ wine_fontconfig_fonts_dirs
+           | map('regex_replace', '^', ansible_user_dir ~ '/') | join(' ') }}
       become: false
       changed_when: false
 

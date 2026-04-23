@@ -55,7 +55,16 @@
           version=$("$cmd" --version 2>&1 | head -n 1 || echo "unknown version")
           echo "$path ($version)"
         else
-          echo "Package {{ item }} is a data/font package, skipping binary check"
+          # Data/font package verification
+          {% if wine_detected_os_family == 'Alpine' %}
+          apk info -e "{{ item }}"
+          {% elif wine_detected_os_family == 'NixOS' %}
+          nix-env -q "{{ wine_data_pkg_map[item] | default(item) }}"
+          {% elif wine_detected_os_family in ['Debian', 'Ubuntu'] %}
+          dpkg -s "{{ item }}"
+          {% else %}
+          echo "Package {{ item }} is a data/font package, skipping verification"
+          {% endif %}
         fi
       changed_when: false
       register: dependency_check_results

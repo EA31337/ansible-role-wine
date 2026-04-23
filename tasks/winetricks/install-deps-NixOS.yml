@@ -29,7 +29,7 @@
 
     - name: Check if data-only dependencies are already installed
       ansible.builtin.command:
-        cmd: nix-env -q {{ item }}
+        cmd: nix-env -q {{ wine_data_pkg_map[item] | default(item) }}
       register: nix_data_dep_check
       when:
         - nix_store_stat.stat.exists
@@ -46,5 +46,5 @@
         - nix_store_stat.stat.exists
         - item.rc is defined
         - item.rc != 0
-      changed_when: "'installing' in nix_data_install.stdout or 'building' in nix_data_install.stdout"
+      changed_when: nix_data_install.rc == 0
       loop: "{{ nix_data_dep_check.results | default([]) }}"

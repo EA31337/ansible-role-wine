@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
 <fontconfig>
-  <dir prefix="default">{{ fontconfig_path }}/share/fonts</dir>
-  <dir prefix="default">/usr/share/fonts</dir>
-  <dir prefix="default">/usr/local/share/fonts</dir>
-  <dir prefix="default">{{ ansible_user_dir }}/.fonts</dir>
-  <dir prefix="default">{{ ansible_user_dir }}/.local/share/fonts</dir>
-  <cachedir prefix="default">{{ ansible_user_dir }}/.cache/fontconfig</cachedir>
-  <include ignore_missing="yes">{{ fontconfig_path }}/etc/fonts/fonts.conf</include>
+  <dir prefix="default">{{ wine_fontconfig_path }}/share/fonts</dir>
+  <dir prefix="default">{{ wine_fontconfig_system_fonts_dir }}</dir>
+  {% for item in wine_fontconfig_fonts_dirs %}
+  <dir>~{{ item }}</dir>
+  {% endfor %}
+  <include ignore_missing="yes">{{ wine_fontconfig_path }}/etc/fonts/fonts.conf</include>
+
   <config>
     <rescan><int>30</int></rescan>
   </config>

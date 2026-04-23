@@ -93,21 +93,38 @@
       changed_when: false
       failed_when: false
 
-    - name: Set fontconfig_path fact
+    - name: Set wine_fontconfig_path fact
       ansible.builtin.set_fact:
-        fontconfig_path: "{{ fontconfig_info.stdout | regex_replace('.*=', '') | split() | last }}"
-      when: fontconfig_info.stdout | length > 0
+        wine_fontconfig_path: "{{ fontconfig_info.stdout | regex_replace('.*=', '') | split() | last }}"
 
-    - name: Create fontconfig directories
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: directory
-        mode: '0755'
-      loop:
-        - "{{ ansible_user_dir }}/.config/fontconfig"
-        - "{{ ansible_user_dir }}/.cache/fontconfig"
-        - "{{ ansible_user_dir }}/.fonts"
-      when: fontconfig_path is defined
+    - name: Set fontconfig environment in ~/.bashrc
+      ansible.builtin.lineinfile:
+        path: ~/.bashrc
+        line: "[ -f ~/.wine_env ] && . ~/.wine_env"
+        create: true
+        mode: '0644'
+      when: wine_fontconfig_path is defined
+
+    - name: Rebuild fontconfig cache
+      ansible.builtin.command: fc-cache -f
+      changed_when: false
+      when: wine_fontconfig_path is defined
+
+    - name: Write fontconfig config
+      ansible.builtin.template:
+        src: fonts.conf.j2
+        dest: "{{ ansible_user_dir }}/{{ wine_fontconfig_config_file }}"
+        mode: '0644'
+        force: true
+      when: wine_fontconfig_path is defined
+
+    - name: Write wine environment config
+      ansible.builtin.template:
+        src: wine_env.j2
+        dest: ~/.wine_env
+        mode: '0644'
+      when: wine_fontconfig_path is defined
+
 
     - name: Write fontconfig configuration
       ansible.builtin.template:
