@@ -31,7 +31,7 @@
 
     - name: Extract major version from wine_alpine_version
       ansible.builtin.set_fact:
-        wine_alpine_major: "{{ (wine_alpine_version | string | regex_search('^\\d+')) or '9' }}"
+        wine_alpine_major: "{{ wine_alpine_version | regex_replace('^(\\d+).*', '\\1') | default('9', true) }}"
       when: wine_alpine_version | length > 0
 
 
@@ -39,9 +39,9 @@
       ansible.builtin.assert:
         that:
           - wine_alpine_major is defined
-          - wine_alpine_major in ['9', '10', '11']
+          - wine_alpine_major | trim in ['9', '10', '11']
         fail_msg: >-
-          Available wine version {{ wine_alpine_major | default('unknown') }}
+          Available wine version {{ wine_alpine_major | default('unknown') | trim }}
           is not supported (expected 9, 10, or 11).
       when: wine_alpine_version | length > 0
 
@@ -49,8 +49,8 @@
       ansible.builtin.assert:
         that:
           - >-
-            wine_alpine_major == ((wine_version | default('') |
-            regex_search('^(\\d+)', '\\1')) | first | default('9', true))
+            (wine_alpine_major | trim) == ((wine_version | default('') |
+            regex_replace('^(\\d+).*', '\\1')) | default('9', true))
         fail_msg: >-
           Requested wine version {{ wine_version }} does not match available
           version {{ wine_alpine_version }}

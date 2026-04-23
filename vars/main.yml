@@ -28,6 +28,7 @@ wine_package_command_map:
   unzip: unzip
   winbind: wbinfo
   xauth: xauth
+  xvfb: xvfb-run
   xvfb-run: xvfb-run
 
 # Operating system specific winetricks dependencies.
@@ -49,7 +50,7 @@ wine_winetricks_dependencies_os_family:
     - unzip
     - winbind
     - xauth
-    - xvfb-run
+    - xvfb
   NixOS:
     - cabextract
     - curl
