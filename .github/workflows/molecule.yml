@@ -133,22 +133,15 @@ jobs:
               lookup[job.name] = job.conclusion;
             }
 
-            let table = '| Platform |';
-            for (const s of scenarios) table += ` ${s} |`;
-            table += '\n| --- |';
-            for (const s of scenarios) table += ' :---: |';
-            table += '\n';
-
-            for (const p of platforms) {
-              table += `| \`${p}\` |`;
-              for (const s of scenarios) {
-                const key = `${s} / ${p}`;
-                table += ` ${icon(lookup[key])} |`;
-              }
-              table += '\n';
-            }
+            const tableData = [
+              ['Platform', ...scenarios].map((data) => ({ data, header: true })),
+              ...platforms.map((p) => [
+                `\`${p}\``,
+                ...scenarios.map((s) => icon(lookup[`${s} / ${p}`])),
+              ]),
+            ];
 
             await core.summary
               .addHeading('Molecule Test Results', 2)
-              .addRaw(table)
+              .addTable(tableData)
               .write();
