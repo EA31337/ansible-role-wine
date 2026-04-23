@@ -31,9 +31,7 @@
 
     - name: Extract major version from wine_alpine_version
       ansible.builtin.set_fact:
-        wine_alpine_major: >-
-          {% set _m = wine_alpine_version | string | regex_search('^(\\d+)') %}
-          {{ _m if _m else '9' }}
+        wine_alpine_major: "{{ (wine_alpine_version | string | regex_search('^\\d+')) or '9' }}"
       when: wine_alpine_version | length > 0
 
 
