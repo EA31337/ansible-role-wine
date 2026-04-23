@@ -7,7 +7,7 @@
 - name: Ensure Wine is installed (Nix)
   become: "{{ ansible_user_id != 'root' }}"
   become_method: >-
-    {{ wine_become_method.get(detected_os_family | default(ansible_os_family),
+    {{ wine_become_method.get(wine_detected_os_family | default(ansible_os_family),
     wine_become_method["_default"]) }}
   when: nix_store_stat.stat.exists
   block:
@@ -22,7 +22,9 @@
 
     - name: Set effective wine version for NixOS
       ansible.builtin.set_fact:
-        wine_version_nixos: "{{ wine_version | default('') | regex_replace('^(\\d+).*', '\\1') | default('9', true) }}"
+        wine_version_nixos: >-
+          {{ wine_version | default('') | regex_replace('^([0-9]+).*', '\\1')
+             | default('9', true) | string | trim }}
 
     - name: Determine if Wine needs installation
       ansible.builtin.set_fact:
@@ -74,10 +76,13 @@
         {% if nixpkgs_revision != 'nixpkgs' %}
         # Install from pinned archive to avoid channel bugs in Docker
         nix-env -f https://github.com/NixOS/nixpkgs/archive/{{ nixpkgs_revision }}.tar.gz -iA \
-          {{ wine_pkg }} fontconfig freetype gawk xorg.libX11 xorg.libxcb
+          {{ wine_pkg }} fontconfig freetype gawk xorg.libX11 xorg.libxcb \
+          {{ wine_selected_winetricks_dependencies | join(' ') }}
         {% else %}
         nix-env -iA \
-          nixpkgs.{{ wine_pkg }} nixpkgs.fontconfig nixpkgs.freetype nixpkgs.gawk nixpkgs.xorg.libX11 nixpkgs.xorg.libxcb
+          nixpkgs.{{ wine_pkg }} nixpkgs.fontconfig nixpkgs.freetype \
+          nixpkgs.gawk nixpkgs.xorg.libX11 nixpkgs.xorg.libxcb \
+          {{ wine_selected_winetricks_dependencies | map('regex_replace', '^', 'nixpkgs.') | join(' ') }}
         {% endif %}
       when: wine_needs_install | bool
       register: wine_install
@@ -92,46 +97,22 @@
       changed_when: false
       failed_when: false
 
-    - name: Set fontconfig_path fact
+    - name: Set wine_fontconfig_path fact
       ansible.builtin.set_fact:
-        fontconfig_path: "{{ fontconfig_info.stdout | regex_replace('.*=', '') | split() | last }}"
-      when: fontconfig_info.stdout | length > 0
+        wine_fontconfig_path: >-
+          {{ fontconfig_info.stdout | regex_replace('.*=', '') | split() | last
+             if (fontconfig_info.stdout | default('') | length > 0) else '' }}
 
-    - name: Create fontconfig directories
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: directory
-        mode: '0755'
-      loop:
-        - "{{ ansible_user_dir }}/.config/fontconfig"
-        - "{{ ansible_user_dir }}/.cache/fontconfig"
-        - "{{ ansible_user_dir }}/.fonts"
-      when: fontconfig_path is defined
-
-    - name: Write fontconfig configuration
-      ansible.builtin.template:
-        src: fonts.conf.j2
-        dest: "{{ ansible_user_dir }}/{{ wine_fontconfig_config_file }}"
-        mode: '0644'
-      when: fontconfig_path is defined
-
-    - name: Set fontconfig environment in ~/.bashrc (NixOS)
+    - name: Set fontconfig environment in ~/.bashrc
       ansible.builtin.lineinfile:
         path: "{{ ansible_user_dir }}/.bashrc"
         line: "[ -f ~/.wine_env ] && . ~/.wine_env"
         create: true
         mode: '0644'
-      when: fontconfig_path is defined
-
-    - name: Write wine_env file
-      ansible.builtin.template:
-        src: wine_env.j2
-        dest: "{{ ansible_user_dir }}/.wine_env"
-        mode: '0644'
-      when: fontconfig_path is defined
+      when: wine_fontconfig_path | length > 0
 
 - name: Ensures ~/.wine is initialized
-  ansible.builtin.command: wineboot --init
+  ansible.builtin.command: xvfb-run -a wineboot --init
   environment:
     PATH: >-
       {{ ansible_user_dir }}/.nix-profile/bin:

@@ -2,9 +2,27 @@
 - name: Ensures Wine is present
   become: true
   become_method: >-
-    {{ wine_become_method.get(detected_os_family | default(ansible_os_family),
+    {{ wine_become_method.get(wine_detected_os_family | default(ansible_os_family),
     wine_become_method["_default"]) }}
   block:
+
+    - name: Read existing Alpine repositories
+      ansible.builtin.slurp:
+        src: /etc/apk/repositories
+      register: alpine_repos_raw
+
+    - name: Derive Alpine release from main repo entry
+      ansible.builtin.set_fact:
+        alpine_main_repo_line: >-
+          {{ (alpine_repos_raw.content | b64decode).splitlines()
+             | select('search', '/main$') | list | first | default('') }}
+
+    - name: Ensure matching community repository is enabled (Alpine)
+      ansible.builtin.lineinfile:
+        path: /etc/apk/repositories
+        line: "{{ alpine_main_repo_line | regex_replace('/main$', '/community') }}"
+        state: present
+      when: alpine_main_repo_line | length > 0
 
     - name: Update apk cache
       ansible.builtin.command: apk update
@@ -20,108 +38,132 @@
       ansible.builtin.set_fact:
         wine_alpine_version: >-
           {{ (wine_available_version.stdout | default('')
-          | regex_search('wine-([\d.]+-r\d+)', '\1')) | first | default('', true) }}
+          | regex_findall('wine-([0-9.]+-r[0-9]+)') | first) | default('', true) | trim }}
+
+    - name: Fail if wine version could not be parsed from apk output
+      ansible.builtin.fail:
+        msg: >-
+          Could not parse a wine version from 'apk search -v -e wine' output.
+          Unexpected format: {{ wine_available_version.stdout | default('(empty)') }}
+      when: wine_alpine_version | length == 0
 
     - name: Extract major version from wine_alpine_version
       ansible.builtin.set_fact:
         wine_alpine_major: >-
-          {{ wine_alpine_version | regex_replace('^(\d+).*', '\1') }}
+          {{ (wine_alpine_version | regex_findall('^([0-9]+)') | first | default('9')) | string | trim }}
       when: wine_alpine_version | length > 0
 
     - name: Validate wine major version (9, 10, or 11)
       ansible.builtin.assert:
         that:
           - wine_alpine_major is defined
-          - wine_alpine_major in ['9', '10', '11']
+          - (wine_alpine_major | string | trim) in ['9', '10', '11']
         fail_msg: >-
-          Available wine version {{ wine_alpine_major | default('unknown') }}
+          Available wine version {{ wine_alpine_major | default('unknown') | string | trim }}
           is not supported (expected 9, 10, or 11).
       when: wine_alpine_version | length > 0
 
     - name: Validate requested wine version matches available
       ansible.builtin.assert:
         that:
-          - wine_alpine_major == (wine_version | regex_replace('^(\d+).*', '\1'))
-        fail_msg: >-
-          Requested wine version {{ wine_version }} does not match available
-          version {{ wine_alpine_version }}
+          - >-
+            {% set _m = wine_version | default('') | regex_findall('^([0-9]+)') %}
+            {% set major = (_m | first | string | trim) if (_m | length > 0) else '9' %}
+            (wine_alpine_major | string | trim) == (major | string | trim)
+        fail_msg: "Requested wine version {{ wine_version }} does not match available version {{ wine_alpine_version }}"
         success_msg: "Wine version {{ wine_alpine_major }} matches requested {{ wine_version }}"
       when:
         - wine_version is defined
         - wine_version | length > 0
         - wine_alpine_version | length > 0
 
-    - name: Ensures Wine and runtime dependencies are present ({{ ansible_os_family }})
+    - name: Ensures Wine and runtime dependencies are present (Alpine)
       ansible.builtin.package:
         name: >-
           {{
             [('wine=' ~ wine_alpine_version
               if (wine_alpine_version is defined and wine_alpine_version | length > 0)
               else 'wine')] +
-            (wine_install_winetricks_dependencies |
-              intersect(['fontconfig', 'p7zip', 'ttf-freefont', 'xauth', 'xvfb-run']))
+            wine_selected_winetricks_dependencies
           }}
         state: present
 
-- name: Ensure fontconfig directories are present (Alpine)
-  ansible.builtin.file:
-    path: "{{ ansible_user_dir }}/{{ item }}"
-    state: directory
-    mode: '0755'
-  loop:
-    - "{{ wine_fontconfig_cache_dir }}"
-    - "{{ wine_fontconfig_config_dir }}"
-    - "{{ wine_fontconfig_fonts_dirs[0] }}"
-    - "{{ wine_fontconfig_fonts_dirs[1] }}"
+- name: Configure fontconfig and environment (Alpine)
+  become: true
+  become_method: >-
+    {{ wine_become_method.get(wine_detected_os_family | default(ansible_os_family),
+    wine_become_method["_default"]) }}
+  block:
+    - name: Ensure fontconfig directories are present (Alpine)
+      ansible.builtin.file:
+        path: "{{ ansible_user_dir }}/{{ item }}"
+        state: directory
+        mode: '0755'
+        owner: "{{ ansible_user_id }}"
+      loop: >-
+        {{ [wine_fontconfig_cache_dir, wine_fontconfig_config_dir]
+           + (wine_fontconfig_fonts_dirs | default([])) }}
 
-- name: Set fontconfig_path fact for Alpine
-  ansible.builtin.set_fact:
-    fontconfig_path: ""
+    - name: Set wine_fontconfig_path fact for Alpine
+      ansible.builtin.set_fact:
+        wine_fontconfig_path: ""
 
-- name: Write fontconfig config for Alpine
-  ansible.builtin.template:
-    src: fonts.conf.j2
-    dest: "{{ ansible_user_dir }}/{{ wine_fontconfig_config_file }}"
-    mode: '0644'
-    force: true
+    - name: Write fontconfig config for Alpine
+      ansible.builtin.template:
+        src: fonts.conf.j2
+        dest: "{{ ansible_user_dir }}/{{ wine_fontconfig_config_file }}"
+        mode: '0644'
+        owner: "{{ ansible_user_id }}"
+        force: true
 
-- name: Write fontconfig and wine environment config for Alpine
-  ansible.builtin.template:
-    src: wine_env.j2
-    dest: "{{ item.dest }}"
-    mode: '0644'
-  become: "{{ item.become | default(false) }}"
-  loop:
-    - { dest: "{{ ansible_user_dir }}/.wine_env" }
-    - { dest: "/etc/profile.d/wine.sh", become: true }
+    - name: Write wine environment config for user (Alpine)
+      ansible.builtin.template:
+        src: wine_env.j2
+        dest: "{{ ansible_user_dir }}/.wine_env"
+        mode: '0644'
+        owner: "{{ ansible_user_id }}"
 
-- name: Set fontconfig environment in ~/.bashrc (Alpine)
-  ansible.builtin.lineinfile:
-    path: "{{ ansible_user_dir }}/.bashrc"
-    line: "[ -f ~/.wine_env ] && . ~/.wine_env"
-    create: true
-    mode: '0644'
+    - name: Set fontconfig environment in ~/.bashrc (Alpine)
+      ansible.builtin.lineinfile:
+        path: "{{ ansible_user_dir }}/.bashrc"
+        line: "[ -f ~/.wine_env ] && . ~/.wine_env"
+        create: true
+        mode: '0644'
+        owner: "{{ ansible_user_id }}"
 
-- name: Rebuild fontconfig cache for Alpine
-  ansible.builtin.command: >-
-    fc-cache -f
-    {{ ansible_user_dir }}/{{ wine_fontconfig_fonts_dirs[0] }}
-    {{ ansible_user_dir }}/{{ wine_fontconfig_fonts_dirs[1] }}
-  changed_when: false
+    - name: Rebuild fontconfig cache for Alpine
+      ansible.builtin.command: >-
+        fc-cache -f
+        {{ wine_fontconfig_fonts_dirs
+           | map('regex_replace', '^', ansible_user_dir ~ '/') | join(' ') }}
+      become: true
+      changed_when: true
 
-- name: Ensures ~/.wine is initialized
-  ansible.builtin.command: xvfb-run -a wineboot --init
-  environment:
-    # WoW64 wine (amd64) only supports win64; 32-bit wine (i686/x86/etc) only supports win32.
-    WINEARCH: >-
-      {{ 'win32' if ansible_facts.architecture in ['i386', 'i486', 'i586', 'i686', 'x86'] else 'win64' }}
-    HOME: "{{ ansible_user_dir }}"
-    FONTCONFIG_FILE: "{{ ansible_user_dir }}/{{ wine_fontconfig_config_file }}"
-    FONTCONFIG_PATH: >-
-      {{ ansible_user_dir }}/{{ wine_fontconfig_config_dir }}:{{
-      wine_fontconfig_system_config_path }}
-    WINEDEBUG: "{{ wine_debug | default('-all') }}"
-    WINEDLLOVERRIDES: "{{ wine_dlloverrides | default('mscoree,mshtml=') }}"
-  args:
-    creates: "{{ ansible_user_dir }}/.wine/system.reg"
-  timeout: 120
+    - name: Verify xvfb-run is available
+      ansible.builtin.command: which xvfb-run
+      changed_when: false
+
+    - name: Check architecture support for Wine on Alpine
+      ansible.builtin.fail:
+        msg: >-
+          Architecture {{ ansible_facts.architecture }} is not supported for WoW64 Wine on Alpine.
+      when:
+        - ansible_facts.architecture not in ['i386', 'i486', 'i586', 'i686', 'x86', 'x86_64', 'amd64']
+
+    - name: Ensures ~/.wine is initialized
+      ansible.builtin.command: xvfb-run -a wineboot --init
+      become: false
+      environment:
+        # WoW64 wine (amd64) only supports win64; 32-bit wine (i686/x86/etc) only supports win32.
+        WINEARCH: >-
+          {{ 'win32' if ansible_facts.architecture in ['i386', 'i486', 'i586', 'i686', 'x86'] else 'win64' }}
+        HOME: "{{ ansible_user_dir }}"
+        FONTCONFIG_FILE: "{{ ansible_user_dir }}/{{ wine_fontconfig_config_file }}"
+        FONTCONFIG_PATH: >-
+          {{ ansible_user_dir }}/{{ wine_fontconfig_config_dir }}:{{
+          wine_fontconfig_system_config_path }}
+        WINEDEBUG: "{{ wine_debug | default('-all') }}"
+        WINEDLLOVERRIDES: "{{ wine_dlloverrides | default('mscoree,mshtml=') }}"
+      args:
+        creates: "{{ ansible_user_dir }}/.wine/system.reg"
+      timeout: 120

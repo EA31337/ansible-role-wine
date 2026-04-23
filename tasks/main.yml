@@ -19,17 +19,37 @@
       changed_when: false
       failed_when: false
 
-    - name: Set detected_os_family fact
+    - name: Set wine_detected_os_family fact
       ansible.builtin.set_fact:
-        detected_os_family: >-
-          {{ 'NixOS' if (nixos_early_check.rc | default(1) == 0 or ansible_os_family == 'NixOS')
-          else (ansible_distribution if ansible_distribution == 'Ubuntu' else ansible_os_family) }}
-        cacheable: true
+        wine_detected_os_family: >-
+          {{ 'NixOS' if (nixos_early_check.rc | default(1) == 0 or
+          ansible_os_family | default('') == 'NixOS')
+          else (ansible_distribution if (ansible_distribution is defined and
+          ansible_distribution == 'Ubuntu')
+          else ansible_os_family | default('')) }}
+
+    - name: Set wine_selected_winetricks_dependencies fact
+      ansible.builtin.set_fact:
+        wine_selected_winetricks_dependencies: >-
+          {{ wine_winetricks_dependencies_os_family.get(wine_detected_os_family)
+          if wine_winetricks_dependencies_os_family.get(wine_detected_os_family) is not none
+          else (wine_winetricks_dependencies_os_family.get(ansible_os_family | default(''))
+          if wine_winetricks_dependencies_os_family.get(ansible_os_family | default('')) is not none
+          else wine_install_winetricks_dependencies) }}
+
+    - name: Debug OS detection and dependencies
+      ansible.builtin.debug:
+        msg:
+          wine_detected_os_family: "{{ wine_detected_os_family }}"
+          ansible_os_family: "{{ ansible_os_family | default('undefined') }}"
+          ansible_distribution: "{{ ansible_distribution | default('undefined') }}"
+          selected_deps: "{{ wine_selected_winetricks_dependencies }}"
+        verbosity: 1
 
 - name: OS-specific Wine version detection
   tags: wine
   when:
-    - detected_os_family == 'NixOS'
+    - wine_detected_os_family == 'NixOS'
     - nixos_early_check.rc | default(1) == 0
   block:
     - name: Check current Wine version on NixOS  # noqa risky-shell-pipe
@@ -42,7 +62,8 @@
     - name: Determine if Wine version mismatch on NixOS
       ansible.builtin.set_fact:
         wine_version_mismatch: >-
-          {%- set major = wine_version | default('') | regex_replace('^(\\d+).*', '\\1') | default('9', true) -%}
+          {% set _m = wine_version | default('') | regex_findall('^([0-9]+)') %}
+          {% set major = (_m | first | string | trim) if (_m | length > 0) else '9' %}
           {{
             (nixos_wine_version_check.stdout | default('not_installed') == "not_installed") or
             ('wine-wow64-' ~ major not in nixos_wine_version_check.stdout) or

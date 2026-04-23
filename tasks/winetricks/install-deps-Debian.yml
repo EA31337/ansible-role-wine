@@ -2,7 +2,7 @@
 - name: Ensure Winetricks dependencies are installed
   become: "{{ ansible_user_id != 'root' }}"
   become_method: >-
-    {{ wine_become_method.get(detected_os_family | default(ansible_os_family),
+    {{ wine_become_method.get(wine_detected_os_family | default(ansible_os_family),
     wine_become_method["_default"]) }}
   environment:
     DEBIAN_FRONTEND: noninteractive
@@ -10,7 +10,7 @@
   block:
     - name: Ensure Winetricks dependencies are installed
       ansible.builtin.apt:
-        name: "{{ wine_install_winetricks_dependencies }}"
+        name: "{{ wine_selected_winetricks_dependencies }}"
         state: present
         update_cache: true
         install_recommends: false

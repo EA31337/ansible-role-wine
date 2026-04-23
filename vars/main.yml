@@ -4,24 +4,75 @@
 # where each key maps to the appropriate become method (e.g., 'sudo', 'su') for that OS family.
 # Note: Keep YAML keys sorted alphabetically.
 wine_become_method:
-  _default: ansible.builtin.sudo
-  Alpine: ansible.builtin.su
-  Darwin: ansible.builtin.sudo
-  Debian: ansible.builtin.su
-  NixOS: ansible.builtin.su
-  OtherLinux: ansible.builtin.su
-  Ubuntu: ansible.builtin.sudo
-  Windows: ansible.builtin.runas
+  _default: sudo
+  Alpine: su
+  Darwin: sudo
+  Debian: su
+  NixOS: su
+  OtherLinux: su
+  Ubuntu: sudo
+  Windows: runas
+
+# Maps NixOS attribute names to installed package names for data-only packages
+wine_data_pkg_map:
+  freefont_ttf: freefont-ttf
+
 # This maps package names to their respective commands
 # Used to verify dependencies are correctly installed
 wine_package_command_map:
   cabextract: cabextract
   curl: curl
+  fontconfig: fc-list
+  fonts-freefont-ttf: ""  # Fonts don't have a command
+  freefont_ttf: ""  # Fonts don't have a command
   gawk: awk
   p7zip: 7z
+  p7zip-full: 7z
+  samba: wbinfo
+
+  ttf-freefont: ""  # Fonts don't have a command
   unzip: unzip
+  winbind: wbinfo
   xauth: xauth
+  xorg.xauth: xauth
+  xvfb: xvfb-run
   xvfb-run: xvfb-run
+
+# Operating system specific winetricks dependencies.
+# If an OS family is not listed, the default from defaults/main.yml is used.
+wine_winetricks_dependencies_os_family:
+  Alpine:
+    - fontconfig
+    - p7zip
+    - ttf-freefont
+    - xauth
+    - xvfb-run
+  Darwin:
+    - cabextract
+    - p7zip
+  Debian: &debian_ubuntu_deps
+    - cabextract
+    - curl
+    - fontconfig
+    - fonts-freefont-ttf
+    - gawk
+    - p7zip-full
+    - unzip
+    - winbind
+    - xauth
+    - xvfb
+  NixOS:
+    - cabextract
+    - curl
+    - fontconfig
+    - freefont_ttf
+    - gawk
+    - p7zip
+    - samba
+    - unzip
+    - xorg.xauth
+    - xvfb-run
+  Ubuntu: *debian_ubuntu_deps
 
 # Fontconfig configuration
 wine_fontconfig_cache_dir: ".cache/fontconfig"
