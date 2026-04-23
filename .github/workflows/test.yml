@@ -48,8 +48,14 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: '3.11'
-          cache: 'pip'
-          cache-dependency-path: "**/.devcontainer/requirements.txt"
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles(format('{0}/Pipfile*', github.repository)) }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
       - name: Install Python's requirements
         run: pip install -r .devcontainer/requirements.txt
@@ -58,8 +64,10 @@ jobs:
       - name: Cache Ansible Galaxy collections
         uses: actions/cache@v4
         with:
-          key: galaxy-${{ hashFiles(format('{0}/requirements.yml', github.repository)) }}
+          key: ${{ runner.os }}-galaxy-${{ hashFiles(format('{0}/requirements.yml', github.repository)) }}
           path: ~/.ansible/collections
+          restore-keys: |
+            ${{ runner.os }}-galaxy-
       - name: Install Ansible Galaxy requirements
         run: |
           ansible-galaxy collection install -r requirements.yml
