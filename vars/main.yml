@@ -39,6 +39,17 @@ wine_winetricks_dependencies_os_family:
     - ttf-freefont
     - xauth
     - xvfb-run
+  Debian:
+    - cabextract
+    - curl
+    - fontconfig
+    - fonts-freefont-ttf
+    - gawk
+    - p7zip
+    - unzip
+    - winbind
+    - xauth
+    - xvfb-run
   NixOS:
     - cabextract
     - curl
@@ -48,6 +59,17 @@ wine_winetricks_dependencies_os_family:
     - p7zip
     - samba
     - unzip
+    - xauth
+    - xvfb-run
+  Ubuntu:
+    - cabextract
+    - curl
+    - fontconfig
+    - fonts-freefont-ttf
+    - gawk
+    - p7zip
+    - unzip
+    - winbind
     - xauth
     - xvfb-run
 

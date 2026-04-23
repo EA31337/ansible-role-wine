@@ -6,12 +6,9 @@ wine_install_winetricks_dependencies:
   - cabextract
   - curl
   - fontconfig
-  - fonts-freefont-ttf
   - gawk
   - p7zip
-  - ttf-freefont
   - unzip
-  - winbind
   - xauth
   - xvfb-run
 # Wine package release to install.
