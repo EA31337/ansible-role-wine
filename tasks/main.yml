@@ -90,33 +90,9 @@
       tags: wine-verify
   tags: wine-verify
 
-- name: Checking wine version
-  become: >-
-    {{ (detected_os_family == 'NixOS')
-    and (ansible_user_id != 'root') }}
-  become_method: >-
-    {{ wine_become_method.get(detected_os_family,
-    wine_become_method["_default"]) }}
-  ansible.builtin.shell: |
-    [[ -f ~/.wine_env ]] && source ~/.wine_env
-    {% if detected_os_family == 'NixOS' and nixos_early_check.rc | default(1) == 0 %}
-    set -o pipefail
-    installed=$(nix-env -q 2>/dev/null | grep -Em1 '^wine-(wow64|wow|10|9|11)' || echo "not_installed")
-    echo "$installed"
-    {% else %}
-    wine --version
-    {% endif %}
-  register: wine_version_res
-  changed_when: false
-  when:
-    - (cmd_which_wine_res.rc | default(1)) == 0
-      or (wine_version_mismatch | default(false) | bool)
-      or (detected_os_family == 'NixOS')
-      or (wine_install_tasks is defined and not (wine_install_tasks.skipped | default(false)))
-  tags: wine
-
 - name: Display wine version
   ansible.builtin.debug:
-    msg: "{{ wine_version_res.stdout | default('Wine not found or installation skipped') }}"
+    msg: "{{ cmd_wine_version.stdout | default('Wine not found or installation skipped') }}"
     verbosity: 1
+  when: cmd_wine_version is defined
   tags: wine

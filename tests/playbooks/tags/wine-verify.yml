@@ -21,7 +21,7 @@
       register: container_info
       until:
         - container_info is defined
-        - (container_info.container is defined and container_info.container.State.Running | default(false) | bool)
+        - (container_info.container | default({})).get('State', {}).get('Running', false) | bool
       delegate_to: localhost
       changed_when: false
 
