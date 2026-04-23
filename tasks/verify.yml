@@ -30,9 +30,8 @@
     - wine_install_winetricks | bool
     - wine_install_winetricks_dependencies | length > 0
   block:
-    - name: Check if required tools are installed
+    - name: Check if required tools are installed  # noqa risky-shell-pipe
       ansible.builtin.shell: |
-        set -o pipefail
         cmd="{{ wine_package_command_map[item] | default(item) }}"
         path=$(which "$cmd")
         version=$("$cmd" --version 2>&1 | head -n 1 || echo "unknown version")

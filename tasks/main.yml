@@ -1,76 +1,68 @@
 ---
-- name: Checks if Wine command exists
-  changed_when: false
-  ansible.builtin.command: which wine
-  failed_when: cmd_which_wine_res.rc > 1
-  register: cmd_which_wine_res
+- name: Early checks and OS detection
+  tags: [always, wine]
+  block:
+    - name: Check for Wine command
+      ansible.builtin.command: which wine
+      register: cmd_which_wine_res
+      changed_when: false
+      failed_when: cmd_which_wine_res.rc > 1
+
+    - name: Check for NixOS (nix-env)
+      ansible.builtin.command: which nix-env
+      register: nixos_early_check
+      changed_when: false
+      failed_when: false
+
+    - name: Set detected_os_family fact
+      ansible.builtin.set_fact:
+        detected_os_family: >-
+          {{ 'NixOS' if (nixos_early_check.rc | default(1) == 0 or ansible_os_family == 'NixOS')
+          else (ansible_distribution if ansible_distribution == 'Ubuntu' else ansible_os_family) }}
+        cacheable: true
+
+- name: OS-specific Wine version detection
   tags: wine
+  when:
+    - detected_os_family == 'NixOS'
+    - nixos_early_check.rc | default(1) == 0
+  block:
+    - name: Check current Wine version on NixOS
+      ansible.builtin.shell: |
+        set -o pipefail
+        nix-env -q 2>/dev/null | grep -E '^wine-(wow64|wow|10|9|11)' | head -1 || echo "not_installed"
+      register: nixos_wine_version_check
+      changed_when: false
 
-- name: Check for NixOS (via nix-env command)
-  ansible.builtin.command: which nix-env
-  register: nixos_early_check
-  changed_when: false
-  failed_when: false
-  tags:
-    - always
-
-- name: Set detected OS family for task inclusion
-  ansible.builtin.set_fact:
-    detected_os_family: >-
-      {{ 'NixOS' if (nixos_early_check.rc == 0 or ansible_os_family == 'NixOS')
-      else (ansible_distribution if ansible_distribution == 'Ubuntu' else ansible_os_family) }}
-    cacheable: true
-  tags:
-    - always
-
-- name: Check current Wine version on NixOS
-  ansible.builtin.shell: |
-    set -o pipefail
-    nix-env -q 2>/dev/null | grep -E '^wine-(wow64|wow|10|9|11)' | head -1 || echo "not_installed"
-  register: nixos_wine_version_check
-  changed_when: false
-  when: nixos_early_check.rc == 0
-  tags: wine
-
-- name: Determine if Wine version mismatch on NixOS
-  ansible.builtin.set_fact:
-    wine_version_mismatch: >-
-      {{
-        nixos_early_check.rc == 0 and
-        (
-          (
-            'wine-wow64-' ~ (wine_version | default('') | regex_replace('^(\\d+).*', '\\1') | default('9'))
-            not in (nixos_wine_version_check.stdout | default(''))
-          )
-          or
-          (
-            'wow64' not in (nixos_wine_version_check.stdout | default('not_installed'))
-            and nixos_wine_version_check.stdout | default('not_installed') != 'not_installed'
-          )
-        )
-      }}
-  tags: wine
+    - name: Determine if Wine version mismatch on NixOS
+      ansible.builtin.set_fact:
+        wine_version_mismatch: >-
+          {% set major = wine_version | default('') | regex_replace('^(\\d+).*', '\\1') | default('9') %}
+          {{
+            (nixos_wine_version_check.stdout | default('not_installed') == "not_installed") or
+            ('wine-wow64-' ~ major not in nixos_wine_version_check.stdout) or
+            ('wow64' not in nixos_wine_version_check.stdout)
+          }}
 
 - name: Ensures Wine is present
   ansible.builtin.include_tasks:
+    file: wine/wine.yml
     apply:
       tags: wine
-    file: wine/wine.yml
+  register: wine_install_tasks
+  when: cmd_which_wine_res.rc != 0 or (wine_version_mismatch | default(false) | bool)
   tags: wine
 
 - name: Ensures Winetricks is present
   when: wine_install_winetricks | bool
-  tags:
-    - winetricks
-    - winetricks-deps
+  tags: [winetricks, winetricks-deps]
   block:
-
     - name: Checks if Winetricks is installed
       ansible.builtin.command: which winetricks
+      register: cmd_which_winetricks_res
       check_mode: false
       changed_when: false
       failed_when: cmd_which_winetricks_res.rc > 1
-      register: cmd_which_winetricks_res
 
     - name: Ensures Winetricks is present
       ansible.builtin.include_tasks: winetricks/winetricks.yml
@@ -78,43 +70,41 @@
     - name: Sets Windows version via winetricks
       ansible.builtin.command: winetricks -q {{ wine_winetricks_winver }}
       async: 20
-      changed_when: false
       poll: 0
+      changed_when: false
       when:
         - wine_winetricks_winver is defined
         - wine_winetricks_winver | length > 0
 
 - name: Verify installation
   ansible.builtin.include_tasks:
+    file: verify.yml
     apply:
       tags: wine-verify
-    file: verify.yml
   tags: wine-verify
 
 - name: Checking wine version
   become: >-
-    {{ (detected_os_family | default(ansible_os_family) == 'NixOS')
+    {{ (detected_os_family == 'NixOS')
     and (ansible_user_id != 'root') }}
   become_method: >-
-    {{ wine_become_method.get(detected_os_family | default(ansible_os_family),
+    {{ wine_become_method.get(detected_os_family,
     wine_become_method["_default"]) }}
-  changed_when: false
   ansible.builtin.shell: |
-    {% if detected_os_family | default(ansible_os_family) == 'NixOS' %}
+    {% if detected_os_family == 'NixOS' and nixos_early_check.rc | default(1) == 0 %}
     set -o pipefail
-    installed=$(nix-env -q 2>/dev/null | grep -Em1 '^wine-(wow64|wow|10|9|11)' || echo "")
-    if [ -z "$installed" ]; then
-      echo "not_installed"
-    else
-      echo "$installed"
-    fi
+    installed=$(nix-env -q 2>/dev/null | grep -Em1 '^wine-(wow64|wow|10|9|11)' || echo "not_installed")
+    echo "$installed"
     {% else %}
     wine --version
     {% endif %}
   register: wine_version_res
+  changed_when: false
   when:
-    - (cmd_which_wine_res.rc | default(1)) == 0 or (wine_version_mismatch | default(false) | bool)
-      or (nixos_early_check.rc | default(1) == 0)
+    - (cmd_which_wine_res.rc | default(1)) == 0
+      or (wine_version_mismatch | default(false) | bool)
+      or (detected_os_family == 'NixOS')
+      or (wine_install_tasks is defined and not (wine_install_tasks.skipped | default(false)))
   tags: wine
 
 - name: Display wine version
