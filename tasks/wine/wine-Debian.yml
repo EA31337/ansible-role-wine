@@ -100,6 +100,7 @@
           wine_version={{ wine_version }},
           wine_release_codename={{ wine_release_codename }},
           computed wine_ubuntu_version={{ wine_ubuntu_version }}
+        verbosity: 1
     - name: Set wine package name
       ansible.builtin.set_fact:
         wine_package_name: >-
@@ -109,6 +110,7 @@
     - name: Debug wine package name
       ansible.builtin.debug:
         msg: "Installing wine package: {{ wine_package_name }}"
+        verbosity: 1
     - name: Ensures Wine package is present (Debian)
       ansible.builtin.apt:
         allow_downgrade: true

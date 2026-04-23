@@ -11,6 +11,8 @@
         name: "{{ inventory_hostname }}"
         pull: "{{ not is_nixos_image }}"
         state: started
+        privileged: "{{ is_nixos_image }}"
+        security_opts: "{{ ['seccomp=unconfined', 'apparmor=unconfined'] if is_nixos_image else omit }}"
       delegate_to: localhost
 
     - name: Wait for container to be ready
@@ -36,7 +38,7 @@
     container_image: "{{ container_image_map[inventory_hostname] | default('ubuntu:latest') }}"
     is_nixos_image: "{{ inventory_hostname == 'wine-on-nixos-latest' }}"
   vars_files:
-    - ../../vars/main.yml
+    - ../../../vars/main.yml
 
 - name: Import ea31337.wine role (wine-verify tag)
   hosts: docker_containers

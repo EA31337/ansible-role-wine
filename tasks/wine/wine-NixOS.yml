@@ -22,7 +22,7 @@
 
     - name: Set effective wine version for NixOS
       ansible.builtin.set_fact:
-        wine_version_nixos: "{{ wine_version | default('') | regex_replace('^(\\d+).*', '\\1') | default('9') }}"
+        wine_version_nixos: "{{ wine_version | default('') | regex_replace('^(\\d+).*', '\\1') | default('9', true) }}"
 
     - name: Determine if Wine needs installation
       ansible.builtin.set_fact:
@@ -84,10 +84,6 @@
       changed_when: "'installing' in wine_install.stdout or 'building' in wine_install.stdout"
 
 - name: Configure fontconfig for NixOS
-  become: "{{ ansible_user_id != 'root' }}"
-  become_method: >-
-    {{ wine_become_method.get(detected_os_family | default(ansible_os_family),
-    wine_become_method["_default"]) }}
   when: nix_store_stat.stat.exists
   block:
     - name: Get fontconfig out-path
@@ -131,11 +127,9 @@
       when: fontconfig_path is defined
 
     - name: Write wine_env file
-      ansible.builtin.copy:
+      ansible.builtin.template:
+        src: wine_env.j2
         dest: "{{ ansible_facts.env.HOME }}/.wine_env"
-        content: |
-          export FONTCONFIG_FILE="{{ ansible_facts.env.HOME }}/.config/fontconfig/fonts.conf"
-          export FONTCONFIG_PATH="{{ ansible_facts.env.HOME }}/.config/fontconfig:{{ fontconfig_path }}/etc/fonts"
         mode: '0644'
       when: fontconfig_path is defined
 

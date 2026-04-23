@@ -20,7 +20,7 @@
       ansible.builtin.set_fact:
         wine_alpine_version: >-
           {{ wine_available_version.stdout | default('')
-          | regex_search('wine-([\d.]+-r\d+)', '\1') | first | default('') }}
+          | regex_search('wine-([\d.]+-r\d+)', '\1') | default('', true) }}
 
     - name: Extract major version from wine_alpine_version
       ansible.builtin.set_fact:
@@ -77,37 +77,26 @@
     - "{{ wine_fontconfig_fonts_dirs[0] }}"
     - "{{ wine_fontconfig_fonts_dirs[1] }}"
 
+- name: Set fontconfig_path fact for Alpine
+  ansible.builtin.set_fact:
+    fontconfig_path: ""
+
 - name: Write fontconfig config for Alpine
-  ansible.builtin.copy:
+  ansible.builtin.template:
+    src: fonts.conf.j2
     dest: "{{ ansible_facts.env.HOME }}/{{ wine_fontconfig_config_file }}"
     mode: '0644'
     force: true
-    content: |
-      <?xml version="1.0"?>
-      {{ '<!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">' }}
-      <fontconfig>
-        <dir>{{ wine_fontconfig_system_fonts_dir }}</dir>
-        {% for fonts_dir in wine_fontconfig_fonts_dirs -%}
-        <dir prefix="default">{{ ansible_facts.env.HOME }}/{{ fonts_dir }}</dir>
-        {% endfor -%}
-        <cachedir prefix="default">{{ ansible_facts.env.HOME }}/{{ wine_fontconfig_cache_dir }}</cachedir>
-        <include ignore_missing="yes">{{ wine_fontconfig_system_config_file }}</include>
-        <config><rescan><int>30</int></rescan></config>
-      </fontconfig>
 
 - name: Write fontconfig and wine environment config for Alpine
-  ansible.builtin.copy:
+  ansible.builtin.template:
+    src: wine_env.j2
     dest: "{{ item.dest }}"
     mode: '0644'
-    content: |
-      {% set fc_file = ansible_facts.env.HOME ~ '/' ~ wine_fontconfig_config_file -%}
-      {% set fc_path = ansible_facts.env.HOME ~ '/' ~ wine_fontconfig_config_dir ~
-        ':' ~ wine_fontconfig_system_config_path -%}
-      export FONTCONFIG_FILE={{ fc_file }}
-      export FONTCONFIG_PATH={{ fc_path }}
+  become: "{{ item.become | default(false) }}"
   loop:
     - { dest: "{{ ansible_facts.env.HOME }}/.wine_env" }
-    - { dest: "/etc/profile.d/wine.sh" }
+    - { dest: "/etc/profile.d/wine.sh", become: true }
 
 - name: Set fontconfig environment in ~/.bashrc (Alpine)
   ansible.builtin.lineinfile:

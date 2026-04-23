@@ -1,0 +1,2 @@
+export FONTCONFIG_FILE="{{ ansible_facts.env.HOME }}/{{ wine_fontconfig_config_file }}"
+export FONTCONFIG_PATH="{{ ansible_facts.env.HOME }}/{{ wine_fontconfig_config_dir }}:{{ fontconfig_path | default('') }}{{ wine_fontconfig_system_config_path }}"

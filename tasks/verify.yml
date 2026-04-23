@@ -32,6 +32,7 @@
   block:
     - name: Check if required tools are installed  # noqa risky-shell-pipe
       ansible.builtin.shell: |
+        set -eo pipefail
         cmd="{{ wine_package_command_map[item] | default(item) }}"
         path=$(which "$cmd")
         version=$("$cmd" --version 2>&1 | head -n 1 || echo "unknown version")
@@ -44,8 +45,8 @@
     - name: Display dependency check results
       ansible.builtin.debug:
         msg: "Dependency {{ item.item }}: {{ item.stdout if item.rc == 0 else 'NOT FOUND' }}"
+        verbosity: 1
       loop: "{{ dependency_check_results.results }}"
-      when: ansible_verbosity >= 0
 
     - name: Verify dependency installation status
       ansible.builtin.assert:
