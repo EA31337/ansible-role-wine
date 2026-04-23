@@ -32,9 +32,9 @@
     - detected_os_family == 'NixOS'
     - nixos_early_check.rc | default(1) == 0
   block:
-    - name: Check current Wine version on NixOS
+    - name: Check current Wine version on NixOS  # noqa risky-shell-pipe
       ansible.builtin.shell: |
-        set -o pipefail
+        set -e
         nix-env -q 2>/dev/null | grep -E '^wine-(wow64|wow|10|9|11)' | head -1 || echo "not_installed"
       register: nixos_wine_version_check
       changed_when: false
@@ -74,7 +74,7 @@
 
     - name: Sets Windows version via winetricks
       ansible.builtin.shell: |
-        [[ -f ~/.wine_env ]] && source ~/.wine_env
+        [ -f ~/.wine_env ] && source ~/.wine_env
         winetricks -q {{ wine_winetricks_winver }}
       async: 20
       poll: 0
