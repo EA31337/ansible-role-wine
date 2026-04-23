@@ -47,7 +47,7 @@
   block:
     - name: Check if required tools are installed  # noqa risky-shell-pipe
       ansible.builtin.shell: |
-        [ -f ~/.wine_env ] && source ~/.wine_env
+        [ -f ~/.wine_env ] && . ~/.wine_env
         set -e
         cmd="{{ wine_package_command_map[item] | default(item) }}"
         if [ -n "$cmd" ]; then

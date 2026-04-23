@@ -104,10 +104,10 @@
         src: wine_env.j2
         dest: "{{ item.dest }}"
         mode: '0644'
-        owner: "{{ ansible_user_id if not item.become | default(false) else 'root' }}"
+        owner: "{{ ansible_user_id if not item.system | default(false) else 'root' }}"
       loop:
         - { dest: "{{ ansible_user_dir }}/.wine_env" }
-        - { dest: "/etc/profile.d/wine.sh", become: true }
+        - { dest: "/etc/profile.d/wine.sh", system: true }
 
     - name: Set fontconfig environment in ~/.bashrc (Alpine)
       ansible.builtin.lineinfile:
