@@ -111,7 +111,7 @@
       ansible.builtin.debug:
         msg: "Installing wine package: {{ wine_package_name }}"
         verbosity: 1
-    - name: Ensures Wine package and dependencies are present (Debian)
+    - name: Ensures Wine package and dependencies are present
       ansible.builtin.apt:
         allow_downgrade: true
         install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
@@ -126,74 +126,22 @@
           }}
         state: present
         update_cache: true
-      when: lsb_release_dist_id.stdout in ["Debian"]
+      register: wine_pkg_install_res
+      until: wine_pkg_install_res is success
+      retries: 3
+      delay: 5
 
-    - name: Ensures Wine package and dependencies are present (Ubuntu)
-      ansible.builtin.apt:
-        allow_downgrade: true
-        install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
-        name: >-
-          {{
-            [
-              wine_package_name,
-              "wine-" ~ wine_release ~ ("=" ~ wine_ubuntu_version if wine_ubuntu_version else ""),
-              "wine-" ~ wine_release ~ "-amd64" ~ ("=" ~ wine_ubuntu_version if wine_ubuntu_version else ""),
-              "wine-" ~ wine_release ~ "-i386:i386" ~ ("=" ~ wine_ubuntu_version if wine_ubuntu_version else "")
-            ] + wine_selected_winetricks_dependencies
-          }}
-        state: present
-        update_cache: true
-      when: lsb_release_dist_id.stdout in ["Ubuntu"]
+    - name: Ensures ~/.wine is initialized
+      ansible.builtin.command: xvfb-run -a wineboot --init
+      become: false
+      environment:
+        HOME: "{{ ansible_user_dir }}"
+        WINEDEBUG: "{{ wine_debug | default('-all') }}"
+        WINEDLLOVERRIDES: "{{ wine_dlloverrides | default('mscoree,mshtml=') }}"
+      args:
+        creates: "{{ ansible_user_dir }}/.wine/system.reg"
+      timeout: 120
 
-    - name: Ensures Wine package and dependencies are present (non-Debian)
-      ansible.builtin.apt:
-        allow_downgrade: true
-        install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
-        name: >-
-          {{
-            [
-              wine_package_name,
-              "wine-" ~ wine_release ~ ("=" ~ wine_ubuntu_version if wine_ubuntu_version else ""),
-              "wine-" ~ wine_release ~ "-amd64" ~ ("=" ~ wine_ubuntu_version if wine_ubuntu_version else ""),
-              "wine-" ~ wine_release ~ "-i386:i386" ~ ("=" ~ wine_ubuntu_version if wine_ubuntu_version else "")
-            ] + wine_selected_winetricks_dependencies
-          }}
-        state: present
-        update_cache: true
-      when: lsb_release_dist_id.stdout not in ["Debian", "Ubuntu"]
-    - name: Ensures p7zip package is present
-      ansible.builtin.apt:
-        install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
-        name: p7zip-full
-        state: present
-        update_cache: true
-
-- name: Write fontconfig and wine environment config for Debian
-  ansible.builtin.template:
-    src: wine_env.j2
-    dest: "{{ item.dest }}"
-    mode: '0644'
-  become: "{{ item.become | default(false) }}"
-  loop:
-    - { dest: "{{ ansible_user_dir }}/.wine_env" }
-
-- name: Set fontconfig environment in ~/.bashrc (Debian)
-  ansible.builtin.lineinfile:
-    path: "{{ ansible_user_dir }}/.bashrc"
-    line: "[ -f ~/.wine_env ] && . ~/.wine_env"
-    create: true
-    mode: '0644'
-
-- name: Ensures ~/.wine is initialized
-  ansible.builtin.command: xvfb-run -a wineboot --init
-  environment:
-    WINEARCH: win64
-    WINEDEBUG: "{{ wine_debug | default('-all') }}"
-    WINEDLLOVERRIDES: "{{ wine_dlloverrides | default('mscoree,mshtml=') }}"
-  args:
-    creates: "{{ ansible_user_dir }}/.wine/system.reg"
-
-  timeout: 120
 
 - name: Apt cleanup ({{ wine_detected_os_family | default(ansible_os_family) }})
   become: >-

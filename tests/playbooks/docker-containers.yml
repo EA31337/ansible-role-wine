@@ -130,9 +130,8 @@
         if [ -n "$missing_packages" ]; then
           nix-channel --update
           nix-env -iA $missing_packages
-        else
-          python3 --version
         fi
+        python3 --version
       changed_when: false
       when: container_image is search("nixos")
 

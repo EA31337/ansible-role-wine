@@ -13,8 +13,11 @@ wine_become_method:
   Ubuntu: sudo
   Windows: runas
 
+# Maps NixOS attribute names to installed package names for data-only packages
+wine_data_pkg_map:
+  freefont_ttf: freefont-ttf
+
 # This maps package names to their respective commands
-# Used to verify dependencies are correctly installed
 wine_package_command_map:
   cabextract: cabextract
   curl: curl
@@ -28,6 +31,7 @@ wine_package_command_map:
   unzip: unzip
   winbind: wbinfo
   xauth: xauth
+  xorg.xauth: xauth
   xvfb: xvfb-run
   xvfb-run: xvfb-run
 
@@ -63,7 +67,7 @@ wine_winetricks_dependencies_os_family:
     - p7zip
     - samba
     - unzip
-    - xauth
+    - xorg.xauth
     - xvfb-run
   Ubuntu:
     - cabextract
@@ -76,10 +80,6 @@ wine_winetricks_dependencies_os_family:
     - winbind
     - xauth
     - xvfb
-
-# Maps NixOS attribute names to installed package names for data-only packages
-wine_data_pkg_map:
-  freefont_ttf: freefont-ttf
 
 # Fontconfig configuration
 wine_fontconfig_cache_dir: ".cache/fontconfig"
