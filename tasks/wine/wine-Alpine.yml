@@ -20,12 +20,13 @@
       ansible.builtin.set_fact:
         wine_alpine_version: >-
           {{ wine_available_version.stdout | default('')
-          | regex_search('wine-([\d.]+-r\d+)', '\1') | default('', true) }}
+          | regex_replace('^.*wine-([\d.]+-r\d+).*$', '\1')
+          | regex_replace('^wine-.*', '') }}
 
     - name: Extract major version from wine_alpine_version
       ansible.builtin.set_fact:
         wine_alpine_major: >-
-          {{ wine_alpine_version | regex_replace('^(\d+).*', '\1') }}
+          {{ wine_alpine_version | string | regex_replace('^(\d+).*', '\1') }}
       when: wine_alpine_version | length > 0
 
     - name: Validate wine major version (9, 10, or 11)
@@ -59,7 +60,8 @@
               if (wine_alpine_version is defined and wine_alpine_version | length > 0)
               else 'wine')] +
             (wine_install_winetricks_dependencies |
-              intersect(['fontconfig', 'p7zip', 'ttf-freefont', 'xauth', 'xvfb-run']))
+              intersect(wine_winetricks_dependencies_os_family[detected_os_family |
+              default(ansible_os_family)] | default([])))
           }}
         state: present
 

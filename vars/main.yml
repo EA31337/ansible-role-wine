@@ -12,13 +12,39 @@ wine_become_method:
   OtherLinux: ansible.builtin.su
   Ubuntu: ansible.builtin.sudo
   Windows: ansible.builtin.runas
+
+# Operating system specific winetricks dependencies.
+# If an OS family is not listed, the default from defaults/main.yml is used.
+wine_winetricks_dependencies_os_family:
+  Alpine:
+    - fontconfig
+    - p7zip
+    - ttf-freefont
+    - xauth
+    - xvfb-run
+  NixOS:
+    - cabextract
+    - curl
+    - fontconfig
+    - freefont_ttf
+    - gawk
+    - p7zip
+    - samba
+    - unzip
+    - xauth
+    - xvfb-run
+
 # This maps package names to their respective commands
 # Used to verify dependencies are correctly installed
 wine_package_command_map:
   cabextract: cabextract
   curl: curl
+  fontconfig: fc-list
+  freefont_ttf: ""  # Fonts don't have a command
   gawk: awk
   p7zip: 7z
+  samba: wbinfo
+  ttf-freefont: ""  # Fonts don't have a command
   unzip: unzip
   xauth: xauth
   xvfb-run: xvfb-run
