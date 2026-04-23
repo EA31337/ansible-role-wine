@@ -43,7 +43,7 @@ wine_winetricks_dependencies_os_family:
     - p7zip
     - ttf-freefont
     - xauth
-    - xvfb
+    - xvfb-run
   Darwin:
     - cabextract
     - p7zip
