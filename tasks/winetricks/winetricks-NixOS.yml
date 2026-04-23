@@ -6,10 +6,10 @@
     wine_become_method["_default"]) }}
   block:
 
-    - name: Check if winetricks is already installed
+    - name: Check if winetricks is already installed  # noqa risky-shell-pipe
       ansible.builtin.shell:
         cmd: |
-          set -o pipefail
+          set -e
           nix-env -q | grep -qw winetricks
       changed_when: false
       failed_when: winetricks_check.rc not in [0, 1]

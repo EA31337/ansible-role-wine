@@ -12,10 +12,10 @@
   when: nix_store_stat.stat.exists
   block:
 
-    - name: Check current Wine version
+    - name: Check current Wine version  # noqa risky-shell-pipe
       ansible.builtin.shell:
         cmd: |
-          set -o pipefail
+          set -e
           nix-env -q 2>/dev/null | grep -E '^wine-(wow64|wow|10|9|11)' | head -1 || echo "not_installed"
       changed_when: false
       register: wine_version_check
@@ -50,9 +50,9 @@
           nixpkgs{%- endif -%}
       when: wine_needs_install | bool
 
-    - name: Remove incompatible Wine and related packages if present
+    - name: Remove incompatible Wine and related packages if present  # noqa risky-shell-pipe
       ansible.builtin.shell: |
-        set -eo pipefail
+        set -e
         old_wine=$(nix-env -q 2>/dev/null | grep -E '^wine-([0-9]|wow64)' | \
           grep -v "wine-wow64-{{ wine_version_nixos }}" | head -1 || echo "")
         if [ -n "$old_wine" ]; then
@@ -70,7 +70,7 @@
 
     - name: Ensure Wine package and dependencies are installed
       ansible.builtin.shell: |
-        set -eo pipefail
+        set -e
         {% if nixpkgs_revision != 'nixpkgs' %}
         # Install from pinned archive to avoid channel bugs in Docker
         nix-env -f https://github.com/NixOS/nixpkgs/archive/{{ nixpkgs_revision }}.tar.gz -iA \
@@ -86,9 +86,9 @@
 - name: Configure fontconfig for NixOS
   when: nix_store_stat.stat.exists
   block:
-    - name: Get fontconfig out-path
+    - name: Get fontconfig out-path  # noqa risky-shell-pipe
       ansible.builtin.shell: |
-        set -o pipefail
+        set -e
         nix-env -q --out-path fontconfig 2>/dev/null | awk '{print $NF}'
       register: fontconfig_info
       changed_when: false
@@ -120,7 +120,7 @@
     - name: Set fontconfig environment in ~/.bashrc (NixOS)
       ansible.builtin.lineinfile:
         path: "{{ ansible_user_dir }}/.bashrc"
-        line: "[[ -f ~/.wine_env ]] && source ~/.wine_env"
+        line: "[ -f ~/.wine_env ] && source ~/.wine_env"
         create: true
         mode: '0644'
       when: fontconfig_path is defined

@@ -1,5 +1,5 @@
 ---
-- name: Checks if Wine is installed
+- name: Checks if Wine is installed  # noqa risky-shell-pipe
   become: >-
     {{ (detected_os_family | default(ansible_os_family) == 'NixOS')
     and (ansible_user_id != 'root') }}
@@ -7,9 +7,9 @@
     {{ wine_become_method.get(detected_os_family | default(ansible_os_family),
     wine_become_method["_default"]) }}
   ansible.builtin.shell: |
-    [[ -f ~/.wine_env ]] && source ~/.wine_env
+    [ -f ~/.wine_env ] && source ~/.wine_env
     {% if detected_os_family | default(ansible_os_family) == 'NixOS' %}
-    set -o pipefail
+    set -e
     nix-env -q 2>/dev/null | grep -Em1 '^wine-(wow64|wow|10|9|11)'
     {% else %}
     wine --version
@@ -28,7 +28,7 @@
     wine_become_method["_default"]) }}
   changed_when: false
   ansible.builtin.shell: |
-    [[ -f ~/.wine_env ]] && source ~/.wine_env
+    [ -f ~/.wine_env ] && source ~/.wine_env
     winetricks --version
   register: cmd_winetricks_version
   failed_when: cmd_winetricks_version.rc != 0 and cmd_winetricks_version.rc != -6
@@ -47,8 +47,8 @@
   block:
     - name: Check if required tools are installed  # noqa risky-shell-pipe
       ansible.builtin.shell: |
-        [[ -f ~/.wine_env ]] && source ~/.wine_env
-        set -eo pipefail
+        [ -f ~/.wine_env ] && source ~/.wine_env
+        set -e
         cmd="{{ wine_package_command_map[item] | default(item) }}"
         path=$(which "$cmd")
         version=$("$cmd" --version 2>&1 | head -n 1 || echo "unknown version")
