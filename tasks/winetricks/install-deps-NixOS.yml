@@ -22,29 +22,29 @@
         cmd: nix-env -iA nixpkgs.{{ item }}
         creates: >-
           {{ privileged_home.stdout ~ '/.nix-profile/bin/' ~ wine_package_command_map[item] }}
-      loop: "{{ wine_selected_winetricks_dependencies }}"
       when:
         - nix_store_stat.stat.exists
         - wine_package_command_map[item] | default('') | length > 0
+      loop: "{{ wine_selected_winetricks_dependencies }}"
 
     - name: Check if data-only dependencies are already installed
       ansible.builtin.command:
         cmd: nix-env -q {{ item }}
       register: nix_data_dep_check
-      changed_when: false
-      failed_when: false
-      loop: "{{ wine_selected_winetricks_dependencies }}"
       when:
         - nix_store_stat.stat.exists
         - wine_package_command_map[item] | default('') | length == 0
+      changed_when: false
+      failed_when: false
+      loop: "{{ wine_selected_winetricks_dependencies }}"
 
     - name: Ensures data-only dependencies are present
       ansible.builtin.command:
         cmd: nix-env -iA nixpkgs.{{ item.item }}
       register: nix_data_install
-      changed_when: "'installing' in nix_data_install.stdout or 'building' in nix_data_install.stdout"
-      loop: "{{ nix_data_dep_check.results | default([]) }}"
       when:
         - nix_store_stat.stat.exists
         - item.rc is defined
         - item.rc != 0
+      changed_when: "'installing' in nix_data_install.stdout or 'building' in nix_data_install.stdout"
+      loop: "{{ nix_data_dep_check.results | default([]) }}"

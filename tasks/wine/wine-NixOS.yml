@@ -77,7 +77,7 @@
           {{ wine_pkg }} fontconfig freetype gawk xorg.libX11 xorg.libxcb
         {% else %}
         nix-env -iA \
-          nixpkgs.{{ wine_pkg }} nixpkgs.fontconfig nixpkgs.freetype
+          nixpkgs.{{ wine_pkg }} nixpkgs.fontconfig nixpkgs.freetype \
           nixpkgs.gawk nixpkgs.xorg.libX11 nixpkgs.xorg.libxcb
         {% endif %}
       when: wine_needs_install | bool
