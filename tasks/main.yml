@@ -61,11 +61,11 @@
     - name: Determine if Wine version mismatch on NixOS
       ansible.builtin.set_fact:
         wine_version_mismatch: >-
-          {% set _m = wine_version | default('') | regex_search('^(\\d+)', '\\1') %}
+          {% set _m = wine_version | default('') | regex_findall('^(\\d+)') %}
           {% set major = (_m | first) if _m else '9' %}
           {{
             (nixos_wine_version_check.stdout | default('not_installed') == "not_installed") or
-            ('wine-wow64-' ~ major not in nixos_wine_version_check.stdout) or
+            ('wine-wow64-' ~ (major | string | trim) not in nixos_wine_version_check.stdout) or
             ('wow64' not in nixos_wine_version_check.stdout)
           }}
 

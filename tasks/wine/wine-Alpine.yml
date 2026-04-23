@@ -38,7 +38,7 @@
       ansible.builtin.set_fact:
         wine_alpine_version: >-
           {{ (wine_available_version.stdout | default('')
-          | regex_search('wine-([\\d.]+-r\\d+)', '\\1')) | first | default('', true) | trim }}
+          | regex_findall('wine-([\\d.]+-r\\d+)')) | first | default('', true) | trim }}
 
     - name: Fail if wine version could not be parsed from apk output
       ansible.builtin.fail:
@@ -50,17 +50,17 @@
     - name: Extract major version from wine_alpine_version
       ansible.builtin.set_fact:
         wine_alpine_major: >-
-          {% set _m = wine_alpine_version | regex_search('^(\\d+)', '\\1') %}
-          {{ (_m | first) if (_m is iterable and _m | length > 0) else '9' }}
+          {% set _m = wine_alpine_version | regex_findall('^(\\d+)') %}
+          {{ (_m | first) if (_m | length > 0) else '9' }}
       when: wine_alpine_version | length > 0
 
     - name: Validate wine major version (9, 10, or 11)
       ansible.builtin.assert:
         that:
           - wine_alpine_major is defined
-          - wine_alpine_major | trim in ['9', '10', '11']
+          - wine_alpine_major | string | trim in ['9', '10', '11']
         fail_msg: >-
-          Available wine version {{ wine_alpine_major | default('unknown') | trim }}
+          Available wine version {{ wine_alpine_major | default('unknown') | string | trim }}
           is not supported (expected 9, 10, or 11).
       when: wine_alpine_version | length > 0
 
@@ -68,9 +68,9 @@
       ansible.builtin.assert:
         that:
           - >-
-            {% set _m = wine_version | default('') | regex_search('^(\\d+)', '\\1') %}
-            {% set major = (_m | first) if (_m is iterable and _m | length > 0) else '9' %}
-            (wine_alpine_major | trim) == (major | trim)
+            {% set _m = wine_version | default('') | regex_findall('^(\\d+)') %}
+            {% set major = (_m | first) if (_m | length > 0) else '9' %}
+            (wine_alpine_major | string | trim) == (major | string | trim)
         fail_msg: >-
           Requested wine version {{ wine_version }} does not match available
           version {{ wine_alpine_version }}
