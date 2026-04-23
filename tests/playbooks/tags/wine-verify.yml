@@ -1,4 +1,51 @@
 ---
+- name: Build NixOS Docker image
+  hosts: localhost
+  gather_facts: false
+  tags: always
+  vars:
+    controller_python: "{{ ansible_playbook_python }}"
+    nixos_built_image: wine-nixos:molecule
+    target_container: "{{ lookup('env', 'TARGET_CONTAINER') | default('', true) }}"
+    is_nixos_target: "{{ target_container in ['', 'wine-on-nixos-latest'] }}"
+    nixos_in_inventory: "{{ 'wine-on-nixos-latest' in groups.get('docker_containers', []) }}"
+    should_build_nixos: "{{ is_nixos_target and nixos_in_inventory }}"
+    nixos_build_dir: "{{ lookup('env', 'RUNNER_TEMP') | default('/tmp', true) }}"
+    nixos_dockerfile_output: "{{ nixos_build_dir }}/Dockerfile.wine-on-nixos"
+    nixos_dockerfile_template: >-
+      {{ playbook_dir }}/../../../molecule/resources/playbooks/Dockerfile.j2
+  tasks:
+    - name: Render Dockerfile for NixOS image
+      ansible.builtin.template:
+        src: "{{ nixos_dockerfile_template }}"
+        dest: "{{ nixos_dockerfile_output }}"
+        mode: "0644"
+      vars:
+        item:
+          name: wine-on-nixos-latest
+          image: nixos/nix:latest
+        ansible_python_interpreter: "{{ controller_python }}"
+      when: should_build_nixos
+
+    - name: Create ca-certificates directory in build context
+      ansible.builtin.file:
+        path: "{{ nixos_dockerfile_output | dirname }}/ca-certificates"
+        state: directory
+        mode: "0755"
+      when: should_build_nixos
+
+    - name: Build NixOS image with Python preinstalled
+      community.docker.docker_image:
+        name: wine-nixos:molecule
+        build:
+          path: "{{ nixos_dockerfile_output | dirname }}"
+          dockerfile: "{{ nixos_dockerfile_output | basename }}"
+        source: build
+        force_source: true
+      when: should_build_nixos
+      vars:
+        ansible_python_interpreter: "{{ controller_python }}"
+
 - name: Ensure Docker containers are up-and-running
   gather_facts: false
   hosts: docker_containers
@@ -6,14 +53,25 @@
   pre_tasks:
     - name: Ensure container is started
       community.docker.docker_container:
-        command: sleep infinity
-        image: "{{ container_image }}"
         name: "{{ inventory_hostname }}"
-        pull: "{{ not is_nixos_image }}"
+        image: "{{ container_image }}"
         state: started
-        privileged: "{{ is_nixos_image }}"
-        security_opts: "{{ ['seccomp=unconfined', 'apparmor=unconfined'] if is_nixos_image else omit }}"
+        command: sleep infinity
+        # NixOS containers require privileged mode due to non-standard filesystem layout.
+        privileged: "{{ container_image is search('nixos') }}"
+        pull: >-
+          {{ not (container_image is search('nixos')) }}
+        # Don't recreate - just restart if needed
+        recreate: false
+        restart: false
+        # Relaxed seccomp/apparmor for NixOS compatibility.
+        security_opts: >-
+          {{ ['seccomp=unconfined', 'apparmor=unconfined']
+          if container_image is search('nixos') else omit }}
       delegate_to: localhost
+      vars:
+        # Use system Python with requests installed for controller-side Docker modules.
+        ansible_python_interpreter: "{{ controller_python }}"
 
     - name: Wait for container to be ready
       community.docker.docker_container_info:
@@ -22,11 +80,69 @@
       until:
         - container_info is defined
         - (container_info.container | default({})).get('State', {}).get('Running', false) | bool
-      delegate_to: localhost
       changed_when: false
+      delay: 2
+      delegate_to: localhost
+      retries: 10
+      vars:
+        # Use system Python with requests installed for controller-side Docker modules.
+        ansible_python_interpreter: "{{ controller_python }}"
+
+    - name: Install Python 3 on Alpine
+      ansible.builtin.raw: |
+        test -e "{{ ansible_python_interpreter }}" || (apk update && apk add --no-cache python3 py3-pip)
+      changed_when: false
+      when: container_image is search("alpine")
+
+    - name: Install Python 3 on Ubuntu/Debian
+      ansible.builtin.raw: |
+        test -e "{{ ansible_python_interpreter }}" || (apt-get update && apt-get install -y python3 python3-pip)
+      changed_when: false
+      register: python_install_result
+      retries: 3
+      delay: 10
+      until: python_install_result.rc == 0
+      when: container_image is search("ubuntu") or container_image is search("debian")
+
+    - name: Install or verify Python on NixOS
+      ansible.builtin.raw: |
+        # Check if Python is already installed from Dockerfile
+        if [ -x /root/.nix-profile/bin/python3 ]; then
+          /root/.nix-profile/bin/python3 --version
+          exit 0
+        fi
+        # If not, install it now
+        PATH=/root/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH
+        nix-channel --update
+        nix-env -iA nixpkgs.python3 nixpkgs.python3Packages.pip
+      changed_when: false
+      when: container_image is search("nixos")
+
+    - name: Gather facts
+      ansible.builtin.setup:
+
+    - name: Determine if we should become root
+      ansible.builtin.set_fact:
+        wine_should_become: >-
+          {{ (ansible_user_uid | default(0) | int) != 0 }}
+        cacheable: true
+
+    - name: Install Python packages for Ubuntu/Debian
+      ansible.builtin.apt:
+        name:
+          - python3
+          - python3-pip
+          - python3-setuptools
+        state: present
+        update_cache: true
+      become: "{{ wine_should_become }}"
+      environment:
+        DEBIAN_FRONTEND: noninteractive
+      when: container_image is search("ubuntu") or container_image is search("debian")
 
   tags: always
   vars:
+    controller_python: "{{ ansible_playbook_python }}"
     nixos_built_image: wine-nixos:molecule
     container_image_map:
       wine-on-alpine-latest: alpine:3.20
@@ -43,6 +159,7 @@
 - name: Import ea31337.wine role (wine-verify tag)
   hosts: docker_containers
   gather_facts: true
+  become: "{{ wine_should_become | default(false) }}"
   tasks:
     - name: Import ea31337.wine role
       ansible.builtin.import_role:

@@ -68,7 +68,7 @@
 
 - name: Ensure fontconfig directories are present (Alpine)
   ansible.builtin.file:
-    path: "{{ ansible_facts.env.HOME }}/{{ item }}"
+    path: "{{ ansible_user_dir }}/{{ item }}"
     state: directory
     mode: '0755'
   loop:
@@ -84,7 +84,7 @@
 - name: Write fontconfig config for Alpine
   ansible.builtin.template:
     src: fonts.conf.j2
-    dest: "{{ ansible_facts.env.HOME }}/{{ wine_fontconfig_config_file }}"
+    dest: "{{ ansible_user_dir }}/{{ wine_fontconfig_config_file }}"
     mode: '0644'
     force: true
 
@@ -95,12 +95,12 @@
     mode: '0644'
   become: "{{ item.become | default(false) }}"
   loop:
-    - { dest: "{{ ansible_facts.env.HOME }}/.wine_env" }
+    - { dest: "{{ ansible_user_dir }}/.wine_env" }
     - { dest: "/etc/profile.d/wine.sh", become: true }
 
 - name: Set fontconfig environment in ~/.bashrc (Alpine)
   ansible.builtin.lineinfile:
-    path: "{{ ansible_facts.env.HOME }}/.bashrc"
+    path: "{{ ansible_user_dir }}/.bashrc"
     line: "[[ -f ~/.wine_env ]] && source ~/.wine_env"
     create: true
     mode: '0644'
@@ -108,8 +108,8 @@
 - name: Rebuild fontconfig cache for Alpine
   ansible.builtin.command: >-
     fc-cache -f
-    {{ ansible_facts.env.HOME }}/{{ wine_fontconfig_fonts_dirs[0] }}
-    {{ ansible_facts.env.HOME }}/{{ wine_fontconfig_fonts_dirs[1] }}
+    {{ ansible_user_dir }}/{{ wine_fontconfig_fonts_dirs[0] }}
+    {{ ansible_user_dir }}/{{ wine_fontconfig_fonts_dirs[1] }}
   changed_when: false
 
 - name: Ensures ~/.wine is initialized
@@ -118,13 +118,13 @@
     # WoW64 wine (amd64) only supports win64; 32-bit wine (i686/x86/etc) only supports win32.
     WINEARCH: >-
       {{ 'win32' if ansible_facts.architecture in ['i386', 'i486', 'i586', 'i686', 'x86'] else 'win64' }}
-    HOME: "{{ ansible_facts.env.HOME }}"
-    FONTCONFIG_FILE: "{{ ansible_facts.env.HOME }}/{{ wine_fontconfig_config_file }}"
+    HOME: "{{ ansible_user_dir }}"
+    FONTCONFIG_FILE: "{{ ansible_user_dir }}/{{ wine_fontconfig_config_file }}"
     FONTCONFIG_PATH: >-
-      {{ ansible_facts.env.HOME }}/{{ wine_fontconfig_config_dir }}:{{
+      {{ ansible_user_dir }}/{{ wine_fontconfig_config_dir }}:{{
       wine_fontconfig_system_config_path }}
     WINEDEBUG: "{{ wine_debug | default('-all') }}"
     WINEDLLOVERRIDES: "{{ wine_dlloverrides | default('mscoree,mshtml=') }}"
   args:
-    creates: "{{ ansible_facts.env.HOME }}/.wine/system.reg"
+    creates: "{{ ansible_user_dir }}/.wine/system.reg"
   timeout: 120
