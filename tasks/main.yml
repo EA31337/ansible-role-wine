@@ -91,7 +91,7 @@
     {{ wine_become_method.get(detected_os_family,
     wine_become_method["_default"]) }}
   ansible.builtin.shell: |
-    {% if detected_os_family == 'NixOS' %}
+    {% if detected_os_family == 'NixOS' and nixos_early_check.rc | default(1) == 0 %}
     set -o pipefail
     installed=$(nix-env -q 2>/dev/null | grep -Em1 '^wine-(wow64|wow|10|9|11)' || echo "not_installed")
     echo "$installed"
