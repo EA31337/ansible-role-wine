@@ -116,9 +116,6 @@
         allow_downgrade: true
         install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
         name:
-          - fontconfig
-          - fonts-freefont-ttf
-          - winbind
           - "{{ wine_package_name }}"
           - "wine-{{ wine_release }}{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
           - "wine-{{ wine_release }}-amd64{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
@@ -131,9 +128,6 @@
         allow_downgrade: true
         install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
         name:
-          - fontconfig
-          - fonts-freefont-ttf
-          - winbind
           - "{{ wine_package_name }}"
           - "wine-{{ wine_release }}{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
           - "wine-{{ wine_release }}-amd64{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
@@ -146,9 +140,6 @@
         allow_downgrade: true
         install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
         name:
-          - fontconfig
-          - fonts-freefont-ttf
-          - winbind
           - "{{ wine_package_name }}"
           - "wine-{{ wine_release }}{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
           - "wine-{{ wine_release }}-amd64{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
