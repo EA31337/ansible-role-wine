@@ -42,7 +42,7 @@
     - name: Determine if Wine version mismatch on NixOS
       ansible.builtin.set_fact:
         wine_version_mismatch: >-
-          {% set major = wine_version | default('') | regex_replace('^(\\d+).*', '\\1') | default('9', true) %}
+          {%- set major = wine_version | default('') | regex_replace('^(\\d+).*', '\\1') | default('9', true) -%}
           {{
             (nixos_wine_version_check.stdout | default('not_installed') == "not_installed") or
             ('wine-wow64-' ~ major not in nixos_wine_version_check.stdout) or
@@ -74,7 +74,7 @@
 
     - name: Sets Windows version via winetricks
       ansible.builtin.shell: |
-        [ -f ~/.wine_env ] && source ~/.wine_env
+        [ -f ~/.wine_env ] && . ~/.wine_env
         winetricks -q {{ wine_winetricks_winver }}
       async: 20
       poll: 0

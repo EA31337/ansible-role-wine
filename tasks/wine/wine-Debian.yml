@@ -166,7 +166,7 @@
 - name: Set fontconfig environment in ~/.bashrc (Debian)
   ansible.builtin.lineinfile:
     path: "{{ ansible_user_dir }}/.bashrc"
-    line: "[ -f ~/.wine_env ] && source ~/.wine_env"
+    line: "[ -f ~/.wine_env ] && . ~/.wine_env"
     create: true
     mode: '0644'
 

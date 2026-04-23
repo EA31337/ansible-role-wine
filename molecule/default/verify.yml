@@ -5,7 +5,9 @@
     - ../../defaults/main.yml
   tasks:
     - name: Get Wine version
-      ansible.builtin.command: wine --version
+      ansible.builtin.shell: |
+        [ -f ~/.wine_env ] && . ~/.wine_env
+        wine --version
       register: wine_version_output
       changed_when: false
       failed_when: false

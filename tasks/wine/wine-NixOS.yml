@@ -74,10 +74,10 @@
         {% if nixpkgs_revision != 'nixpkgs' %}
         # Install from pinned archive to avoid channel bugs in Docker
         nix-env -f https://github.com/NixOS/nixpkgs/archive/{{ nixpkgs_revision }}.tar.gz -iA \
-          {{ wine_pkg }} fontconfig freetype xorg.libX11 xorg.libxcb
+          {{ wine_pkg }} fontconfig freetype gawk xorg.libX11 xorg.libxcb
         {% else %}
         nix-env -iA \
-          nixpkgs.{{ wine_pkg }} nixpkgs.fontconfig nixpkgs.freetype nixpkgs.xorg.libX11 nixpkgs.xorg.libxcb
+          nixpkgs.{{ wine_pkg }} nixpkgs.fontconfig nixpkgs.freetype nixpkgs.gawk nixpkgs.xorg.libX11 nixpkgs.xorg.libxcb
         {% endif %}
       when: wine_needs_install | bool
       register: wine_install
@@ -86,17 +86,15 @@
 - name: Configure fontconfig for NixOS
   when: nix_store_stat.stat.exists
   block:
-    - name: Get fontconfig out-path  # noqa risky-shell-pipe
-      ansible.builtin.shell: |
-        set -e
-        nix-env -q --out-path fontconfig 2>/dev/null | awk '{print $NF}'
+    - name: Get fontconfig out-path
+      ansible.builtin.command: nix-env -q --out-path fontconfig
       register: fontconfig_info
       changed_when: false
       failed_when: false
 
     - name: Set fontconfig_path fact
       ansible.builtin.set_fact:
-        fontconfig_path: "{{ fontconfig_info.stdout }}"
+        fontconfig_path: "{{ fontconfig_info.stdout | regex_replace('.*=', '') | split() | last }}"
       when: fontconfig_info.stdout | length > 0
 
     - name: Create fontconfig directories
@@ -120,7 +118,7 @@
     - name: Set fontconfig environment in ~/.bashrc (NixOS)
       ansible.builtin.lineinfile:
         path: "{{ ansible_user_dir }}/.bashrc"
-        line: "[ -f ~/.wine_env ] && source ~/.wine_env"
+        line: "[ -f ~/.wine_env ] && . ~/.wine_env"
         create: true
         mode: '0644'
       when: fontconfig_path is defined
