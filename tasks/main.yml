@@ -73,7 +73,9 @@
       ansible.builtin.include_tasks: winetricks/winetricks.yml
 
     - name: Sets Windows version via winetricks
-      ansible.builtin.command: winetricks -q {{ wine_winetricks_winver }}
+      ansible.builtin.shell: |
+        [[ -f ~/.wine_env ]] && source ~/.wine_env
+        winetricks -q {{ wine_winetricks_winver }}
       async: 20
       poll: 0
       changed_when: false
@@ -96,6 +98,7 @@
     {{ wine_become_method.get(detected_os_family,
     wine_become_method["_default"]) }}
   ansible.builtin.shell: |
+    [[ -f ~/.wine_env ]] && source ~/.wine_env
     {% if detected_os_family == 'NixOS' and nixos_early_check.rc | default(1) == 0 %}
     set -o pipefail
     installed=$(nix-env -q 2>/dev/null | grep -Em1 '^wine-(wow64|wow|10|9|11)' || echo "not_installed")

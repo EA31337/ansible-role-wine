@@ -117,13 +117,12 @@
         mode: '0644'
       when: fontconfig_path is defined
 
-    - name: Set fontconfig environment variables in .bashrc
-      ansible.builtin.blockinfile:
+    - name: Set fontconfig environment in ~/.bashrc (NixOS)
+      ansible.builtin.lineinfile:
         path: "{{ ansible_facts.env.HOME }}/.bashrc"
-        marker: "# {mark} Wine fontconfig settings for NixOS"
-        block: |
-          export FONTCONFIG_FILE="{{ ansible_facts.env.HOME }}/.config/fontconfig/fonts.conf"
-          export FONTCONFIG_PATH="{{ ansible_facts.env.HOME }}/.config/fontconfig:{{ fontconfig_path }}/etc/fonts"
+        line: "[[ -f ~/.wine_env ]] && source ~/.wine_env"
+        create: true
+        mode: '0644'
       when: fontconfig_path is defined
 
     - name: Write wine_env file

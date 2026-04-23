@@ -163,6 +163,23 @@
         state: present
         update_cache: true
 
+- name: Write fontconfig and wine environment config for Debian
+  ansible.builtin.template:
+    src: wine_env.j2
+    dest: "{{ item.dest }}"
+    mode: '0644'
+  become: "{{ item.become | default(false) }}"
+  loop:
+    - { dest: "{{ ansible_facts.env.HOME }}/.wine_env" }
+    - { dest: "/etc/profile.d/wine.sh", become: true }
+
+- name: Set fontconfig environment in ~/.bashrc (Debian)
+  ansible.builtin.lineinfile:
+    path: "{{ ansible_facts.env.HOME }}/.bashrc"
+    line: "[[ -f ~/.wine_env ]] && source ~/.wine_env"
+    create: true
+    mode: '0644'
+
 - name: Ensures ~/.wine is initialized
   ansible.builtin.command: wineboot --init
   environment:
