@@ -19,8 +19,8 @@
     - name: Extract version info from available wine
       ansible.builtin.set_fact:
         wine_alpine_version: >-
-          {{ wine_available_version.stdout | default('')
-          | regex_search('wine-([\d.]+-r\d+)', '\1') | default('', true) }}
+          {{ (wine_available_version.stdout | default('')
+          | regex_search('wine-([\d.]+-r\d+)', '\1')) | first | default('', true) }}
 
     - name: Extract major version from wine_alpine_version
       ansible.builtin.set_fact:
@@ -98,7 +98,7 @@
 - name: Set fontconfig environment in ~/.bashrc (Alpine)
   ansible.builtin.lineinfile:
     path: "{{ ansible_user_dir }}/.bashrc"
-    line: "[ -f ~/.wine_env ] && source ~/.wine_env"
+    line: "[ -f ~/.wine_env ] && . ~/.wine_env"
     create: true
     mode: '0644'
 

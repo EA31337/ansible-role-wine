@@ -7,7 +7,7 @@
     {{ wine_become_method.get(detected_os_family | default(ansible_os_family),
     wine_become_method["_default"]) }}
   ansible.builtin.shell: |
-    [ -f ~/.wine_env ] && source ~/.wine_env
+    [ -f ~/.wine_env ] && . ~/.wine_env
     {% if detected_os_family | default(ansible_os_family) == 'NixOS' %}
     set -e
     nix-env -q 2>/dev/null | grep -Em1 '^wine-(wow64|wow|10|9|11)'
@@ -28,7 +28,7 @@
     wine_become_method["_default"]) }}
   changed_when: false
   ansible.builtin.shell: |
-    [ -f ~/.wine_env ] && source ~/.wine_env
+    [ -f ~/.wine_env ] && . ~/.wine_env
     winetricks --version
   register: cmd_winetricks_version
   failed_when: cmd_winetricks_version.rc != 0 and cmd_winetricks_version.rc != -6
