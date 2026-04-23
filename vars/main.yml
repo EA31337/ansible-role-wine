@@ -18,6 +18,7 @@ wine_data_pkg_map:
   freefont_ttf: freefont-ttf
 
 # This maps package names to their respective commands
+# Used to verify dependencies are correctly installed
 wine_package_command_map:
   cabextract: cabextract
   curl: curl
@@ -26,7 +27,9 @@ wine_package_command_map:
   freefont_ttf: ""  # Fonts don't have a command
   gawk: awk
   p7zip: 7z
+  p7zip-full: 7z
   samba: wbinfo
+
   ttf-freefont: ""  # Fonts don't have a command
   unzip: unzip
   winbind: wbinfo
@@ -53,7 +56,7 @@ wine_winetricks_dependencies_os_family:
     - fontconfig
     - fonts-freefont-ttf
     - gawk
-    - p7zip
+    - p7zip-full
     - unzip
     - winbind
     - xauth
@@ -75,7 +78,7 @@ wine_winetricks_dependencies_os_family:
     - fontconfig
     - fonts-freefont-ttf
     - gawk
-    - p7zip
+    - p7zip-full
     - unzip
     - winbind
     - xauth
