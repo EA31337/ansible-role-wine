@@ -22,7 +22,9 @@
 
     - name: Set effective wine version for NixOS
       ansible.builtin.set_fact:
-        wine_version_nixos: "{{ wine_version | default('') | regex_replace('^(\\d+).*', '\\1') | default('9', true) }}"
+        wine_version_nixos: >-
+          {{ wine_version | default('') | regex_replace('^([0-9]+).*', '\\1')
+             | default('9', true) | string | trim }}
 
     - name: Determine if Wine needs installation
       ansible.builtin.set_fact:
@@ -103,7 +105,7 @@
 
     - name: Set fontconfig environment in ~/.bashrc
       ansible.builtin.lineinfile:
-        path: ~/.bashrc
+        path: "{{ ansible_user_dir }}/.bashrc"
         line: "[ -f ~/.wine_env ] && . ~/.wine_env"
         create: true
         mode: '0644'

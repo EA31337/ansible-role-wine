@@ -100,15 +100,24 @@
 
     - name: Install Python 3 on Alpine
       ansible.builtin.raw: |
-        test -e "{{ ansible_python_interpreter }}" || \
-        (apk update && apk add --no-cache python3 py3-pip sudo bash procps)
+        missing=""
+        [ -e "{{ ansible_python_interpreter }}" ] || missing="$missing python3 py3-pip"
+        command -v sudo >/dev/null 2>&1 || missing="$missing sudo"
+        command -v bash >/dev/null 2>&1 || missing="$missing bash"
+        command -v ps   >/dev/null 2>&1 || missing="$missing procps"
+        if [ -n "$missing" ]; then apk update && apk add --no-cache $missing; fi
       changed_when: false
       when: container_image is search("alpine")
 
     - name: Install Python 3 on Ubuntu/Debian
       ansible.builtin.raw: |
-        test -e "{{ ansible_python_interpreter }}" || \
-        (apt-get update && apt-get install -y python3 python3-pip sudo procps)
+        missing=""
+        [ -e "{{ ansible_python_interpreter }}" ] || missing="$missing python3 python3-pip"
+        command -v sudo >/dev/null 2>&1 || missing="$missing sudo"
+        command -v ps   >/dev/null 2>&1 || missing="$missing procps"
+        if [ -n "$missing" ]; then
+          apt-get update && apt-get install -y --no-install-recommends $missing
+        fi
       changed_when: false
       register: python_install_result
       retries: 3
