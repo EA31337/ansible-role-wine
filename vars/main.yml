@@ -17,6 +17,17 @@ wine_become_method:
 wine_data_pkg_map:
   freefont_ttf: freefont-ttf
 
+# Fontconfig configuration
+wine_fontconfig_cache_dir: ".cache/fontconfig"
+wine_fontconfig_config_dir: ".config/fontconfig"
+wine_fontconfig_config_file: ".config/fontconfig/fonts.conf"
+wine_fontconfig_fonts_dirs:
+  - ".fonts"
+  - ".local/share/fonts"
+wine_fontconfig_system_fonts_dir: "/usr/share/fonts"
+wine_fontconfig_system_config_file: "/etc/fonts/fonts.conf"
+wine_fontconfig_system_config_path: "/etc/fonts"
+
 # This maps package names to their respective commands
 # Used to verify dependencies are correctly installed
 wine_package_command_map:
@@ -73,14 +84,3 @@ wine_winetricks_dependencies_os_family:
     - xorg.xauth
     - xvfb-run
   Ubuntu: *debian_ubuntu_deps
-
-# Fontconfig configuration
-wine_fontconfig_cache_dir: ".cache/fontconfig"
-wine_fontconfig_config_dir: ".config/fontconfig"
-wine_fontconfig_config_file: ".config/fontconfig/fonts.conf"
-wine_fontconfig_fonts_dirs:
-  - ".fonts"
-  - ".local/share/fonts"
-wine_fontconfig_system_fonts_dir: "/usr/share/fonts"
-wine_fontconfig_system_config_file: "/etc/fonts/fonts.conf"
-wine_fontconfig_system_config_path: "/etc/fonts"

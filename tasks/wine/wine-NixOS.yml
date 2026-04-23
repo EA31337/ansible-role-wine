@@ -23,8 +23,8 @@
     - name: Set effective wine version for NixOS
       ansible.builtin.set_fact:
         wine_version_nixos: >-
-          {{ wine_version | default('') | regex_replace('^([0-9]+).*', '\\1')
-             | default('9', true) | string | trim }}
+          {% set _m = wine_version | default('') | regex_findall('^([0-9]+)') %}
+          {{ (_m | first | string | trim) if (_m | length > 0) else '9' }}
 
     - name: Determine if Wine needs installation
       ansible.builtin.set_fact:
