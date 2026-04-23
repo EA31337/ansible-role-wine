@@ -7,17 +7,22 @@ on:
   issues:
     types:
       - opened
+      - edited
       - reopened
   issue_comment:
     types:
       - created
+      - edited
   pull_request:
     types:
       - opened
+      - edited
       - reopened
+      - synchronize
   pull_request_review_comment:
     types:
       - created
+      - edited
   workflow_dispatch:
     inputs:
       model:
@@ -60,6 +65,9 @@ jobs:
   cogni-ai-agent:
     name: Run Cogni AI agent
     runs-on: ubuntu-latest
+    if: |
+      github.event_name != 'issues' ||
+      !github.event.issue.pull_request
     permissions:
       contents: write
       id-token: write
@@ -122,10 +130,11 @@ jobs:
               touch*: allow
               true*: allow
               vim*: allow
+          # Use comment body if available, otherwise fall back to issue/PR body or manual input.
           prompt: >-
             ${{
-              github.event.comment.body
-              || github.event.issue.body
-              || github.event.pull_request.body
-              || inputs.prompt
+              github.event.comment.body ||
+              github.event.issue.body ||
+              github.event.pull_request.body ||
+              inputs.prompt
             }}

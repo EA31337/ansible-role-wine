@@ -6,7 +6,7 @@ name: Molecule
 on:
   pull_request:
     paths-ignore:
-      - '!.github/workflows/**'
+      - '.github/workflows/**'
       - '**.cfg'
       - '**.md'
       - '.*'
@@ -14,7 +14,7 @@ on:
       - Pipfile*
   push:
     paths-ignore:
-      - '!.github/workflows/**'
+      - '.github/workflows/**'
       - '**.cfg'
       - '**.md'
       - '.*'
