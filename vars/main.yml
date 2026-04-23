@@ -20,6 +20,8 @@ wine_package_command_map:
   gawk: awk
   p7zip: 7z
   unzip: unzip
+  xauth: xauth
+  xvfb-run: xvfb-run
 
 # Fontconfig configuration
 wine_fontconfig_cache_dir: ".cache/fontconfig"

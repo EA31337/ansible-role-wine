@@ -9,8 +9,11 @@ wine_install_winetricks_dependencies:
   - fonts-freefont-ttf
   - gawk
   - p7zip
+  - ttf-freefont
   - unzip
   - winbind
+  - xauth
+  - xvfb-run
 # Wine package release to install.
 # Stable, devel, or staging (for winehq packages).
 wine_release: stable

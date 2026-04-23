@@ -53,17 +53,14 @@
 
     - name: Ensures Wine and runtime dependencies are present ({{ ansible_os_family }})
       ansible.builtin.package:
-        name:
-          - fontconfig
-          - p7zip
-          - ttf-freefont
-          - >-
-            {{ 'wine=' ~ wine_alpine_version
-            if (wine_alpine_version is defined
-            and wine_alpine_version | length > 0)
-            else 'wine' }}
-          - xauth
-          - xvfb-run
+        name: >-
+          {{
+            [('wine=' ~ wine_alpine_version
+              if (wine_alpine_version is defined and wine_alpine_version | length > 0)
+              else 'wine')] +
+            (wine_install_winetricks_dependencies |
+              intersect(['fontconfig', 'p7zip', 'ttf-freefont', 'xauth', 'xvfb-run']))
+          }}
         state: present
 
 - name: Ensure fontconfig directories are present (Alpine)
