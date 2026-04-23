@@ -40,12 +40,14 @@ wine_package_command_map:
   cabextract: cabextract
   curl: curl
   fontconfig: fc-list
+  fonts-freefont-ttf: ""  # Fonts don't have a command
   freefont_ttf: ""  # Fonts don't have a command
   gawk: awk
   p7zip: 7z
   samba: wbinfo
   ttf-freefont: ""  # Fonts don't have a command
   unzip: unzip
+  winbind: wbinfo
   xauth: xauth
   xvfb-run: xvfb-run
 
