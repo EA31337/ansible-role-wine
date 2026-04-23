@@ -97,7 +97,9 @@
 
     - name: Set wine_fontconfig_path fact
       ansible.builtin.set_fact:
-        wine_fontconfig_path: "{{ fontconfig_info.stdout | regex_replace('.*=', '') | split() | last }}"
+        wine_fontconfig_path: >-
+          {{ fontconfig_info.stdout | regex_replace('.*=', '') | split() | last
+             if (fontconfig_info.stdout | default('') | length > 0) else '' }}
 
     - name: Set fontconfig environment in ~/.bashrc
       ansible.builtin.lineinfile:
@@ -105,8 +107,7 @@
         line: "[ -f ~/.wine_env ] && . ~/.wine_env"
         create: true
         mode: '0644'
-      when: wine_fontconfig_path is defined
-
+      when: wine_fontconfig_path | length > 0
 
 - name: Ensures ~/.wine is initialized
   ansible.builtin.command: xvfb-run -a wineboot --init

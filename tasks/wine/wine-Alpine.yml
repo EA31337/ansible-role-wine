@@ -6,23 +6,12 @@
     wine_become_method["_default"]) }}
   block:
 
-    - name: Read existing Alpine repositories
-      ansible.builtin.slurp:
-        src: /etc/apk/repositories
-      register: alpine_repos_raw
-
-    - name: Derive Alpine release from main repo entry
-      ansible.builtin.set_fact:
-        alpine_main_repo_line: >-
-          {{ (alpine_repos_raw.content | b64decode).splitlines()
-             | select('search', '/main$') | list | first | default('') }}
-
-    - name: Ensure matching community repository is enabled (Alpine)
+    - name: Ensure community repository is enabled (Alpine)
       ansible.builtin.lineinfile:
         path: /etc/apk/repositories
-        line: "{{ alpine_main_repo_line | regex_replace('/main$', '/community') }}"
+        line: "https://dl-cdn.alpinelinux.org/alpine/latest-stable/community"
         state: present
-      when: alpine_main_repo_line | length > 0
+      when: ansible_os_family == 'Alpine'
 
     - name: Update apk cache
       ansible.builtin.command: apk update
@@ -38,7 +27,7 @@
       ansible.builtin.set_fact:
         wine_alpine_version: >-
           {{ (wine_available_version.stdout | default('')
-          | regex_search('wine-([\\d.]+-r\\d+)', '\\1')) | first | default('', true) | trim }}
+          | regex_search('wine-([\d.]+-r\d+)', '\1')) | first | default('', true) | trim }}
 
     - name: Fail if wine version could not be parsed from apk output
       ansible.builtin.fail:
@@ -49,9 +38,7 @@
 
     - name: Extract major version from wine_alpine_version
       ansible.builtin.set_fact:
-        wine_alpine_major: >-
-          {% set _m = wine_alpine_version | regex_search('^(\\d+)', '\\1') %}
-          {{ (_m | first) if (_m is iterable and _m | length > 0) else '9' }}
+        wine_alpine_major: "{{ wine_alpine_version | regex_search('^\\d+') | default('9', true) }}"
       when: wine_alpine_version | length > 0
 
     - name: Validate wine major version (9, 10, or 11)
@@ -68,9 +55,8 @@
       ansible.builtin.assert:
         that:
           - >-
-            {% set _m = wine_version | default('') | regex_search('^(\\d+)', '\\1') %}
-            {% set major = (_m | first) if (_m is iterable and _m | length > 0) else '9' %}
-            (wine_alpine_major | trim) == (major | trim)
+            (wine_alpine_major | trim) == ((wine_version | default('') |
+            regex_replace('^(\\d+).*', '\\1')) | default('9', true))
         fail_msg: >-
           Requested wine version {{ wine_version }} does not match available
           version {{ wine_alpine_version }}
@@ -80,7 +66,7 @@
         - wine_version | length > 0
         - wine_alpine_version | length > 0
 
-    - name: Ensures Wine and runtime dependencies are present (Alpine)
+    - name: Ensures Wine and runtime dependencies are present ({{ ansible_os_family }})
       ansible.builtin.package:
         name: >-
           {{
@@ -126,6 +112,13 @@
         mode: '0644'
         owner: "{{ ansible_user_id }}"
 
+    - name: Write wine environment config for system (Alpine)
+      ansible.builtin.template:
+        src: wine_env.j2
+        dest: "/etc/profile.d/wine.sh"
+        mode: '0644'
+        owner: root
+
     - name: Set fontconfig environment in ~/.bashrc (Alpine)
       ansible.builtin.lineinfile:
         path: "{{ ansible_user_dir }}/.bashrc"
@@ -139,19 +132,8 @@
         fc-cache -f
         {{ wine_fontconfig_fonts_dirs
            | map('regex_replace', '^', ansible_user_dir ~ '/') | join(' ') }}
-      become: true
-      changed_when: true
-
-    - name: Verify xvfb-run is available
-      ansible.builtin.command: which xvfb-run
+      become: false
       changed_when: false
-
-    - name: Check architecture support for Wine on Alpine
-      ansible.builtin.fail:
-        msg: >-
-          Architecture {{ ansible_facts.architecture }} is not supported for WoW64 Wine on Alpine.
-      when:
-        - ansible_facts.architecture not in ['i386', 'i486', 'i586', 'i686', 'x86', 'x86_64', 'amd64']
 
     - name: Ensures ~/.wine is initialized
       ansible.builtin.command: xvfb-run -a wineboot --init
