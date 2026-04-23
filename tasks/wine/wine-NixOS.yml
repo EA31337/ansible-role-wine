@@ -74,11 +74,13 @@
         {% if nixpkgs_revision != 'nixpkgs' %}
         # Install from pinned archive to avoid channel bugs in Docker
         nix-env -f https://github.com/NixOS/nixpkgs/archive/{{ nixpkgs_revision }}.tar.gz -iA \
-          {{ wine_pkg }} fontconfig freetype gawk xorg.libX11 xorg.libxcb
+          {{ wine_pkg }} fontconfig freetype gawk xorg.libX11 xorg.libxcb \
+          {{ wine_selected_winetricks_dependencies | join(' ') }}
         {% else %}
         nix-env -iA \
           nixpkgs.{{ wine_pkg }} nixpkgs.fontconfig nixpkgs.freetype \
-          nixpkgs.gawk nixpkgs.xorg.libX11 nixpkgs.xorg.libxcb
+          nixpkgs.gawk nixpkgs.xorg.libX11 nixpkgs.xorg.libxcb \
+          {{ wine_selected_winetricks_dependencies | map('regex_replace', '^', 'nixpkgs.') | join(' ') }}
         {% endif %}
       when: wine_needs_install | bool
       register: wine_install
@@ -105,51 +107,9 @@
         mode: '0644'
       when: wine_fontconfig_path is defined
 
-    - name: Rebuild fontconfig cache
-      ansible.builtin.command: fc-cache -f
-      changed_when: false
-      when: wine_fontconfig_path is defined
-
-    - name: Write fontconfig config
-      ansible.builtin.template:
-        src: fonts.conf.j2
-        dest: "{{ ansible_user_dir }}/{{ wine_fontconfig_config_file }}"
-        mode: '0644'
-        force: true
-      when: wine_fontconfig_path is defined
-
-    - name: Write wine environment config
-      ansible.builtin.template:
-        src: wine_env.j2
-        dest: ~/.wine_env
-        mode: '0644'
-      when: wine_fontconfig_path is defined
-
-
-    - name: Write fontconfig configuration
-      ansible.builtin.template:
-        src: fonts.conf.j2
-        dest: "{{ ansible_user_dir }}/{{ wine_fontconfig_config_file }}"
-        mode: '0644'
-      when: fontconfig_path is defined
-
-    - name: Set fontconfig environment in ~/.bashrc (NixOS)
-      ansible.builtin.lineinfile:
-        path: "{{ ansible_user_dir }}/.bashrc"
-        line: "[ -f ~/.wine_env ] && . ~/.wine_env"
-        create: true
-        mode: '0644'
-      when: fontconfig_path is defined
-
-    - name: Write wine_env file
-      ansible.builtin.template:
-        src: wine_env.j2
-        dest: "{{ ansible_user_dir }}/.wine_env"
-        mode: '0644'
-      when: fontconfig_path is defined
 
 - name: Ensures ~/.wine is initialized
-  ansible.builtin.command: wineboot --init
+  ansible.builtin.command: xvfb-run -a wineboot --init
   environment:
     PATH: >-
       {{ ansible_user_dir }}/.nix-profile/bin:

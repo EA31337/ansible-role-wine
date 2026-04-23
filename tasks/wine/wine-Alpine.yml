@@ -6,6 +6,13 @@
     wine_become_method["_default"]) }}
   block:
 
+    - name: Ensure community repository is enabled (Alpine)
+      ansible.builtin.lineinfile:
+        path: /etc/apk/repositories
+        line: "http://dl-cdn.alpinelinux.org/alpine/latest-stable/community"
+        state: present
+      when: ansible_os_family == 'Alpine'
+
     - name: Update apk cache
       ansible.builtin.command: apk update
       changed_when: false

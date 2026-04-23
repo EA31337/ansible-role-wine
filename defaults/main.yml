@@ -10,7 +10,7 @@ wine_install_winetricks_dependencies:
   - p7zip
   - unzip
   - xauth
-  - xvfb-run
+  - xvfb
 # Wine package release to install.
 # Stable, devel, or staging (for winehq packages).
 wine_release: stable

@@ -27,14 +27,15 @@
     - name: Set wine_detected_os_family fact
       ansible.builtin.set_fact:
         wine_detected_os_family: >-
-          {{ 'NixOS' if (nixos_early_check.rc | default(1) == 0 or ansible_os_family == 'NixOS')
-          else (ansible_distribution if ansible_distribution == 'Ubuntu' else ansible_os_family) }}
+          {{ 'NixOS' if (nixos_early_check.rc | default(1) == 0 or ansible_os_family | default('') == 'NixOS')
+          else (ansible_distribution if (ansible_distribution is defined and ansible_distribution == 'Ubuntu')
+          else ansible_os_family | default('')) }}
 
     - name: Set wine_selected_winetricks_dependencies fact
       ansible.builtin.set_fact:
         wine_selected_winetricks_dependencies: >-
-          {{ wine_winetricks_dependencies_os_family.get(wine_detected_os_family) |
-          default(wine_winetricks_dependencies_os_family.get(ansible_os_family), true) |
+          {{ (wine_winetricks_dependencies_os_family | default({})).get(wine_detected_os_family) |
+          default((wine_winetricks_dependencies_os_family | default({})).get(ansible_os_family | default('')), true) |
           default(wine_install_winetricks_dependencies, true) }}
 
     - name: Debug OS detection and dependencies

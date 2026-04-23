@@ -111,39 +111,53 @@
       ansible.builtin.debug:
         msg: "Installing wine package: {{ wine_package_name }}"
         verbosity: 1
-    - name: Ensures Wine package is present (Debian)
+    - name: Ensures Wine package and dependencies are present (Debian)
       ansible.builtin.apt:
         allow_downgrade: true
         install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
-        name:
-          - "{{ wine_package_name }}"
-          - "wine-{{ wine_release }}{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
-          - "wine-{{ wine_release }}-amd64{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
-          - "wine-{{ wine_release }}-i386:i386{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
+        name: >-
+          {{
+            [
+              wine_package_name,
+              "wine-" ~ wine_release ~ ("=" ~ wine_ubuntu_version if wine_ubuntu_version else ""),
+              "wine-" ~ wine_release ~ "-amd64" ~ ("=" ~ wine_ubuntu_version if wine_ubuntu_version else ""),
+              "wine-" ~ wine_release ~ "-i386:i386" ~ ("=" ~ wine_ubuntu_version if wine_ubuntu_version else "")
+            ] + wine_selected_winetricks_dependencies
+          }}
         state: present
         update_cache: true
       when: lsb_release_dist_id.stdout in ["Debian"]
-    - name: Ensures Wine package is present (Ubuntu)
+
+    - name: Ensures Wine package and dependencies are present (Ubuntu)
       ansible.builtin.apt:
         allow_downgrade: true
         install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
-        name:
-          - "{{ wine_package_name }}"
-          - "wine-{{ wine_release }}{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
-          - "wine-{{ wine_release }}-amd64{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
-          - "wine-{{ wine_release }}-i386:i386{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
+        name: >-
+          {{
+            [
+              wine_package_name,
+              "wine-" ~ wine_release ~ ("=" ~ wine_ubuntu_version if wine_ubuntu_version else ""),
+              "wine-" ~ wine_release ~ "-amd64" ~ ("=" ~ wine_ubuntu_version if wine_ubuntu_version else ""),
+              "wine-" ~ wine_release ~ "-i386:i386" ~ ("=" ~ wine_ubuntu_version if wine_ubuntu_version else "")
+            ] + wine_selected_winetricks_dependencies
+          }}
         state: present
         update_cache: true
       when: lsb_release_dist_id.stdout in ["Ubuntu"]
-    - name: Ensures Wine package is present (non-Debian)
+
+    - name: Ensures Wine package and dependencies are present (non-Debian)
       ansible.builtin.apt:
         allow_downgrade: true
         install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
-        name:
-          - "{{ wine_package_name }}"
-          - "wine-{{ wine_release }}{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
-          - "wine-{{ wine_release }}-amd64{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
-          - "wine-{{ wine_release }}-i386:i386{% if wine_ubuntu_version %}={{ wine_ubuntu_version }}{% endif %}"
+        name: >-
+          {{
+            [
+              wine_package_name,
+              "wine-" ~ wine_release ~ ("=" ~ wine_ubuntu_version if wine_ubuntu_version else ""),
+              "wine-" ~ wine_release ~ "-amd64" ~ ("=" ~ wine_ubuntu_version if wine_ubuntu_version else ""),
+              "wine-" ~ wine_release ~ "-i386:i386" ~ ("=" ~ wine_ubuntu_version if wine_ubuntu_version else "")
+            ] + wine_selected_winetricks_dependencies
+          }}
         state: present
         update_cache: true
       when: lsb_release_dist_id.stdout not in ["Debian", "Ubuntu"]
@@ -171,7 +185,7 @@
     mode: '0644'
 
 - name: Ensures ~/.wine is initialized
-  ansible.builtin.command: wineboot --init
+  ansible.builtin.command: xvfb-run -a wineboot --init
   environment:
     WINEARCH: win64
     WINEDEBUG: "{{ wine_debug | default('-all') }}"
