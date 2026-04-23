@@ -50,7 +50,7 @@ wine_winetricks_dependencies_os_family:
   Darwin:
     - cabextract
     - p7zip
-  Debian:
+  Debian: &debian_ubuntu_deps
     - cabextract
     - curl
     - fontconfig
@@ -72,17 +72,7 @@ wine_winetricks_dependencies_os_family:
     - unzip
     - xorg.xauth
     - xvfb-run
-  Ubuntu:
-    - cabextract
-    - curl
-    - fontconfig
-    - fonts-freefont-ttf
-    - gawk
-    - p7zip-full
-    - unzip
-    - winbind
-    - xauth
-    - xvfb
+  Ubuntu: *debian_ubuntu_deps
 
 # Fontconfig configuration
 wine_fontconfig_cache_dir: ".cache/fontconfig"
