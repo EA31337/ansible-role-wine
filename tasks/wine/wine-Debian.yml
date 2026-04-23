@@ -4,7 +4,7 @@
     {{ (ansible_user_id is defined and ansible_user_id != 'root')
     or (ansible_user_id is not defined and (lookup('env', 'UID') | int != 0)) }}
   become_method: >-
-    {{ wine_become_method.get(detected_os_family | default(ansible_os_family),
+    {{ wine_become_method.get(wine_detected_os_family | default(ansible_os_family),
     wine_become_method["_default"]) }}
   environment:
     DEBIAN_FRONTEND: noninteractive
@@ -78,7 +78,7 @@
     {{ (ansible_user_id is defined and ansible_user_id != 'root')
     or (ansible_user_id is not defined and (lookup('env', 'UID') | int != 0)) }}
   become_method: >-
-    {{ wine_become_method.get(detected_os_family | default(ansible_os_family),
+    {{ wine_become_method.get(wine_detected_os_family | default(ansible_os_family),
     wine_become_method["_default"]) }}
   environment:
     DEBIAN_FRONTEND: noninteractive
@@ -181,12 +181,12 @@
 
   timeout: 120
 
-- name: Apt cleanup ({{ detected_os_family | default(ansible_os_family) }})
+- name: Apt cleanup ({{ wine_detected_os_family | default(ansible_os_family) }})
   become: >-
     {{ (ansible_user_id is defined and ansible_user_id != 'root')
     or (ansible_user_id is not defined and (lookup('env', 'UID') | int != 0)) }}
   become_method: >-
-    {{ wine_become_method.get(detected_os_family | default(ansible_os_family),
+    {{ wine_become_method.get(wine_detected_os_family | default(ansible_os_family),
     wine_become_method["_default"]) }}
   environment:
     DEBIAN_FRONTEND: noninteractive

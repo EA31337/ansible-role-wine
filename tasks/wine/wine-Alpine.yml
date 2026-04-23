@@ -2,7 +2,7 @@
 - name: Ensures Wine is present
   become: true
   become_method: >-
-    {{ wine_become_method.get(detected_os_family | default(ansible_os_family),
+    {{ wine_become_method.get(wine_detected_os_family | default(ansible_os_family),
     wine_become_method["_default"]) }}
   block:
 
@@ -32,8 +32,10 @@
     - name: Extract major version from wine_alpine_version
       ansible.builtin.set_fact:
         wine_alpine_major: >-
-          {{ wine_alpine_version | string | regex_replace('^(\d+).*', '\1') }}
+          {% set _m = wine_alpine_version | string | regex_search('^(\\d+)') %}
+          {{ _m if _m else '9' }}
       when: wine_alpine_version | length > 0
+
 
     - name: Validate wine major version (9, 10, or 11)
       ansible.builtin.assert:
@@ -48,7 +50,9 @@
     - name: Validate requested wine version matches available
       ansible.builtin.assert:
         that:
-          - wine_alpine_major == (wine_version | regex_replace('^(\d+).*', '\1'))
+          - >-
+            wine_alpine_major == ((wine_version | default('') |
+            regex_search('^(\\d+)', '\\1')) | first | default('9', true))
         fail_msg: >-
           Requested wine version {{ wine_version }} does not match available
           version {{ wine_alpine_version }}
@@ -72,7 +76,7 @@
 - name: Configure fontconfig and environment (Alpine)
   become: true
   become_method: >-
-    {{ wine_become_method.get(detected_os_family | default(ansible_os_family),
+    {{ wine_become_method.get(wine_detected_os_family | default(ansible_os_family),
     wine_become_method["_default"]) }}
   block:
     - name: Ensure fontconfig directories are present (Alpine)
@@ -99,15 +103,23 @@
         owner: "{{ ansible_user_id }}"
         force: true
 
-    - name: Write fontconfig and wine environment config for Alpine
+    - name: Write wine environment config for user (Alpine)
       ansible.builtin.template:
         src: wine_env.j2
-        dest: "{{ item.dest }}"
+        dest: "{{ ansible_user_dir }}/.wine_env"
         mode: '0644'
-        owner: "{{ ansible_user_id if not item.become | default(false) else 'root' }}"
-      loop:
-        - { dest: "{{ ansible_user_dir }}/.wine_env" }
-        - { dest: "/etc/profile.d/wine.sh", become: true }
+        owner: "{{ ansible_user_id }}"
+
+    - name: Write wine environment config for system (Alpine)
+      ansible.builtin.template:
+        src: wine_env.j2
+        dest: "/etc/profile.d/wine.sh"
+        mode: '0644'
+        owner: root
+      become: true
+      become_method: >-
+        {{ wine_become_method.get(wine_detected_os_family | default(ansible_os_family),
+        wine_become_method["_default"]) }}
 
     - name: Set fontconfig environment in ~/.bashrc (Alpine)
       ansible.builtin.lineinfile:
