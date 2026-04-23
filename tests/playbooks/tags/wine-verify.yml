@@ -13,7 +13,7 @@
     nixos_build_dir: "{{ lookup('env', 'RUNNER_TEMP') | default('/tmp', true) }}"
     nixos_dockerfile_output: "{{ nixos_build_dir }}/Dockerfile.wine-on-nixos"
     nixos_dockerfile_template: >-
-      {{ playbook_dir }}/../../molecule/resources/playbooks/Dockerfile.j2
+      {{ playbook_dir }}/../../../molecule/resources/playbooks/Dockerfile.j2
   tasks:
     - name: Render Dockerfile for NixOS image
       ansible.builtin.template:
@@ -46,19 +46,9 @@
       vars:
         ansible_python_interpreter: "{{ controller_python }}"
 
-- name: Configure Docker container
-  hosts: docker_containers
+- name: Ensure Docker containers are up-and-running
   gather_facts: false
-  vars:
-    controller_python: "{{ ansible_playbook_python }}"
-    container_image_map:
-      wine-on-alpine-latest: alpine:3.20
-      wine-on-debian-latest: debian:latest
-      wine-on-nixos-latest: wine-nixos:molecule
-      wine-on-ubuntu-jammy: ubuntu:jammy
-      wine-on-ubuntu-latest: ubuntu:latest
-      wine-on-ubuntu-noble: ubuntu:noble
-    container_image: "{{ container_image_map[inventory_hostname] | default('ubuntu:latest') }}"
+  hosts: docker_containers
 
   pre_tasks:
     - name: Ensure container is started
@@ -151,19 +141,30 @@
       when: container_image is search("ubuntu") or container_image is search("debian")
 
   tags: always
+  vars:
+    controller_python: "{{ ansible_playbook_python }}"
+    nixos_built_image: wine-nixos:molecule
+    container_image_map:
+      wine-on-alpine-latest: alpine:3.20
+      wine-on-debian-latest: debian:latest
+      wine-on-nixos-latest: "{{ nixos_built_image }}"
+      wine-on-ubuntu-jammy: ubuntu:jammy
+      wine-on-ubuntu-latest: ubuntu:latest
+      wine-on-ubuntu-noble: ubuntu:noble
+    container_image: "{{ container_image_map[inventory_hostname] | default('ubuntu:latest') }}"
+    is_nixos_image: "{{ inventory_hostname == 'wine-on-nixos-latest' }}"
+  vars_files:
+    - ../../../vars/main.yml
 
-- name: Install ea31337.wine role on all containers
+- name: Import ea31337.wine role (wine-verify tag)
   hosts: docker_containers
   gather_facts: true
   become: "{{ wine_should_become | default(false) }}"
-  tags: always
-  vars:
-    controller_python: "{{ ansible_playbook_python }}"
-    wine_install_winetricks: true
   tasks:
-    - name: Installs ea31337.wine role
+    - name: Import ea31337.wine role
       ansible.builtin.import_role:
         name: ea31337.wine
+  tags: wine-verify
 
   post_tasks:
     - name: Stop Docker containers
@@ -172,3 +173,6 @@
         state: stopped
       delegate_to: localhost
       failed_when: false
+
+  vars:
+    wine_install_winetricks: true

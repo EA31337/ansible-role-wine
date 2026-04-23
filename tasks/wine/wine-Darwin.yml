@@ -1,10 +1,17 @@
 ---
 - name: Ensures Wine is present (Homebrew Cast)
   become: "{{ ansible_user_id is defined and ansible_user_id != 'root' }}"
-  become_method: "{{ wine_become_method }}"
+  become_method: >-
+    {{ wine_become_method.get(detected_os_family | default(ansible_os_family),
+    wine_become_method["_default"]) }}
   block:
-    - name: Ensures Wine is present (Homebrew Cast)
+    - name: Validate Wine version pinning is not set for Homebrew cask installs
+      ansible.builtin.assert:
+        that:
+          - wine_version | length == 0
+        fail_msg: "wine_version is not supported for Homebrew cask installs on Darwin; use wine_release only."
+      when: wine_version is defined
+
+    - name: Ensures Wine is present (Homebrew Cask)
       community.general.homebrew_cask:
-        name: "{{ item }}"
-      loop:
-        - wine-{{ wine_release }}
+        name: "wine-{{ wine_release }}"

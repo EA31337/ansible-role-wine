@@ -1,15 +1,35 @@
 # yamllint disable rule:line-length
 ---
-wine_become_method: ansible.builtin.su
 wine_install_recommends: false
 wine_install_winetricks: false
 wine_install_winetricks_dependencies:
+  - cabextract
   - curl
+  - fontconfig
+  - fonts-freefont-ttf
   - gawk
   - p7zip
-# Wine package version to install.
+  - ttf-freefont
+  - unzip
+  - winbind
+  - xauth
+  - xvfb-run
+# Wine package release to install.
 # Stable, devel, or staging (for winehq packages).
 wine_release: stable
+# Override Ubuntu/Debian release codename for Wine repository.
+# Use this to install older Wine versions from previous release repos.
+# Example: 'jammy' for Ubuntu 22.04 to get Wine 10.x on newer Ubuntu.
+wine_release_codename: ""
+# Specific Wine package version to install (optional).
+# If set, installs exact version instead of latest from wine_release.
+# Example: '10.0.0.0~jammy-1' to install Wine 10.0.0 from jammy repo.
+wine_version: ""
+# Wine debug level (e.g., -all to disable).
+wine_debug: "-all"
+# Wine DLL overrides.
+wine_dlloverrides: "mscoree,mshtml="
 wine_winetricks_apt_install: false
+wine_apt_cleanup: false
 wine_winetricks_url: https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks
 wine_winetricks_winver: win10

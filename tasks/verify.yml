@@ -1,54 +1,70 @@
 ---
-- name: Checks if Wine is installed
-  ansible.builtin.command: wine --version
+- name: Checks if Wine is installed  # noqa risky-shell-pipe
+  become: >-
+    {{ (detected_os_family | default(ansible_os_family) == 'NixOS')
+    and (ansible_user_id != 'root') }}
+  become_method: >-
+    {{ wine_become_method.get(detected_os_family | default(ansible_os_family),
+    wine_become_method["_default"]) }}
+  ansible.builtin.shell: |
+    [ -f ~/.wine_env ] && source ~/.wine_env
+    {% if detected_os_family | default(ansible_os_family) == 'NixOS' %}
+    set -e
+    nix-env -q 2>/dev/null | grep -Em1 '^wine-(wow64|wow|10|9|11)'
+    {% else %}
+    wine --version
+    {% endif %}
   check_mode: false
   changed_when: false
   register: cmd_wine_version
   failed_when: cmd_wine_version.rc != 0 and cmd_wine_version.rc != -6
 
 - name: Checks if Winetricks is installed
+  become: >-
+    {{ (detected_os_family | default(ansible_os_family) == 'NixOS')
+    and (ansible_user_id != 'root') }}
+  become_method: >-
+    {{ wine_become_method.get(detected_os_family | default(ansible_os_family),
+    wine_become_method["_default"]) }}
   changed_when: false
-  ansible.builtin.command: winetricks --version
+  ansible.builtin.shell: |
+    [ -f ~/.wine_env ] && source ~/.wine_env
+    winetricks --version
   register: cmd_winetricks_version
   failed_when: cmd_winetricks_version.rc != 0 and cmd_winetricks_version.rc != -6
   when: wine_install_winetricks | bool
 
-- name: Checks if required tools are installed
-  changed_when: false
-  ansible.builtin.command: "{{ wine_package_command_map[item] | default(item) }} --version"
-  loop: "{{ wine_install_winetricks_dependencies }}"
-  register: dependency_check_results
-  failed_when: false
-  when:
-    - wine_install_winetricks | bool
-    - wine_install_winetricks_dependencies | length > 0
-
 - name: Verify dependency installation status
+  become: >-
+    {{ (detected_os_family | default(ansible_os_family) == 'NixOS')
+    and (ansible_user_id != 'root') }}
+  become_method: >-
+    {{ wine_become_method.get(detected_os_family | default(ansible_os_family),
+    wine_become_method["_default"]) }}
   when:
     - wine_install_winetricks | bool
     - wine_install_winetricks_dependencies | length > 0
   block:
-    - name: Get version check commands for dependencies
-      ansible.builtin.set_fact:
-        version_check_commands:
-          p7zip: "7z || true"
-          curl: "curl --version || true"
-          gawk: "awk --version || true"
-
-    - name: Check if required tools are installed
-      ansible.builtin.command: which "{{ wine_package_command_map[item] | default(item) }}"
+    - name: Check if required tools are installed  # noqa risky-shell-pipe
+      ansible.builtin.shell: |
+        [ -f ~/.wine_env ] && source ~/.wine_env
+        set -e
+        cmd="{{ wine_package_command_map[item] | default(item) }}"
+        path=$(which "$cmd")
+        version=$("$cmd" --version 2>&1 | head -n 1 || echo "unknown version")
+        echo "$path ($version)"
       changed_when: false
       register: dependency_check_results
       loop: "{{ wine_install_winetricks_dependencies }}"
       failed_when: false
 
-    - name: Display dependency check results (debug)
+    - name: Display dependency check results
       ansible.builtin.debug:
-        msg: "Dependency check for {{ item.item }}: {{ 'Successful' if item.rc == 0 else 'Failed' }}"
+        msg: "Dependency {{ item.item }}: {{ item.stdout if item.rc == 0 else 'NOT FOUND' }}"
+        verbosity: 1
       loop: "{{ dependency_check_results.results }}"
-      when: ansible_verbosity > 0
 
-    - name: Verify dependency installation status (with improved checking)
+    - name: Verify dependency installation status
       ansible.builtin.assert:
         that: >-
           dependency_check_results.results |
@@ -57,7 +73,7 @@
           length == (wine_install_winetricks_dependencies | length)
         fail_msg: >-
           Some winetricks dependencies failed verification.
-          Please install:
+          Missing tools:
           {{ dependency_check_results.results |
              selectattr('rc', 'ne', 0) |
              map(attribute='item') |

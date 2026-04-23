@@ -3,5 +3,8 @@
 # ansible-galaxy install -r requirements.yml
 ---
 collections:
+  - name: ansible.posix  # Required for profile_tasks callback plugin.
   - name: community.docker
-  - name: community.general  # Required for apk and from_ini modules.
+    version: ">=3.0.0"
+  - name: community.general  # Required for apk, from_ini and supervisorctl modules.
+    version: ">=6.0.0"

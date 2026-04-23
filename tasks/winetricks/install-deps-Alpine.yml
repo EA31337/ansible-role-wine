@@ -1,11 +1,12 @@
 ---
 - name: Ensures that dependencies are installed
   become: "{{ ansible_user_id != 'root' }}"
-  become_method: "{{ wine_become_method }}"
+  become_method: >-
+    {{ wine_become_method.get(detected_os_family | default(ansible_os_family),
+    wine_become_method["_default"]) }}
   block:
 
     - name: Install winetricks dependencies (Alpine)
       ansible.builtin.package:
-        name: "{{ item }}"
+        name: "{{ wine_install_winetricks_dependencies }}"
         state: present
-      loop: "{{ wine_install_winetricks_dependencies }}"

@@ -1,0 +1,150 @@
+---
+- name: Check if Nix store exists
+  ansible.builtin.stat:
+    path: /nix/store
+  register: nix_store_stat
+
+- name: Ensure Wine is installed (Nix)
+  become: "{{ ansible_user_id != 'root' }}"
+  become_method: >-
+    {{ wine_become_method.get(detected_os_family | default(ansible_os_family),
+    wine_become_method["_default"]) }}
+  when: nix_store_stat.stat.exists
+  block:
+
+    - name: Check current Wine version  # noqa risky-shell-pipe
+      ansible.builtin.shell:
+        cmd: |
+          set -e
+          nix-env -q 2>/dev/null | grep -E '^wine-(wow64|wow|10|9|11)' | head -1 || echo "not_installed"
+      changed_when: false
+      register: wine_version_check
+
+    - name: Set effective wine version for NixOS
+      ansible.builtin.set_fact:
+        wine_version_nixos: "{{ wine_version | default('') | regex_replace('^(\\d+).*', '\\1') | default('9', true) }}"
+
+    - name: Determine if Wine needs installation
+      ansible.builtin.set_fact:
+        wine_needs_install: >-
+          {{
+            wine_version_check.stdout == "not_installed" or
+            'wine-wow64-' ~ wine_version_nixos not in wine_version_check.stdout or
+            ('wow64' not in wine_version_check.stdout and wine_version_check.stdout != 'not_installed')
+          }}
+
+    - name: Set wine_pkg fact
+      ansible.builtin.set_fact:
+        wine_pkg: >-
+          {{ wine_nix_pkg | default(
+            'wineWow64Packages.' ~ ('staging' if wine_release == 'staging' else 'stable')
+          ) }}
+      when: wine_needs_install | bool
+
+    - name: Determine nixpkgs revision for Wine version
+      ansible.builtin.set_fact:
+        nixpkgs_revision: >-
+          {%- if wine_version_nixos | string == '9' -%}
+          nixos-24.05{%- elif wine_version_nixos | string == '10' -%}
+          nixos-25.05{%- else -%}
+          nixpkgs{%- endif -%}
+      when: wine_needs_install | bool
+
+    - name: Remove incompatible Wine and related packages if present  # noqa risky-shell-pipe
+      ansible.builtin.shell: |
+        set -e
+        old_wine=$(nix-env -q 2>/dev/null | grep -E '^wine-([0-9]|wow64)' | \
+          grep -v "wine-wow64-{{ wine_version_nixos }}" | head -1 || echo "")
+        if [ -n "$old_wine" ]; then
+          echo "Removing incompatible wine package: $old_wine"
+          nix-env -e "$old_wine" || true
+          if nix-env -q | grep -qw fontconfig; then
+            nix-env -e fontconfig || true
+          fi
+        fi
+      when:
+        - wine_needs_install | bool
+        - wine_version_check.stdout != 'not_installed'
+      register: wine_remove_old
+      changed_when: "'Removing' in wine_remove_old.stdout"
+
+    - name: Ensure Wine package and dependencies are installed
+      ansible.builtin.shell: |
+        set -e
+        {% if nixpkgs_revision != 'nixpkgs' %}
+        # Install from pinned archive to avoid channel bugs in Docker
+        nix-env -f https://github.com/NixOS/nixpkgs/archive/{{ nixpkgs_revision }}.tar.gz -iA \
+          {{ wine_pkg }} fontconfig freetype xorg.libX11 xorg.libxcb
+        {% else %}
+        nix-env -iA \
+          nixpkgs.{{ wine_pkg }} nixpkgs.fontconfig nixpkgs.freetype nixpkgs.xorg.libX11 nixpkgs.xorg.libxcb
+        {% endif %}
+      when: wine_needs_install | bool
+      register: wine_install
+      changed_when: "'installing' in wine_install.stdout or 'building' in wine_install.stdout"
+
+- name: Configure fontconfig for NixOS
+  when: nix_store_stat.stat.exists
+  block:
+    - name: Get fontconfig out-path  # noqa risky-shell-pipe
+      ansible.builtin.shell: |
+        set -e
+        nix-env -q --out-path fontconfig 2>/dev/null | awk '{print $NF}'
+      register: fontconfig_info
+      changed_when: false
+      failed_when: false
+
+    - name: Set fontconfig_path fact
+      ansible.builtin.set_fact:
+        fontconfig_path: "{{ fontconfig_info.stdout }}"
+      when: fontconfig_info.stdout | length > 0
+
+    - name: Create fontconfig directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - "{{ ansible_user_dir }}/.config/fontconfig"
+        - "{{ ansible_user_dir }}/.cache/fontconfig"
+        - "{{ ansible_user_dir }}/.fonts"
+      when: fontconfig_path is defined
+
+    - name: Write fontconfig configuration
+      ansible.builtin.template:
+        src: fonts.conf.j2
+        dest: "{{ ansible_user_dir }}/{{ wine_fontconfig_config_file }}"
+        mode: '0644'
+      when: fontconfig_path is defined
+
+    - name: Set fontconfig environment in ~/.bashrc (NixOS)
+      ansible.builtin.lineinfile:
+        path: "{{ ansible_user_dir }}/.bashrc"
+        line: "[ -f ~/.wine_env ] && source ~/.wine_env"
+        create: true
+        mode: '0644'
+      when: fontconfig_path is defined
+
+    - name: Write wine_env file
+      ansible.builtin.template:
+        src: wine_env.j2
+        dest: "{{ ansible_user_dir }}/.wine_env"
+        mode: '0644'
+      when: fontconfig_path is defined
+
+- name: Ensures ~/.wine is initialized
+  ansible.builtin.command: wineboot --init
+  environment:
+    PATH: >-
+      {{ ansible_user_dir }}/.nix-profile/bin:
+      {{ ansible_facts.env.PATH
+      | default('/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:/usr/bin:/bin') }}
+    WINEARCH: win64
+    WINEPREFIX: "{{ ansible_user_dir }}/.wine"
+    FONTCONFIG_FILE: "{{ ansible_user_dir }}/{{ wine_fontconfig_config_file }}"
+    FONTCONFIG_PATH: "{{ ansible_user_dir }}/{{ wine_fontconfig_config_dir }}"
+    WINEDEBUG: "{{ wine_debug | default('-all') }}"
+    WINEDLLOVERRIDES: "{{ wine_dlloverrides | default('mscoree,mshtml=') }}"
+  args:
+    creates: "{{ ansible_user_dir }}/.wine/system.reg"
+  when: nix_store_stat.stat.exists

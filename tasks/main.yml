@@ -1,45 +1,98 @@
 ---
-- name: Checks if Wine command exists
-  changed_when: false
-  ansible.builtin.command: which wine
-  failed_when: cmd_which_wine_res.rc > 1
-  register: cmd_which_wine_res
+- name: Gather facts
+  ansible.builtin.setup:
+  when: ansible_os_family is not defined
+  tags: always
+
+- name: Early checks and OS detection
+  tags: [always, wine]
+  block:
+    - name: Check for Wine command
+      ansible.builtin.command: which wine
+      register: cmd_which_wine_res
+      changed_when: false
+      failed_when: cmd_which_wine_res.rc > 1
+
+    - name: Check for NixOS (nix-env)
+      ansible.builtin.command: which nix-env
+      register: nixos_early_check
+      changed_when: false
+      failed_when: false
+
+    - name: Set detected_os_family fact
+      ansible.builtin.set_fact:
+        detected_os_family: >-
+          {{ 'NixOS' if (nixos_early_check.rc | default(1) == 0 or ansible_os_family == 'NixOS')
+          else (ansible_distribution if ansible_distribution == 'Ubuntu' else ansible_os_family) }}
+        cacheable: true
+
+- name: OS-specific Wine version detection
   tags: wine
+  when:
+    - detected_os_family == 'NixOS'
+    - nixos_early_check.rc | default(1) == 0
+  block:
+    - name: Check current Wine version on NixOS  # noqa risky-shell-pipe
+      ansible.builtin.shell: |
+        set -e
+        nix-env -q 2>/dev/null | grep -E '^wine-(wow64|wow|10|9|11)' | head -1 || echo "not_installed"
+      register: nixos_wine_version_check
+      changed_when: false
+
+    - name: Determine if Wine version mismatch on NixOS
+      ansible.builtin.set_fact:
+        wine_version_mismatch: >-
+          {% set major = wine_version | default('') | regex_replace('^(\\d+).*', '\\1') | default('9', true) %}
+          {{
+            (nixos_wine_version_check.stdout | default('not_installed') == "not_installed") or
+            ('wine-wow64-' ~ major not in nixos_wine_version_check.stdout) or
+            ('wow64' not in nixos_wine_version_check.stdout)
+          }}
 
 - name: Ensures Wine is present
   ansible.builtin.include_tasks:
+    file: wine/wine.yml
     apply:
       tags: wine
-    file: wine/wine.yml
+  register: wine_install_tasks
+  when: cmd_which_wine_res.rc != 0 or (wine_version_mismatch | default(false) | bool)
   tags: wine
-  when: cmd_which_wine_res.rc != 0
 
 - name: Ensures Winetricks is present
   when: wine_install_winetricks | bool
-  tags: winetricks
+  tags: [winetricks, winetricks-deps]
   block:
-
     - name: Checks if Winetricks is installed
       ansible.builtin.command: which winetricks
+      register: cmd_which_winetricks_res
       check_mode: false
       changed_when: false
       failed_when: cmd_which_winetricks_res.rc > 1
-      register: cmd_which_winetricks_res
 
     - name: Ensures Winetricks is present
       ansible.builtin.include_tasks: winetricks/winetricks.yml
-      when: cmd_which_winetricks_res.rc != 0
 
     - name: Sets Windows version via winetricks
-      ansible.builtin.command: winetricks -q {{ wine_winetricks_winver }}
+      ansible.builtin.shell: |
+        [ -f ~/.wine_env ] && source ~/.wine_env
+        winetricks -q {{ wine_winetricks_winver }}
       async: 20
-      changed_when: false
       poll: 0
+      changed_when: false
       when:
-        - cmd_which_winetricks_res.rc == 0
         - wine_winetricks_winver is defined
         - wine_winetricks_winver | length > 0
 
-- name: Verify
-  ansible.builtin.include_tasks: verify.yml
-  tags: verify
+- name: Verify installation
+  ansible.builtin.include_tasks:
+    file: verify.yml
+    apply:
+      tags: wine-verify
+  tags: wine-verify
+
+- name: Display wine version
+  ansible.builtin.debug:
+    msg: "{{ cmd_wine_version.stdout | default('Wine not found or installation skipped') }}"
+    verbosity: 1
+  when: cmd_wine_version is defined
+  tags: wine
