@@ -9,10 +9,15 @@
   environment:
     DEBIAN_FRONTEND: noninteractive
   block:
-    - name: Ensures lsb_release command is present
+    - name: Ensures basic dependencies are present
       ansible.builtin.package:
-        name: lsb-release
+        name:
+          - ca-certificates
+          - lsb-release
         state: present
+    - name: Ensures CA certificates are updated
+      ansible.builtin.command: update-ca-certificates
+      changed_when: false
     - name: Gets code name of the distribution
       changed_when: false
       ansible.builtin.command: /usr/bin/lsb_release -sc
@@ -35,10 +40,6 @@
     - name: Ensures Apt cache is up-to-date
       ansible.builtin.apt:
         update_cache: true
-    - name: Ensures CA certificates are installed
-      ansible.builtin.apt:
-        name: ca-certificates
-        state: present
     - name: Ensures GPG key directory exists
       ansible.builtin.file:
         path: /etc/apt/keyrings

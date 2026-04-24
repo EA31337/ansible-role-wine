@@ -1,3 +1,5 @@
 {% if lsb_release_code_name.stdout != 'noble' %}
 deb [signed-by=/etc/apt/keyrings/ubuntu-backports-keyring.asc] http://ppa.launchpad.net/cybermax-dexter/sdl2-backport/ubuntu {{ lsb_release_code_name.stdout }} main
+{% else %}
+# No backports needed for {{ lsb_release_code_name.stdout }}
 {% endif %}
