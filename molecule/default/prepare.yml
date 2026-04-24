@@ -16,10 +16,18 @@
         elif command -v apt-get >/dev/null 2>&1; then
           if grep -qi '^ID=ubuntu' /etc/os-release 2>/dev/null; then
             mirror="http://azure.archive.ubuntu.com/ubuntu"
-            sed -i \
-              -e "s|http://archive.ubuntu.com/ubuntu|$mirror|g" \
-              -e "s|http://security.ubuntu.com/ubuntu|$mirror|g" \
-              /etc/apt/sources.list
+            if [ -f /etc/apt/sources.list ]; then
+              sed -i \
+                -e "s|http://archive.ubuntu.com/ubuntu|$mirror|g" \
+                -e "s|http://security.ubuntu.com/ubuntu|$mirror|g" \
+                /etc/apt/sources.list
+            fi
+            if [ -f /etc/apt/sources.list.d/ubuntu.sources ]; then
+              sed -i \
+                -e "s|http://archive.ubuntu.com/ubuntu|$mirror|g" \
+                -e "s|http://security.ubuntu.com/ubuntu|$mirror|g" \
+                /etc/apt/sources.list.d/ubuntu.sources
+            fi
           fi
           apt-get update -qq && \
             DEBIAN_FRONTEND=noninteractive apt-get install -y -q python3-minimal sudo ca-certificates
