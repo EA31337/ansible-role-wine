@@ -53,7 +53,11 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/Pipfile*', '**/.devcontainer/requirements.txt') }}
+          key: >-
+            ${{ runner.os }}-pip-${{ hashFiles(
+              format('{0}/Pipfile*', github.repository),
+              format('{0}/.devcontainer/requirements.txt', github.repository)
+            ) }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
@@ -64,7 +68,7 @@ jobs:
       - name: Cache Ansible Galaxy collections
         uses: actions/cache@v4
         with:
-          key: ${{ runner.os }}-galaxy-${{ hashFiles('**/requirements.yml') }}
+          key: ${{ runner.os }}-galaxy-${{ hashFiles(format('{0}/requirements.yml', github.repository)) }}
           path: ~/.ansible/collections
           restore-keys: |
             ${{ runner.os }}-galaxy-

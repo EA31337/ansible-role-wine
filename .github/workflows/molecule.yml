@@ -57,7 +57,7 @@ jobs:
       - name: Cache Ansible Galaxy collections
         uses: actions/cache@v4
         with:
-          key: ${{ runner.os }}-galaxy-${{ hashFiles('**/requirements.yml') }}
+          key: ${{ runner.os }}-galaxy-${{ hashFiles(format('{0}/requirements.yml', github.repository)) }}
           path: ${{ github.workspace }}/${{ github.repository }}/collections
           restore-keys: |
             ${{ runner.os }}-galaxy-
@@ -65,7 +65,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/Pipfile*') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles(format('{0}/Pipfile*', github.repository)) }}
           restore-keys: |
             ${{ runner.os }}-pip-
       - name: Install Ansible collections
