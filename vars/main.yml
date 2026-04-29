@@ -42,9 +42,13 @@ wine_package_command_map:
 # If an OS family is not listed, the default from defaults/main.yml is used.
 wine_winetricks_dependencies_os_family:
   Alpine:
+    - cabextract
+    - curl
     - fontconfig
+    - gawk
     - p7zip
     - ttf-freefont
+    - unzip
     - xauth
     - xvfb-run
   Darwin:
