@@ -16,3 +16,4 @@ AGENTS.md
 .yamllint
 Dockerfile
 Dockerfile.j2
+*.patch
