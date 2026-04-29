@@ -1,26 +1,20 @@
 ---
 # Note: Keep keys and envs in alphabetical order.
-name: Docker Publish
+name: Docker Build
 
 on:
+  pull_request:
   push:
-    branches:
+    branches-ignore:
       - master
-    tags:
-      - 'v*'
-  schedule:
-    - cron: '0 0 * * 0' # Weekly on Sunday
-  workflow_dispatch:
 
 jobs:
-  publish:
-    name: Publish
+  build:
+    name: Build
     permissions:
       contents: read
       packages: write
     runs-on: ubuntu-latest
-    env:
-      IS_DEFAULT_BRANCH: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -46,50 +40,32 @@ jobs:
           python3 -m pip install --upgrade pip
           pip install -r .devcontainer/requirements.txt
 
-      - name: Log in to the Container registry
-        uses: docker/login-action@v3
-        with:
-          password: ${{ secrets.GITHUB_TOKEN }}
-          registry: ghcr.io
-          username: ${{ github.actor }}
-
       - name: Render Dockerfile
         run: jinja2 Dockerfile.j2 -D docker_image='${{ matrix.image }}' > Dockerfile
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        env:
-          IS_RELEASE: ${{ env.IS_DEFAULT_BRANCH == 'true' || startsWith(github.ref, 'refs/tags/v') }}
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
-            # Semver versioning: v1.0.4-ubuntu-noble
-            type=semver,pattern={{version}}-${{ matrix.platform }}
-            # Distro rolling tags: ubuntu-noble
-            type=raw,value=${{ matrix.platform }},enable=${{ env.IS_RELEASE == 'true' }}
-            # Branch-specific platform tags: latest-ubuntu-noble (for default branch)
-            type=raw,value=latest-${{ matrix.platform }},enable=${{ env.IS_DEFAULT_BRANCH == 'true' }}
-            type=ref,event=branch,suffix=-${{ matrix.platform }},enable=${{ env.IS_DEFAULT_BRANCH == 'false' }}
-            # Global rolling tags (only for default platform)
-            type=semver,pattern={{version}},enable=${{ matrix.is_default == true }}
-            type=raw,value=latest,enable=${{ matrix.is_default == true && env.IS_RELEASE == 'true' }}
-            type=ref,event=branch,enable=${{ matrix.is_default == true && env.IS_DEFAULT_BRANCH == 'false' }}
+            type=ref,event=branch,suffix=-${{ matrix.platform }}
+            type=ref,event=pr,suffix=-${{ matrix.platform }}
 
-      - name: Build and push Docker image
+      - name: Build Docker image
         uses: docker/build-push-action@v5
         with:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           context: .
           labels: ${{ steps.meta.outputs.labels }}
-          push: true
+          load: true
+          push: false
           tags: ${{ steps.meta.outputs.tags }}
 
       - name: Test Docker image
         run: |
           TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -n 1)
-          docker pull "$TAG"
           docker run --rm "$TAG" wine --version
 
     strategy:
