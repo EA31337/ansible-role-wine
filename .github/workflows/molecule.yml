@@ -6,7 +6,8 @@ name: Molecule
 on:
   pull_request:
     paths-ignore:
-      - '.github/workflows/**'
+      - '.github/workflows/cogni-ai-agent.yml'
+      - '.github/workflows/copilot-setup-steps.yml'
       - '**.cfg'
       - '**.md'
       - '.*'
@@ -14,7 +15,8 @@ on:
       - Pipfile*
   push:
     paths-ignore:
-      - '.github/workflows/**'
+      - '.github/workflows/cogni-ai-agent.yml'
+      - '.github/workflows/copilot-setup-steps.yml'
       - '**.cfg'
       - '**.md'
       - '.*'
