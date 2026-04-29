@@ -115,7 +115,7 @@
     - name: Ensures Wine package and dependencies are present
       ansible.builtin.apt:
         allow_downgrade: true
-        install_recommends: "{{ 'yes' if wine_install_recommends else 'no' }}"
+        install_recommends: "{{ wine_install_recommends | bool }}"
         name: >-
           {{
             [
@@ -160,9 +160,11 @@
         autoremove: true
         purge: true
       when: wine_apt_cleanup | default(false) | bool
+      changed_when: false
 
     - name: Cleans Apt cache
       ansible.builtin.apt:
         autoclean: true
         clean: true
       when: wine_apt_cleanup | default(false) | bool
+      changed_when: false
