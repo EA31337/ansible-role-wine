@@ -150,13 +150,18 @@
       when:
         - ansible_facts.architecture not in ['i386', 'i486', 'i586', 'i686', 'x86', 'x86_64', 'amd64']
 
+    - name: Check if wine64 is available (Alpine)
+      ansible.builtin.stat:
+        path: /usr/bin/wine64
+      register: wine64_bin
+
     - name: Ensures ~/.wine is initialized
       ansible.builtin.command: xvfb-run -a wineboot --init
       become: false
       environment:
         # WoW64 wine (amd64) only supports win64; 32-bit wine (i686/x86/etc) only supports win32.
         WINEARCH: >-
-          {{ 'win32' if ansible_facts.architecture in ['i386', 'i486', 'i586', 'i686', 'x86'] else 'win64' }}
+          {{ 'win64' if (wine64_bin.stat.exists and ansible_facts.architecture in ['x86_64', 'amd64']) else 'win32' }}
         HOME: "{{ ansible_user_dir }}"
         FONTCONFIG_FILE: "{{ ansible_user_dir }}/{{ wine_fontconfig_config_file }}"
         FONTCONFIG_PATH: >-

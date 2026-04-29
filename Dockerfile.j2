@@ -8,7 +8,10 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Install Ansible and dependencies
 {% if 'alpine' in (docker_image | default('ubuntu:noble')) %}
-RUN apk add --no-cache ansible sudo python3 bash ca-certificates
+RUN grep -E '^[^#].*/main$' /etc/apk/repositories | sed 's/main$/community/' >> /etc/apk/repositories && \
+    apk update && \
+    apk add --no-cache ansible bash ca-certificates fontconfig p7zip python3 sudo ttf-freefont xauth xvfb-run && \
+    update-ca-certificates
 {% elif 'nixos' in (docker_image | default('ubuntu:noble')) %}
 RUN nix-channel --update && \
     nix-env -iA nixpkgs.ansible nixpkgs.procps nixpkgs.python3 nixpkgs.python3Packages.pip nixpkgs.sudo
