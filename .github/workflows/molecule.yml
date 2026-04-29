@@ -55,7 +55,7 @@ jobs:
           - staging
           - winetricks
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false  # Prevents Duplicate header: "Authorization" error.
       - name: Cache Ansible Galaxy collections
