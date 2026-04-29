@@ -49,12 +49,12 @@ jobs:
           persist-credentials: false  # Prevents Duplicate header: "Authorization" error.
 
       - name: Set up Python
-        uses: actions/setup-python@v6.1.0
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
       - name: Cache pip
-        uses: actions/cache@v5.0.1
+        uses: actions/cache@v5
         with:
           path: ~/.cache/pip
           key: >-
@@ -69,7 +69,7 @@ jobs:
         run: pip install -r .devcontainer/requirements.txt
 
       - name: Cache Ansible Galaxy collections
-        uses: actions/cache@v5.0.1
+        uses: actions/cache@v5
         with:
           key: ${{ runner.os }}-galaxy-${{ hashFiles('requirements.yml') }}
           path: ~/.ansible/collections
