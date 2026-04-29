@@ -5,6 +5,7 @@ name: Test
 on:
   pull_request:
     paths-ignore:
+      - '.devcontainer/**'
       - '.github/workflows/cogni-ai-agent.yml'
       - '.github/workflows/copilot-setup-steps.yml'
       - '**/*.cfg'
@@ -13,6 +14,7 @@ on:
       - Pipfile*
   push:
     paths-ignore:
+      - '.devcontainer/**'
       - '.github/workflows/cogni-ai-agent.yml'
       - '.github/workflows/copilot-setup-steps.yml'
       - '**/*.cfg'
