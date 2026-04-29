@@ -9,6 +9,9 @@
   environment:
     DEBIAN_FRONTEND: noninteractive
   block:
+    - name: Ensures Apt cache is up-to-date
+      ansible.builtin.apt:
+        update_cache: true
     - name: Ensures basic dependencies are present
       ansible.builtin.package:
         name:
@@ -37,9 +40,6 @@
       with_items:
         - amd64
         - i386
-    - name: Ensures Apt cache is up-to-date
-      ansible.builtin.apt:
-        update_cache: true
     - name: Ensures GPG key directory exists
       ansible.builtin.file:
         path: /etc/apt/keyrings
