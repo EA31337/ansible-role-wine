@@ -136,11 +136,28 @@ molecule test
 The Docker image is automatically built and pushed to the GitHub Container Registry (GHCR) on every merge to `master`
 and on new tags.
 
+### Pulling the Image
+
 To pull the latest image:
 
 ```shell
 docker pull ghcr.io/ea31337/ansible-role-wine:latest
 ```
+
+### Available Tags
+
+The following tags are available for different platforms:
+
+| Platform | Latest Tag | Branch Tag | Version Tag Example |
+| -------- | ---------- | ---------- | ------------------- |
+| **Ubuntu Latest** (Default) | `latest` | `master` | `v1.0.0` |
+| Ubuntu Noble (24.04) | `ubuntu-noble` | `latest-ubuntu-noble` | `v1.0.0-ubuntu-noble` |
+| Ubuntu Jammy (22.04) | `ubuntu-jammy` | `latest-ubuntu-jammy` | `v1.0.0-ubuntu-jammy` |
+| Debian Latest | `debian-latest` | `latest-debian-latest` | `v1.0.0-debian-latest` |
+| Alpine Latest | `alpine-latest` | `latest-alpine-latest` | `v1.0.0-alpine-latest` |
+| NixOS Latest | `nixos-latest` | `latest-nixos-latest` | `v1.0.0-nixos-latest` |
+
+For a specific branch (e.g., `develop`), use the branch name as the tag: `ghcr.io/ea31337/ansible-role-wine:develop-<platform>`.
 
 ## License
 
