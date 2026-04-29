@@ -8,8 +8,6 @@ on:
       - master
     tags:
       - 'v*'
-  schedule:
-    - cron: '0 0 * * 0' # Weekly on Sunday
   workflow_dispatch:
 
 jobs:
@@ -54,7 +52,7 @@ jobs:
           username: ${{ github.actor }}
 
       - name: Render Dockerfile
-        run: jinja2 Dockerfile.j2 -D docker_image='${{ matrix.image }}' > Dockerfile
+        run: jinja2 Dockerfile.j2 -D docker_image="${{ matrix.image }}" > Dockerfile
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta

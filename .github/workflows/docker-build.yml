@@ -41,7 +41,7 @@ jobs:
           pip install -r .devcontainer/requirements.txt
 
       - name: Render Dockerfile
-        run: jinja2 Dockerfile.j2 -D docker_image='${{ matrix.image }}' > Dockerfile
+        run: jinja2 Dockerfile.j2 -D docker_image="${{ matrix.image }}" > Dockerfile
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
