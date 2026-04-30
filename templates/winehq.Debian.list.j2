@@ -1,2 +1,1 @@
-{% set codename = wine_release_codename if wine_release_codename else lsb_release_code_name.stdout %}
-deb [signed-by=/etc/apt/keyrings/winehq-archive-keyring.asc] https://dl.winehq.org/wine-builds/{{ lsb_release_dist_id.stdout | lower }} {{ codename }} main
+deb [signed-by=/etc/apt/keyrings/winehq-archive-keyring.asc] https://dl.winehq.org/wine-builds/{{ lsb_release_dist_id.stdout | lower }} {{ active_wine_release_codename | default(lsb_release_code_name.stdout) }} main

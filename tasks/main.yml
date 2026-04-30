@@ -46,11 +46,35 @@
           selected_deps: "{{ wine_selected_winetricks_dependencies }}"
         verbosity: 1
 
-- name: OS-specific Wine version detection
+- name: Universal Wine version detection
+  tags: wine
+  when: cmd_which_wine_res.rc == 0
+  block:
+    - name: Get current Wine version
+      ansible.builtin.command: wine --version
+      register: current_wine_version_cmd
+      changed_when: false
+      failed_when: false
+
+    - name: Determine if Wine version mismatch
+      ansible.builtin.set_fact:
+        wine_version_mismatch: >-
+          {% set req = wine_version | default('') | string | trim %}
+          {% if not req %}
+          false
+          {% else %}
+          {% set req_major = req | regex_findall('^([0-9]+)') | first | default('', true) %}
+          {% set _cmd_out = current_wine_version_cmd.stdout | default('') %}
+          {% set curr_major = _cmd_out | regex_findall('wine-([0-9]+)') | first | default('', true) %}
+          {{ (req_major != '' and curr_major != '' and req_major != curr_major) }}
+          {% endif %}
+
+- name: OS-specific Wine version detection (NixOS fallback)
   tags: wine
   when:
     - wine_detected_os_family == 'NixOS'
     - nixos_early_check.rc | default(1) == 0
+    - cmd_which_wine_res.rc != 0
   block:
     - name: Check current Wine version on NixOS  # noqa risky-shell-pipe
       ansible.builtin.shell: |

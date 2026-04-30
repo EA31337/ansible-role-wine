@@ -31,6 +31,22 @@
       ansible.builtin.command: /usr/bin/lsb_release -si
       become: false
       register: lsb_release_dist_id
+    - name: Detect existing repository codename from winehq package  # noqa command-instead-of-shell risky-shell-pipe
+      ansible.builtin.shell: |
+        set -o pipefail
+        dpkg-query -W -f='${Version}' winehq-{{ wine_release }} 2>/dev/null \
+        | grep -oE '~[a-z]+-[0-9]+$' | sed 's/~//;s/-[0-9]\+$//' || true
+      args:
+        executable: /bin/bash
+      register: existing_codename_cmd
+      changed_when: false
+      failed_when: false
+    - name: Set active wine_release_codename
+      ansible.builtin.set_fact:
+        active_wine_release_codename: >-
+          {{ wine_release_codename if wine_release_codename
+             else (existing_codename_cmd.stdout if existing_codename_cmd.stdout | default('') != ''
+             else lsb_release_code_name.stdout) }}
     - name: Adds architecture dependencies
       ansible.builtin.lineinfile:
         create: true
@@ -93,7 +109,7 @@
           {{ raw_wine_version }}{%- else -%}
           {%- set version_parts = raw_wine_version.split('.') -%}
           {{ (version_parts + ['0', '0', '0', '0'])[:4] | join('.') }}~{{
-          wine_release_codename or lsb_release_code_name.stdout }}-1{%- endif -%}
+          active_wine_release_codename | default(lsb_release_code_name.stdout) }}-1{%- endif -%}
           {%- endif %}
     - name: Debug wine_ubuntu_version
       ansible.builtin.debug:
