@@ -24,6 +24,7 @@ jobs:
     name: Run Cogni AI agent (Sudo)
     runs-on: ubuntu-latest
     permissions:
+      actions: read
       contents: write
       id-token: write
       issues: write
@@ -59,3 +60,9 @@ jobs:
             bash:
               '*': allow
           prompt: ${{ inputs.prompt }}
+
+      - name: Generate Session Summary
+        if: always()
+        uses: Cogni-AI-OU/cogni-ai-agent-action/ai-inference/summary@main
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
