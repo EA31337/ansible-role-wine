@@ -61,8 +61,21 @@ jobs:
               '*': allow
           prompt: ${{ inputs.prompt }}
 
-      - name: Generate Session Summary
-        if: always()
+  summary:
+    name: Generate Summary (post-run)
+    needs: cogni-ai-agent-sudo
+    if: always() && needs.cogni-ai-agent-sudo.result != 'skipped'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Generate Summary
         uses: Cogni-AI-OU/cogni-ai-agent-action/ai-inference/summary@main
         with:
+          agent_job_id: cogni-ai-agent-sudo
           github_token: ${{ secrets.GITHUB_TOKEN }}
