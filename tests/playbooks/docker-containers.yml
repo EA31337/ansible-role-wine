@@ -14,6 +14,8 @@
     nixos_dockerfile_output: "{{ nixos_build_dir }}/Dockerfile.wine-on-nixos"
     nixos_dockerfile_template: >-
       {{ playbook_dir }}/../../molecule/resources/playbooks/Dockerfile.j2
+  vars_files:
+    - ../../vars/main.yml
   tasks:
     - name: Render Dockerfile for NixOS image
       ansible.builtin.template:
@@ -181,6 +183,8 @@
   vars:
     controller_python: "{{ ansible_playbook_python }}"
     wine_install_winetricks: true
+  vars_files:
+    - ../../vars/main.yml
   tasks:
     - name: Installs ea31337.wine role
       ansible.builtin.import_role:

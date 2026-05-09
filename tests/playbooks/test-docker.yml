@@ -54,6 +54,8 @@
 - name: Install ea31337.wine role on the container
   hosts: docker_containers
   gather_facts: true
+  vars_files:
+    - ../../vars/main.yml
   tasks:
     - name: Installs ea31337.wine role
       ansible.builtin.import_role:

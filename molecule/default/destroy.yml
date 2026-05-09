@@ -7,6 +7,8 @@
   vars:
     # Use controller Python (Ansible's interpreter)
     ansible_python_interpreter: "{{ ansible_playbook_python }}"
+  vars_files:
+    - ../../vars/main.yml
   pre_tasks:
     - name: Ensure Python dependencies are installed on controller
       ansible.builtin.command:
