@@ -37,9 +37,6 @@ platforms:
   - name: ubuntu-noble
     image: ubuntu:noble
     init: true
-  - name: ubuntu-latest
-    image: ubuntu:24.04
-    init: true
 provisioner:
   config_options:
     defaults:
@@ -73,9 +70,6 @@ provisioner:
         wine_release_codename: jammy
         wine_version: "10.0"
       ubuntu-noble:
-        wine_release_codename: jammy
-        wine_version: "10.0"
-      ubuntu-latest:
         wine_release_codename: jammy
         wine_version: "10.0"
   name: ansible
