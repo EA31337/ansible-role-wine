@@ -70,7 +70,7 @@ jobs:
             ${{ runner.os }}-pip-
 
       - name: Install Python's requirements
-        run: pip install -r .devcontainer/requirements.txt
+        run: pip install -qq -r .devcontainer/requirements.txt
 
       - name: Cache Ansible Galaxy collections
         uses: actions/cache@v5

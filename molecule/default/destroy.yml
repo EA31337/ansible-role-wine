@@ -10,9 +10,10 @@
   pre_tasks:
     - name: Ensure Python dependencies are installed on controller
       ansible.builtin.command:
-        cmd: "{{ ansible_playbook_python }} -m pip install docker>=7.1 requests"
+        cmd: "{{ ansible_playbook_python }} -m pip install -q docker>=7.1 requests"
       register: pip_install_result
       changed_when: pip_install_result.rc == 0 and 'Successfully installed' in pip_install_result.stdout
+      no_log: "{{ wine_no_log }}"
 
   tasks:
     - name: Stop and remove test containers

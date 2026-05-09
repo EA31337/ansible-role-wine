@@ -74,10 +74,10 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('Pipfile*') }}
           restore-keys: |
             ${{ runner.os }}-pip-
-      - name: Install Ansible collections
+      - name: Install Python packages
         run: |
-          pip install ansible-core
-          ansible-galaxy collection install -r requirements.yml -p collections
+          pip install -qq ansible-core
+          ansible-galaxy collection install -q -r requirements.yml -p collections
       - name: Filter molecule platforms to ${{ matrix.platform }}
         # yq is pre-installed on ubuntu-latest GitHub-hosted runners.
         run: |
