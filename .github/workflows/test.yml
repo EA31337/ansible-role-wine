@@ -41,7 +41,6 @@ jobs:
           - wine-on-debian-latest
           - wine-on-nixos-latest
           - wine-on-ubuntu-jammy
-          - wine-on-ubuntu-latest
           - wine-on-ubuntu-noble
     env:
       ANSIBLE_DISPLAY_OK_HOSTS: 'no'

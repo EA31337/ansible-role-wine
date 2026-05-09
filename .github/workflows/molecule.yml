@@ -51,7 +51,6 @@ jobs:
           - nixos-latest
           - ubuntu-jammy
           - ubuntu-noble
-          - ubuntu-latest
         scenario:
           - default
           - devel
@@ -171,7 +170,6 @@ jobs:
               'nixos-latest',
               'ubuntu-jammy',
               'ubuntu-noble',
-              'ubuntu-latest',
             ];
 
             const icon = (c) => ({

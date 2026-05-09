@@ -57,7 +57,6 @@
       wine-on-debian-latest: debian:latest
       wine-on-nixos-latest: wine-nixos:molecule
       wine-on-ubuntu-jammy: ubuntu:jammy
-      wine-on-ubuntu-latest: ubuntu:latest
       wine-on-ubuntu-noble: ubuntu:noble
     container_image: "{{ container_image_map[inventory_hostname] | default('ubuntu:latest') }}"
   vars_files:
