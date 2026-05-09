@@ -68,13 +68,12 @@ jobs:
           path: collections
           restore-keys: |
             ${{ runner.os }}-galaxy-
-      - name: Cache pip
-        uses: actions/cache@v5
+      - name: Set up Python
+        uses: actions/setup-python@v6.1.0
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('Pipfile*') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+          cache: pip
+          cache-dependency-path: Pipfile*
+          python-version: '3.12'
       - name: Install Ansible collections
         run: |
           pip install ansible-core
