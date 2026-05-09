@@ -62,6 +62,7 @@ provisioner:
   inventory:
     group_vars:
       all:
+        wine_no_log: "{{ ansible_verbosity | default(0) < 1 }}"
         wine_release: stable
     host_vars:
       debian-latest:

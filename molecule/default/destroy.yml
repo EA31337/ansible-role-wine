@@ -22,7 +22,7 @@
       loop: "{{ molecule_yml.platforms }}"
       loop_control:
         label: "{{ item.name }}"
-      no_log: "{{ ansible_verbosity | default(0) < 1 }}"
+      no_log: "{{ wine_no_log }}"
       register: container_results
       async: 7200
       poll: 0
@@ -36,7 +36,7 @@
       register: async_results
       until: async_results.finished
       retries: 300
-      no_log: "{{ ansible_verbosity | default(0) < 1 }}"
+      no_log: "{{ wine_no_log }}"
 
     - name: Remove molecule instance config
       ansible.builtin.file:

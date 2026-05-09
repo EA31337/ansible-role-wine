@@ -43,6 +43,8 @@ jobs:
           - wine-on-ubuntu-latest
           - wine-on-ubuntu-noble
     env:
+      ANSIBLE_DISPLAY_OK_HOSTS: 'no'
+      ANSIBLE_DISPLAY_SKIPPED_HOSTS: 'no'
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
       TARGET_CONTAINER: ${{ matrix.container }}
     steps:
@@ -104,18 +106,12 @@ jobs:
           ansible-playbook -i tests/inventory/docker-containers.yml
           --limit "${TARGET_CONTAINER},localhost"
           tests/playbooks/docker-containers.yml
-        env:
-          ANSIBLE_DISPLAY_OK_HOSTS: 'no'
-          ANSIBLE_DISPLAY_SKIPPED_HOSTS: 'no'
 
       - name: Run Ansible playbook with wine-verify tag
         run: >-
           ansible-playbook -i tests/inventory/docker-containers.yml
           --limit "${TARGET_CONTAINER},localhost"
           tests/playbooks/tags/wine-verify.yml
-        env:
-          ANSIBLE_DISPLAY_OK_HOSTS: 'no'
-          ANSIBLE_DISPLAY_SKIPPED_HOSTS: 'no'
 
       # Debug with tmate on failure when debug logging is enabled.
       - if: ${{ failure() && runner.debug == '1' }}

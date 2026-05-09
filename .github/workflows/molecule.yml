@@ -93,7 +93,6 @@ jobs:
         uses: gofrolist/molecule-action@v2
         env:
           ANSIBLE_COLLECTIONS_PATH: collections
-          ANSIBLE_CALLBACK_RESULT_FORMAT: yaml
           ANSIBLE_DISPLAY_OK_HOSTS: 'no'
           ANSIBLE_DISPLAY_SKIPPED_HOSTS: 'no'
           ANSIBLE_FORCE_COLOR: '1'
