@@ -1,8 +1,8 @@
 ---
-- name: Ensures Winetricks is installed ({{ ansible_os_family }})
-  become: "{{ ansible_user_id != 'root' }}"
+- name: Ensures Winetricks is installed ({{ ansible_facts.get('os_family') }})
+  become: "{{ ansible_facts.get('user_id', 'root') != 'root' }}"
   become_method: >-
-    {{ wine_become_method.get(wine_detected_os_family | default(ansible_os_family),
+    {{ wine_become_method.get(wine_detected_os_family | default(ansible_facts.get('os_family')),
     wine_become_method["_default"]) }}
   block:
 
@@ -23,14 +23,14 @@
 
     - name: Check if nix profile directory exists
       ansible.builtin.stat:
-        path: "{{ ansible_user_dir }}/.nix-profile"
+        path: "{{ ansible_facts.get('user_dir') }}/.nix-profile"
       register: nix_profile_dir
 
     - name: Ensures Winetricks is present via URL
       ansible.builtin.get_url:
         dest: >-
           {{ nix_profile_dir.stat.exists
-          | ternary(ansible_user_dir + '/.nix-profile/bin', '/usr/local/bin') ~ '/winetricks' }}
+          | ternary(ansible_facts.get('user_dir') + '/.nix-profile/bin', '/usr/local/bin') ~ '/winetricks' }}
         force: false
         mode: "0755"
         url: '{{ wine_winetricks_url }}'

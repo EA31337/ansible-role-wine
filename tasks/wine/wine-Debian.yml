@@ -1,10 +1,10 @@
 ---
 - name: Ensures Wine repository is configured
   become: >-
-    {{ (ansible_user_id is defined and ansible_user_id != 'root')
-    or (ansible_user_id is not defined and (lookup('env', 'UID') | int != 0)) }}
+    {{ ansible_facts.get('user_id', 'root') != 'root' or
+    ansible_facts.get('env', {}).get('UID', 0) | int != 0 }}
   become_method: >-
-    {{ wine_become_method.get(wine_detected_os_family | default(ansible_os_family),
+    {{ wine_become_method.get(wine_detected_os_family | default(ansible_facts.get('os_family')),
     wine_become_method["_default"]) }}
   environment:
     DEBIAN_FRONTEND: noninteractive
@@ -54,7 +54,7 @@
       ansible.builtin.template:
         dest: /etc/apt/sources.list.d/winehq.list
         mode: "0644"
-        src: 'winehq.{{ ansible_os_family }}.list.j2'
+        src: "winehq.{{ ansible_facts.get('os_family') }}.list.j2"
     - name: Ensures Wine backports repo is present
       ansible.builtin.template:
         dest: /etc/apt/sources.list.d/ubuntu.list
@@ -76,10 +76,10 @@
 
 - name: Ensures Wine is present
   become: >-
-    {{ (ansible_user_id is defined and ansible_user_id != 'root')
-    or (ansible_user_id is not defined and (lookup('env', 'UID') | int != 0)) }}
+    {{ ansible_facts.get('user_id', 'root') != 'root' or
+    ansible_facts.get('env', {}).get('UID', 0) | int != 0 }}
   become_method: >-
-    {{ wine_become_method.get(wine_detected_os_family | default(ansible_os_family),
+    {{ wine_become_method.get(wine_detected_os_family | default(ansible_facts.get('os_family')),
     wine_become_method["_default"]) }}
   environment:
     DEBIAN_FRONTEND: noninteractive
@@ -136,19 +136,19 @@
       ansible.builtin.command: xvfb-run -a wineboot --init
       become: false
       environment:
-        HOME: "{{ ansible_user_dir }}"
+        HOME: "{{ ansible_facts.get('user_dir') }}"
         WINEDEBUG: "{{ wine_debug | default('-all') }}"
         WINEDLLOVERRIDES: "{{ wine_dlloverrides | default('mscoree,mshtml=') }}"
       args:
-        creates: "{{ ansible_user_dir }}/.wine/system.reg"
+        creates: "{{ ansible_facts.get('user_dir') }}/.wine/system.reg"
       timeout: 120
 
-- name: Apt cleanup ({{ wine_detected_os_family | default(ansible_os_family) }})
+- name: Apt cleanup ({{ wine_detected_os_family | default(ansible_facts.get('os_family')) }})
   become: >-
-    {{ (ansible_user_id is defined and ansible_user_id != 'root')
-    or (ansible_user_id is not defined and (lookup('env', 'UID') | int != 0)) }}
+    {{ ansible_facts.get('user_id', 'root') != 'root' or
+    ansible_facts.get('env', {}).get('UID', 0) | int != 0 }}
   become_method: >-
-    {{ wine_become_method.get(wine_detected_os_family | default(ansible_os_family),
+    {{ wine_become_method.get(wine_detected_os_family | default(ansible_facts.get('os_family')),
     wine_become_method["_default"]) }}
   environment:
     DEBIAN_FRONTEND: noninteractive

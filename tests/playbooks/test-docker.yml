@@ -1,15 +1,15 @@
 ---
 - name: Configure Docker container
-  # Note: Since facts are not gathered, we're checking for ansible_user_id, connection_user or UID instead.
+  # Note: Since facts are not gathered, we're checking for ansible_facts.get('user_id'), connection_user or UID instead.
   become: >-
     {{
       (connection_user | default('root')) != 'root'
-      or (ansible_user_id | default('root')) != 'root'
-      or (ansible_user_uid | default(0) | int) != 0
-      or (((ansible_env | default({}))['UID'] | default(0) | int) != 0)
+      or (ansible_facts.get('user_id', 'root')) != 'root'
+      or (ansible_facts.get('user_uid', 0) | int) != 0
+      or (ansible_facts.get('env', {}).get('UID', 0) | int != 0)
       or (
-        ((ansible_env | default({}))['USER']
-        | default(((ansible_env | default({}))['LOGNAME'] | default('root'))) )
+        ansible_facts.get('env', {}).get('USER',
+        ansible_facts.get('env', {}).get('LOGNAME', 'root'))
         != 'root'
       )
     }}

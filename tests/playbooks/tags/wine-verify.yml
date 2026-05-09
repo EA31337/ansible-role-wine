@@ -124,7 +124,7 @@
     - name: Determine if we should become root
       ansible.builtin.set_fact:
         wine_should_become: >-
-          {{ (ansible_user_uid | default(0) | int) != 0 }}
+          {{ (ansible_facts.get('user_uid') | default(0) | int) != 0 }}
         cacheable: true
 
     - name: Install Python packages for Ubuntu/Debian
