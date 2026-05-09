@@ -36,7 +36,7 @@ platforms:
     image: ubuntu:noble
     init: true
   - name: ubuntu-latest
-    image: ubuntu:latest
+    image: ubuntu:24.04
     init: true
 provisioner:
   config_options:
