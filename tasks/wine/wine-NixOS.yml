@@ -115,15 +115,15 @@
   ansible.builtin.command: xvfb-run -a wineboot --init
   environment:
     PATH: >-
-      {{ ansible_facts.get('user_dir') }}/.nix-profile/bin:
-      {{ ansible_facts.env.PATH
-      | default('/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:/usr/bin:/bin') }}
+      {{ ansible_facts.get('user_dir', lookup('ansible.builtin.env', 'HOME')) }}/.nix-profile/bin:
+      {{ ansible_facts.get('env', {}).get('PATH',
+      '/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:/usr/bin:/bin') }}
     WINEARCH: win64
-    WINEPREFIX: "{{ ansible_facts.get('user_dir') }}/.wine"
-    FONTCONFIG_FILE: "{{ ansible_facts.get('user_dir') }}/{{ wine_fontconfig_config_file }}"
-    FONTCONFIG_PATH: "{{ ansible_facts.get('user_dir') }}/{{ wine_fontconfig_config_dir }}"
+    WINEPREFIX: "{{ ansible_facts.get('user_dir', lookup('ansible.builtin.env', 'HOME')) }}/.wine"
+    FONTCONFIG_FILE: "{{ ansible_facts.get('user_dir', lookup('ansible.builtin.env', 'HOME')) }}/{{ wine_fontconfig_config_file }}"
+    FONTCONFIG_PATH: "{{ ansible_facts.get('user_dir', lookup('ansible.builtin.env', 'HOME')) }}/{{ wine_fontconfig_config_dir }}"
     WINEDEBUG: "{{ wine_debug | default('-all') }}"
     WINEDLLOVERRIDES: "{{ wine_dlloverrides | default('mscoree,mshtml=') }}"
   args:
-    creates: "{{ ansible_facts.get('user_dir') }}/.wine/system.reg"
+    creates: "{{ ansible_facts.get('user_dir', lookup('ansible.builtin.env', 'HOME')) }}/.wine/system.reg"
   when: nix_store_stat.stat.exists

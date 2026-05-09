@@ -5,8 +5,8 @@
     {{
       (connection_user | default('root')) != 'root'
       or (ansible_facts.get('user_id', 'root')) != 'root'
-      or (ansible_facts.get('user_uid', 0) | int) != 0
-      or (ansible_facts.get('env', {}).get('UID', 0) | int != 0)
+      or (ansible_facts.get('user_uid', lookup('ansible.builtin.env', 'UID') | default(0)) | int) != 0
+      or (ansible_facts.get('env', {}).get('UID', lookup('ansible.builtin.env', 'UID') | default(0)) | int != 0)
       or (
         ansible_facts.get('env', {}).get('USER',
         ansible_facts.get('env', {}).get('LOGNAME', 'root'))

@@ -1,6 +1,6 @@
 ---
 - name: Ensures Wine is present (Homebrew Cast)
-  become: "{{ ansible_facts.get('user_id') is defined and ansible_facts.get('user_id', 'root') != 'root' }}"
+  become: "{{ ansible_facts.get('user_id', 'root') != 'root' }}"
   become_method: >-
     {{ wine_become_method.get(wine_detected_os_family | default(ansible_facts.get('os_family')),
     wine_become_method["_default"]) }}
