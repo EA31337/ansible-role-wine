@@ -12,12 +12,14 @@
     - name: Ensures Apt cache is up-to-date
       ansible.builtin.apt:
         update_cache: true
+      no_log: "{{ ansible_verbosity | default(0) < 1 }}"
     - name: Ensures basic dependencies are present
       ansible.builtin.package:
         name:
           - ca-certificates
           - lsb-release
         state: present
+      no_log: "{{ ansible_verbosity | default(0) < 1 }}"
     - name: Ensures CA certificates are updated
       ansible.builtin.command: update-ca-certificates
       changed_when: false
@@ -73,6 +75,7 @@
     - name: Update Apt cache after adding Wine repositories
       ansible.builtin.apt:
         update_cache: true
+      no_log: "{{ ansible_verbosity | default(0) < 1 }}"
 
 - name: Ensures Wine is present
   become: >-
@@ -131,6 +134,7 @@
       until: wine_pkg_install_res is success
       retries: 3
       delay: 5
+      no_log: "{{ ansible_verbosity | default(0) < 1 }}"
 
     - name: Ensures ~/.wine is initialized
       ansible.builtin.command: xvfb-run -a wineboot --init
@@ -161,6 +165,7 @@
         purge: true
       when: wine_apt_cleanup | default(false) | bool
       changed_when: false
+      no_log: "{{ ansible_verbosity | default(0) < 1 }}"
 
     - name: Cleans Apt cache
       ansible.builtin.apt:
@@ -168,3 +173,4 @@
         clean: true
       when: wine_apt_cleanup | default(false) | bool
       changed_when: false
+      no_log: "{{ ansible_verbosity | default(0) < 1 }}"

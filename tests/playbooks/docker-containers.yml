@@ -45,6 +45,7 @@
       when: should_build_nixos
       vars:
         ansible_python_interpreter: "{{ controller_python }}"
+      no_log: "{{ ansible_verbosity | default(0) < 1 }}"
 
 - name: Configure Docker container
   hosts: docker_containers
@@ -82,6 +83,7 @@
       vars:
         # Use system Python with requests installed for controller-side Docker modules.
         ansible_python_interpreter: "{{ controller_python }}"
+      no_log: "{{ ansible_verbosity | default(0) < 1 }}"
 
     - name: Wait for container to be ready
       community.docker.docker_container_info:
@@ -97,6 +99,7 @@
       vars:
         # Use system Python with requests installed for controller-side Docker modules.
         ansible_python_interpreter: "{{ controller_python }}"
+      no_log: "{{ ansible_verbosity | default(0) < 1 }}"
 
     - name: Install Python 3 on Alpine
       ansible.builtin.raw: |
@@ -105,7 +108,7 @@
         command -v sudo >/dev/null 2>&1 || missing="$missing sudo"
         command -v bash >/dev/null 2>&1 || missing="$missing bash"
         command -v ps   >/dev/null 2>&1 || missing="$missing procps"
-        if [ -n "$missing" ]; then apk update && apk add --no-cache $missing; fi
+        if [ -n "$missing" ]; then apk update -q && apk add -q --no-cache $missing; fi
       changed_when: false
       when: container_image is search("alpine")
 
@@ -116,7 +119,7 @@
         command -v sudo >/dev/null 2>&1 || missing="$missing sudo"
         command -v ps   >/dev/null 2>&1 || missing="$missing procps"
         if [ -n "$missing" ]; then
-          apt-get update && apt-get install -y --no-install-recommends $missing
+          apt-get update -y -qq && apt-get install -y -qq --no-install-recommends $missing
         fi
       changed_when: false
       register: python_install_result
@@ -137,8 +140,8 @@
         command -v ps >/dev/null 2>&1 || missing_packages="$missing_packages nixpkgs.procps"
 
         if [ -n "$missing_packages" ]; then
-          nix-channel --update
-          nix-env -iA $missing_packages
+          nix-channel --update > /dev/null 2>&1
+          nix-env -iA $missing_packages > /dev/null 2>&1
         fi
         python3 --version
       changed_when: false
@@ -165,6 +168,7 @@
       environment:
         DEBIAN_FRONTEND: noninteractive
       when: container_image is search("ubuntu") or container_image is search("debian")
+      no_log: "{{ ansible_verbosity | default(0) < 1 }}"
 
   tags: always
 
@@ -188,3 +192,4 @@
         state: stopped
       delegate_to: localhost
       failed_when: false
+      no_log: "{{ ansible_verbosity | default(0) < 1 }}"

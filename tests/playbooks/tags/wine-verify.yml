@@ -45,6 +45,7 @@
       when: should_build_nixos
       vars:
         ansible_python_interpreter: "{{ controller_python }}"
+      no_log: "{{ ansible_verbosity | default(0) < 1 }}"
 
 - name: Ensure Docker containers are up-and-running
   gather_facts: false
@@ -72,6 +73,7 @@
       vars:
         # Use system Python with requests installed for controller-side Docker modules.
         ansible_python_interpreter: "{{ controller_python }}"
+      no_log: "{{ ansible_verbosity | default(0) < 1 }}"
 
     - name: Wait for container to be ready
       community.docker.docker_container_info:
@@ -87,16 +89,18 @@
       vars:
         # Use system Python with requests installed for controller-side Docker modules.
         ansible_python_interpreter: "{{ controller_python }}"
+      no_log: "{{ ansible_verbosity | default(0) < 1 }}"
 
     - name: Install Python 3 on Alpine
       ansible.builtin.raw: |
-        test -e "{{ ansible_python_interpreter }}" || (apk update && apk add --no-cache python3 py3-pip)
+        test -e "{{ ansible_python_interpreter }}" || (apk update -q && apk add -q --no-cache python3 py3-pip)
       changed_when: false
       when: container_image is search("alpine")
 
     - name: Install Python 3 on Ubuntu/Debian
       ansible.builtin.raw: |
-        test -e "{{ ansible_python_interpreter }}" || (apt-get update && apt-get install -y python3 python3-pip)
+        test -e "{{ ansible_python_interpreter }}" || \
+        (apt-get update -y -qq && apt-get install -y -qq python3 python3-pip)
       changed_when: false
       register: python_install_result
       retries: 3
@@ -113,8 +117,8 @@
         fi
         # If not, install it now
         PATH=/root/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH
-        nix-channel --update
-        nix-env -iA nixpkgs.python3 nixpkgs.python3Packages.pip
+        nix-channel --update > /dev/null 2>&1
+        nix-env -iA nixpkgs.python3 nixpkgs.python3Packages.pip > /dev/null 2>&1
       changed_when: false
       when: container_image is search("nixos")
 
@@ -139,6 +143,7 @@
       environment:
         DEBIAN_FRONTEND: noninteractive
       when: container_image is search("ubuntu") or container_image is search("debian")
+      no_log: "{{ ansible_verbosity | default(0) < 1 }}"
 
   tags: always
   vars:
@@ -173,6 +178,7 @@
         state: stopped
       delegate_to: localhost
       failed_when: false
+      no_log: "{{ ansible_verbosity | default(0) < 1 }}"
 
   vars:
     wine_install_winetricks: true
