@@ -7,18 +7,26 @@ all:
           ansible_connection: docker
           ansible_host: wine-on-ubuntu-latest
           ansible_python_interpreter: /usr/bin/python3
+          wine_release_codename: jammy
+          wine_version: "10.0"
         wine-on-ubuntu-noble:
           ansible_connection: docker
           ansible_host: wine-on-ubuntu-noble
           ansible_python_interpreter: /usr/bin/python3
+          wine_release_codename: jammy
+          wine_version: "10.0"
         wine-on-ubuntu-jammy:
           ansible_connection: docker
           ansible_host: wine-on-ubuntu-jammy
           ansible_python_interpreter: /usr/bin/python3
+          wine_release_codename: jammy
+          wine_version: "10.0"
         wine-on-debian-latest:
           ansible_connection: docker
           ansible_host: wine-on-debian-latest
           ansible_python_interpreter: /usr/bin/python3
+          wine_release_codename: bookworm
+          wine_version: "10.0"
         wine-on-alpine-latest:
           ansible_connection: docker
           ansible_host: wine-on-alpine-latest
