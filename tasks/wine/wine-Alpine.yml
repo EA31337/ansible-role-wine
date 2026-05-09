@@ -96,10 +96,10 @@
   block:
     - name: Ensure fontconfig directories are present (Alpine)
       ansible.builtin.file:
-        path: "{{ ansible_facts.get('user_dir') }}/{{ item }}"
+        path: "{{ ansible_facts.get('user_dir', lookup('ansible.builtin.env', 'HOME')) }}/{{ item }}"
         state: directory
         mode: '0755'
-        owner: "{{ ansible_facts.get('user_id') }}"
+        owner: "{{ ansible_facts.get('user_id', 'root') }}"
       loop: >-
         {{ [wine_fontconfig_cache_dir, wine_fontconfig_config_dir]
            + (wine_fontconfig_fonts_dirs | default([])) }}
@@ -111,31 +111,33 @@
     - name: Write fontconfig config for Alpine
       ansible.builtin.template:
         src: fonts.conf.j2
-        dest: "{{ ansible_facts.get('user_dir') }}/{{ wine_fontconfig_config_file }}"
+        dest: >-
+          {{ ansible_facts.get('user_dir', lookup('ansible.builtin.env', 'HOME')) }}/{{ wine_fontconfig_config_file }}
         mode: '0644'
-        owner: "{{ ansible_facts.get('user_id') }}"
+        owner: "{{ ansible_facts.get('user_id', 'root') }}"
         force: true
 
     - name: Write wine environment config for user (Alpine)
       ansible.builtin.template:
         src: wine_env.j2
-        dest: "{{ ansible_facts.get('user_dir') }}/.wine_env"
+        dest: "{{ ansible_facts.get('user_dir', lookup('ansible.builtin.env', 'HOME')) }}/.wine_env"
         mode: '0644'
-        owner: "{{ ansible_facts.get('user_id') }}"
+        owner: "{{ ansible_facts.get('user_id', 'root') }}"
 
     - name: Set fontconfig environment in ~/.bashrc (Alpine)
       ansible.builtin.lineinfile:
-        path: "{{ ansible_facts.get('user_dir') }}/.bashrc"
+        path: "{{ ansible_facts.get('user_dir', lookup('ansible.builtin.env', 'HOME')) }}/.bashrc"
         line: "[ -f ~/.wine_env ] && . ~/.wine_env"
-        create: true
         mode: '0644'
-        owner: "{{ ansible_facts.get('user_id') }}"
+        owner: "{{ ansible_facts.get('user_id', 'root') }}"
+        create: true
 
     - name: Rebuild fontconfig cache for Alpine
       ansible.builtin.command: >-
         fc-cache -f
         {{ wine_fontconfig_fonts_dirs
-           | map('regex_replace', '^', ansible_facts.get('user_dir') ~ '/') | join(' ') }}
+           | map('regex_replace', '^', ansible_facts.get('user_dir', lookup('ansible.builtin.env', 'HOME')) ~ '/')
+           | join(' ') }}
       become: true
       changed_when: true
 
@@ -162,14 +164,16 @@
         # WoW64 wine (amd64) only supports win64; 32-bit wine (i686/x86/etc) only supports win32.
         WINEARCH: >-
           {{ 'win64' if (wine64_bin.stat.exists and
-          ansible_facts.get('architecture') in ['x86_64', 'amd64']) else 'win32' }}
-        HOME: "{{ ansible_facts.get('user_dir') }}"
-        FONTCONFIG_FILE: "{{ ansible_facts.get('user_dir') }}/{{ wine_fontconfig_config_file }}"
+          ansible_facts.get('architecture') in ['x86_64', 'amd64'])
+          else 'win32' }}
+        HOME: "{{ ansible_facts.get('user_dir', lookup('ansible.builtin.env', 'HOME')) }}"
+        FONTCONFIG_FILE: >-
+          {{ ansible_facts.get('user_dir', lookup('ansible.builtin.env', 'HOME')) }}/{{ wine_fontconfig_config_file }}
         FONTCONFIG_PATH: >-
-          {{ ansible_facts.get('user_dir') }}/{{ wine_fontconfig_config_dir }}:{{
+          {{ ansible_facts.get('user_dir', lookup('ansible.builtin.env', 'HOME')) }}/{{ wine_fontconfig_config_dir }}:{{
           wine_fontconfig_system_config_path }}
         WINEDEBUG: "{{ wine_debug | default('-all') }}"
         WINEDLLOVERRIDES: "{{ wine_dlloverrides | default('mscoree,mshtml=') }}"
       args:
-        creates: "{{ ansible_facts.get('user_dir') }}/.wine/system.reg"
+        creates: "{{ ansible_facts.get('user_dir', lookup('ansible.builtin.env', 'HOME')) }}/.wine/system.reg"
       timeout: 120

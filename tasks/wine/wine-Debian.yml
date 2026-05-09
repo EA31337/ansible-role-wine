@@ -136,11 +136,12 @@
       ansible.builtin.command: xvfb-run -a wineboot --init
       become: false
       environment:
-        HOME: "{{ ansible_facts.get('user_dir') }}"
+        HOME: "{{ ansible_facts.get('user_dir', lookup('ansible.builtin.env', 'HOME')) }}"
         WINEDEBUG: "{{ wine_debug | default('-all') }}"
         WINEDLLOVERRIDES: "{{ wine_dlloverrides | default('mscoree,mshtml=') }}"
       args:
-        creates: "{{ ansible_facts.get('user_dir') }}/.wine/system.reg"
+        creates: >-
+          {{ ansible_facts.get('user_dir', lookup('ansible.builtin.env', 'HOME')) }}/.wine/system.reg
       timeout: 120
 
 - name: Apt cleanup ({{ wine_detected_os_family | default(ansible_facts.get('os_family')) }})
