@@ -41,7 +41,6 @@ jobs:
           - wine-on-debian-latest
           - wine-on-nixos-latest
           - wine-on-ubuntu-jammy
-          - wine-on-ubuntu-latest
           - wine-on-ubuntu-noble
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'

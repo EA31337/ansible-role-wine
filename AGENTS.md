@@ -70,7 +70,6 @@ For project overview and install instructions, see [README.md](README.md).
 | `nixos-latest` | `nixos/nix:latest` | Custom Dockerfile; privileged mode |
 | `ubuntu-jammy` | `ubuntu:jammy` | WineHQ repo with `wine_release_codename: jammy` |
 | `ubuntu-noble` | `ubuntu:noble` | WineHQ repo with `wine_release_codename: jammy` |
-| `ubuntu-latest` | `ubuntu:latest` | WineHQ repo with `wine_release_codename: jammy` |
 
 ### Running Tests
 

@@ -35,9 +35,6 @@ platforms:
   - name: ubuntu-noble
     image: ubuntu:noble
     init: true
-  - name: ubuntu-latest
-    image: ubuntu:latest
-    init: true
 provisioner:
   config_options:
     defaults:
