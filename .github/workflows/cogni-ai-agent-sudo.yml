@@ -4,8 +4,28 @@ name: Cogni AI Agent (Sudo)
 
 # yamllint disable-line rule:truthy
 on:
+  workflow_call:
+    inputs:
+      agent:
+        default: cogni-ai-architect
+        description: Agent to use.
+        required: false
+        type: string
   workflow_dispatch:
     inputs:
+      agent:
+        default: cogni-ai-architect
+        description: Agent to use.
+        options:
+          - cogni-ai-architect
+          - cogni-ai-brain-ops
+          - cogni-ai-code-reviewer
+          - cogni-ai-devops
+          - cogni-ai-manager
+          - cogni-ai-plan-reviewer
+          - default
+        required: false
+        type: choice
       model:
         default: opencode/gemini-3-flash
         description: Model to use for OpenCode
@@ -54,6 +74,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          agent: ${{ inputs.agent }}
           model: ${{ inputs.model }}
           opencode-api-key: ${{ secrets.OPENCODE_API_KEY }}  # <https://opencode.ai/auth>
           permissions: |-
