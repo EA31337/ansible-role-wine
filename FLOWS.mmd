@@ -1,0 +1,41 @@
+flowchart TD
+    %% Main Execution Flow
+    subgraph Role_Execution_Flow ["Role Execution Flow"]
+        Start([Start: tasks/main.yml]) --> GatherFacts[Gather Facts & OS Detection]
+        GatherFacts --> CheckWine{Check if Wine is present / Version mismatch}
+        
+        CheckWine -- Not Present/Mismatch --> WineDispatcher[tasks/wine/wine.yml]
+        CheckWine -- Present & Match --> CheckWinetricks{wine_install_winetricks == true?}
+        
+        WineDispatcher --> OSDispatcher{OS Family Dispatcher}
+        OSDispatcher -- Alpine --> WineAlpine[tasks/wine/wine-Alpine.yml]
+        OSDispatcher -- Debian/Ubuntu --> WineDebian[tasks/wine/wine-Debian.yml]
+        OSDispatcher -- NixOS --> WineNixOS[tasks/wine/wine-NixOS.yml]
+        
+        WineAlpine --> CheckWinetricks
+        WineDebian --> CheckWinetricks
+        WineNixOS --> CheckWinetricks
+        
+        CheckWinetricks -- Yes --> Winetricks[tasks/winetricks/winetricks.yml]
+        Winetricks --> SetWinver[Set Windows Version via winetricks]
+        SetWinver --> VerifyInstallation
+        
+        CheckWinetricks -- No --> VerifyInstallation[Verify Installation: tasks/verify.yml]
+        VerifyInstallation --> End([End])
+    end
+
+    %% Testing Flow
+    subgraph Testing_Flow ["Molecule Testing Flow"]
+        MolTest[molecule test] --> MolCreate[molecule create]
+        MolCreate --> MolPrepare[molecule prepare]
+        MolPrepare --> MolConverge[molecule converge]
+        MolConverge --> MolVerify[molecule verify]
+        MolVerify --> MolDestroy[molecule destroy]
+    end
+
+    %% Documentation Links
+    subgraph Documentation_References ["Documentation References"]
+        DocReadme([README.md]) -.-> Start
+        DocAgents([AGENTS.md]) -.-> Role_Execution_Flow
+        DocMolPrompt([.github/prompts/molecule-test.prompt.md]) -.-> Testing_Flow
+    end
