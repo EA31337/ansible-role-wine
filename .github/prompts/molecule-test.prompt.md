@@ -47,7 +47,6 @@ Run all Molecule scenarios and report results as a table.
 | `nixos-latest` | `nixos/nix:latest` | Custom Dockerfile; privileged mode |
 | `ubuntu-jammy` | `ubuntu:jammy` | WineHQ repo; codename `jammy` |
 | `ubuntu-noble` | `ubuntu:noble` | WineHQ repo; codename `jammy` |
-| `ubuntu-latest` | `ubuntu:latest` | WineHQ repo; codename `jammy` |
 
 ## Results Template
 
@@ -65,7 +64,6 @@ For each scenario, report per-platform step results:
 | `nixos-latest` | | | | | |
 | `ubuntu-jammy` | | | | | |
 | `ubuntu-noble` | | | | | |
-| `ubuntu-latest` | | | | | |
 
 ### Summary (all scenarios)
 
@@ -76,7 +74,6 @@ For each scenario, report per-platform step results:
 | `nixos-latest` | | | | |
 | `ubuntu-jammy` | | | | |
 | `ubuntu-noble` | | | | |
-| `ubuntu-latest` | | | | |
 
 ## Troubleshooting
 

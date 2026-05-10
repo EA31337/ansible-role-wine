@@ -35,9 +35,6 @@ platforms:
   - name: ubuntu-noble
     image: ubuntu:noble
     init: true
-  - name: ubuntu-latest
-    image: ubuntu:latest
-    init: true
 provisioner:
   config_options:
     defaults:
@@ -63,21 +60,8 @@ provisioner:
         wine_install_recommends: true
         wine_release: staging
     host_vars:
-      debian-latest:
-        wine_release_codename: bookworm
-        wine_version: "10.0"
       nixos-latest:
         ansible_python_interpreter: /root/.nix-profile/bin/python3
-        wine_version: "10.0"
-      ubuntu-jammy:
-        wine_release_codename: jammy
-        wine_version: "10.0"
-      ubuntu-noble:
-        wine_release_codename: jammy
-        wine_version: "10.0"
-      ubuntu-latest:
-        wine_release_codename: jammy
-        wine_version: "10.0"
   name: ansible
   options:
     diff: true

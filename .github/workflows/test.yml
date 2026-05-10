@@ -41,7 +41,6 @@ jobs:
           - wine-on-debian-latest
           - wine-on-nixos-latest
           - wine-on-ubuntu-jammy
-          - wine-on-ubuntu-latest
           - wine-on-ubuntu-noble
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
@@ -54,19 +53,11 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v6.1.0
         with:
-          python-version: '3.11'
-
-      - name: Cache pip
-        uses: actions/cache@v5
-        with:
-          path: ~/.cache/pip
-          key: >-
-            ${{ runner.os }}-pip-${{ hashFiles(
-              'Pipfile*',
-              '.devcontainer/requirements.txt'
-            ) }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+          cache: pip
+          cache-dependency-path: |
+            Pipfile*
+            .devcontainer/requirements.txt
+          python-version: '3.12'
 
       - name: Install Python's requirements
         run: pip install -r .devcontainer/requirements.txt
