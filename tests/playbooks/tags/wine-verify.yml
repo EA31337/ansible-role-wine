@@ -92,36 +92,8 @@
         ansible_python_interpreter: "{{ controller_python }}"
       no_log: "{{ wine_no_log }}"
 
-    - name: Install Python 3 on Alpine
-      ansible.builtin.raw: |
-        test -e "{{ ansible_python_interpreter }}" || (apk update -q && apk add -q --no-cache python3 py3-pip)
-      changed_when: false
-      when: container_image is search("alpine")
-
-    - name: Install Python 3 on Ubuntu/Debian
-      ansible.builtin.raw: |
-        test -e "{{ ansible_python_interpreter }}" || \
-        (apt-get update -qq && apt-get install -y -qq python3 python3-pip)
-      changed_when: false
-      register: python_install_result
-      retries: 3
-      delay: 10
-      until: python_install_result.rc == 0
-      when: container_image is search("ubuntu") or container_image is search("debian")
-
-    - name: Install or verify Python on NixOS
-      ansible.builtin.raw: |
-        # Check if Python is already installed from Dockerfile
-        if [ -x /root/.nix-profile/bin/python3 ]; then
-          /root/.nix-profile/bin/python3 --version
-          exit 0
-        fi
-        # If not, install it now
-        PATH=/root/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH
-        nix-channel --update > /dev/null
-        nix-env -iA nixpkgs.python3 nixpkgs.python3Packages.pip > /dev/null
-      changed_when: false
-      when: container_image is search("nixos")
+    - name: Install Python 3 for Ansible
+      ansible.builtin.include_tasks: ../tasks/install-python.yml
 
     - name: Gather facts
       ansible.builtin.setup:
