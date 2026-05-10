@@ -26,11 +26,11 @@ flowchart TD
 
     %% Testing Flow
     subgraph Testing_Flow ["Molecule Testing Flow"]
-        MolTest[molecule test] --> MolCreate[molecule create]
-        MolCreate --> MolPrepare[molecule prepare]
-        MolPrepare --> MolConverge[molecule converge]
-        MolConverge --> MolVerify[molecule verify]
-        MolVerify --> MolDestroy[molecule destroy]
+        MolTest[molecule test (orchestrates full lifecycle)] --> MolCreate[create]
+        MolCreate --> MolPrepare[prepare]
+        MolPrepare --> MolConverge[converge]
+        MolConverge --> MolVerify[verify]
+        MolVerify --> MolDestroy[destroy]
     end
 
     %% Documentation Links
