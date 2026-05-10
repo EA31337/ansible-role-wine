@@ -6,6 +6,7 @@ on:
   pull_request:
     paths-ignore:
       - '.github/workflows/cogni-ai-agent.yml'
+      - '.github/workflows/cogni-ai-agent-sudo.yml'
       - '.github/workflows/copilot-setup-steps.yml'
       - '.github/workflows/galaxy-publish.yml'
       - '**/*.cfg'
@@ -15,6 +16,7 @@ on:
   push:
     paths-ignore:
       - '.github/workflows/cogni-ai-agent.yml'
+      - '.github/workflows/cogni-ai-agent-sudo.yml'
       - '.github/workflows/copilot-setup-steps.yml'
       - '.github/workflows/galaxy-publish.yml'
       - '**/*.cfg'
