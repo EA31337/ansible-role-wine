@@ -73,9 +73,9 @@ jobs:
           cache: pip
           cache-dependency-path: Pipfile*
           python-version: '3.12'
-      - name: Install Ansible collections
+      - name: Install Python packages and Ansible collections
         run: |
-          pip install ansible-core
+          pip install -qq ansible-core
           ansible-galaxy collection install -r requirements.yml -p collections
       - name: Filter molecule platforms to ${{ matrix.platform }}
         # yq is pre-installed on ubuntu-latest GitHub-hosted runners.
@@ -92,10 +92,11 @@ jobs:
         uses: gofrolist/molecule-action@v2
         env:
           ANSIBLE_COLLECTIONS_PATH: collections
-          ANSIBLE_CALLBACK_RESULT_FORMAT: yaml
+          ANSIBLE_DISPLAY_OK_HOSTS: 'no'
+          ANSIBLE_DISPLAY_SKIPPED_HOSTS: 'no'
           ANSIBLE_FORCE_COLOR: '1'
           ANSIBLE_STDOUT_CALLBACK: >-
-            ${{ runner.debug == '1' && 'debug' || 'ansible.builtin.default' }}
+            ${{ runner.debug == '1' && 'debug' || 'community.general.unixy' }}
           MOLECULE_REPORT: molecule-${{ matrix.scenario }}-report.html
         with:
           molecule_args: >-

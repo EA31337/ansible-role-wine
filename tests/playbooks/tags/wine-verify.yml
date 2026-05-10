@@ -14,6 +14,8 @@
     nixos_dockerfile_output: "{{ nixos_build_dir }}/Dockerfile.wine-on-nixos"
     nixos_dockerfile_template: >-
       {{ playbook_dir }}/../../../molecule/resources/playbooks/Dockerfile.j2
+  vars_files:
+    - ../../../vars/main.yml
   tasks:
     - name: Render Dockerfile for NixOS image
       ansible.builtin.template:
@@ -45,6 +47,7 @@
       when: should_build_nixos
       vars:
         ansible_python_interpreter: "{{ controller_python }}"
+      no_log: "{{ wine_no_log }}"
 
 - name: Ensure Docker containers are up-and-running
   gather_facts: false
@@ -72,6 +75,7 @@
       vars:
         # Use system Python with requests installed for controller-side Docker modules.
         ansible_python_interpreter: "{{ controller_python }}"
+      no_log: "{{ wine_no_log }}"
 
     - name: Wait for container to be ready
       community.docker.docker_container_info:
@@ -87,16 +91,18 @@
       vars:
         # Use system Python with requests installed for controller-side Docker modules.
         ansible_python_interpreter: "{{ controller_python }}"
+      no_log: "{{ wine_no_log }}"
 
     - name: Install Python 3 on Alpine
       ansible.builtin.raw: |
-        test -e "{{ ansible_python_interpreter }}" || (apk update && apk add --no-cache python3 py3-pip)
+        test -e "{{ ansible_python_interpreter }}" || (apk update -q && apk add -q --no-cache python3 py3-pip)
       changed_when: false
       when: container_image is search("alpine")
 
     - name: Install Python 3 on Ubuntu/Debian
       ansible.builtin.raw: |
-        test -e "{{ ansible_python_interpreter }}" || (apt-get update && apt-get install -y python3 python3-pip)
+        test -e "{{ ansible_python_interpreter }}" || \
+        (apt-get update -qq && apt-get install -y -qq python3 python3-pip)
       changed_when: false
       register: python_install_result
       retries: 3
@@ -113,8 +119,8 @@
         fi
         # If not, install it now
         PATH=/root/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH
-        nix-channel --update
-        nix-env -iA nixpkgs.python3 nixpkgs.python3Packages.pip
+        nix-channel --update > /dev/null
+        nix-env -iA nixpkgs.python3 nixpkgs.python3Packages.pip > /dev/null
       changed_when: false
       when: container_image is search("nixos")
 
@@ -139,6 +145,7 @@
       environment:
         DEBIAN_FRONTEND: noninteractive
       when: container_image is search("ubuntu") or container_image is search("debian")
+      no_log: "{{ wine_no_log }}"
 
   tags: always
   vars:
@@ -159,6 +166,8 @@
   hosts: docker_containers
   gather_facts: true
   become: "{{ wine_should_become | default(false) }}"
+  vars_files:
+    - ../../../vars/main.yml
   tasks:
     - name: Import ea31337.wine role
       ansible.builtin.import_role:
@@ -172,6 +181,7 @@
         state: stopped
       delegate_to: localhost
       failed_when: false
+      no_log: "{{ wine_no_log }}"
 
   vars:
     wine_install_winetricks: true

@@ -14,6 +14,8 @@
     nixos_dockerfile_output: "{{ nixos_build_dir }}/Dockerfile.wine-on-nixos"
     nixos_dockerfile_template: >-
       {{ playbook_dir }}/../../molecule/resources/playbooks/Dockerfile.j2
+  vars_files:
+    - ../../vars/main.yml
   tasks:
     - name: Render Dockerfile for NixOS image
       ansible.builtin.template:
@@ -45,6 +47,7 @@
       when: should_build_nixos
       vars:
         ansible_python_interpreter: "{{ controller_python }}"
+      no_log: "{{ wine_no_log }}"
 
 - name: Configure Docker container
   hosts: docker_containers
@@ -58,6 +61,8 @@
       wine-on-ubuntu-jammy: ubuntu:jammy
       wine-on-ubuntu-noble: ubuntu:noble
     container_image: "{{ container_image_map[inventory_hostname] | default('ubuntu:latest') }}"
+  vars_files:
+    - ../../vars/main.yml
 
   pre_tasks:
     - name: Ensure container is started
@@ -81,6 +86,7 @@
       vars:
         # Use system Python with requests installed for controller-side Docker modules.
         ansible_python_interpreter: "{{ controller_python }}"
+      no_log: "{{ wine_no_log }}"
 
     - name: Wait for container to be ready
       community.docker.docker_container_info:
@@ -96,6 +102,7 @@
       vars:
         # Use system Python with requests installed for controller-side Docker modules.
         ansible_python_interpreter: "{{ controller_python }}"
+      no_log: "{{ wine_no_log }}"
 
     - name: Install Python 3 on Alpine
       ansible.builtin.raw: |
@@ -104,7 +111,7 @@
         command -v sudo >/dev/null 2>&1 || missing="$missing sudo"
         command -v bash >/dev/null 2>&1 || missing="$missing bash"
         command -v ps   >/dev/null 2>&1 || missing="$missing procps"
-        if [ -n "$missing" ]; then apk update && apk add --no-cache $missing; fi
+        if [ -n "$missing" ]; then apk update -q && apk add -q --no-cache $missing; fi
       changed_when: false
       when: container_image is search("alpine")
 
@@ -115,7 +122,7 @@
         command -v sudo >/dev/null 2>&1 || missing="$missing sudo"
         command -v ps   >/dev/null 2>&1 || missing="$missing procps"
         if [ -n "$missing" ]; then
-          apt-get update && apt-get install -y --no-install-recommends $missing
+          apt-get update -qq && apt-get install -y -qq --no-install-recommends $missing
         fi
       changed_when: false
       register: python_install_result
@@ -136,8 +143,8 @@
         command -v ps >/dev/null 2>&1 || missing_packages="$missing_packages nixpkgs.procps"
 
         if [ -n "$missing_packages" ]; then
-          nix-channel --update
-          nix-env -iA $missing_packages
+          nix-channel --update > /dev/null
+          nix-env -iA $missing_packages > /dev/null
         fi
         python3 --version
       changed_when: false
@@ -164,6 +171,7 @@
       environment:
         DEBIAN_FRONTEND: noninteractive
       when: container_image is search("ubuntu") or container_image is search("debian")
+      no_log: "{{ wine_no_log }}"
 
   tags: always
 
@@ -175,6 +183,8 @@
   vars:
     controller_python: "{{ ansible_playbook_python }}"
     wine_install_winetricks: true
+  vars_files:
+    - ../../vars/main.yml
   tasks:
     - name: Installs ea31337.wine role
       ansible.builtin.import_role:
@@ -187,3 +197,4 @@
         state: stopped
       delegate_to: localhost
       failed_when: false
+      no_log: "{{ wine_no_log }}"

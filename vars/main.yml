@@ -17,6 +17,8 @@ wine_become_method:
 wine_data_pkg_map:
   freefont_ttf: freefont-ttf
 
+wine_no_log: "{{ ansible_verbosity | default(0) < 1 }}"
+
 # This maps package names to their respective commands
 # Used to verify dependencies are correctly installed
 wine_package_command_map:

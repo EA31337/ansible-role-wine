@@ -43,6 +43,8 @@ jobs:
           - wine-on-ubuntu-jammy
           - wine-on-ubuntu-noble
     env:
+      ANSIBLE_DISPLAY_OK_HOSTS: 'no'
+      ANSIBLE_DISPLAY_SKIPPED_HOSTS: 'no'
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
       TARGET_CONTAINER: ${{ matrix.container }}
     steps:
@@ -60,7 +62,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install Python's requirements
-        run: pip install -r .devcontainer/requirements.txt
+        run: pip install -qq -r .devcontainer/requirements.txt
 
       - name: Cache Ansible Galaxy collections
         uses: actions/cache@v5

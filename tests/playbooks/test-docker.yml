@@ -20,6 +20,8 @@
 
   vars:
     wine_test_image: "ghcr.io/ea31337/ansible-role-wine:latest"
+  vars_files:
+    - ../../vars/main.yml
 
   pre_tasks:
     - name: Manage Docker container lifecycle
@@ -35,6 +37,7 @@
             command: sleep infinity
             recreate: true
             pull: true
+          no_log: "{{ wine_no_log }}"
 
         - name: Wait for container to be ready
           community.docker.docker_container_info:
@@ -46,10 +49,13 @@
           changed_when: false
           delay: 2
           retries: 10
+          no_log: "{{ wine_no_log }}"
 
 - name: Install ea31337.wine role on the container
   hosts: docker_containers
   gather_facts: true
+  vars_files:
+    - ../../vars/main.yml
   tasks:
     - name: Installs ea31337.wine role
       ansible.builtin.import_role:
@@ -64,3 +70,4 @@
       failed_when: false
       vars:
         ansible_python_interpreter: "{{ ansible_playbook_python }}"
+      no_log: "{{ wine_no_log }}"
