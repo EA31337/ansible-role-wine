@@ -1,8 +1,8 @@
 ---
-- name: Ensures winetricks is present ({{ ansible_os_family }})
-  become: "{{ ansible_user_id != 'root' }}"
+- name: Ensures winetricks is present ({{ ansible_facts.get('os_family') }})
+  become: "{{ ansible_facts.get('user_id', 'root') != 'root' }}"
   become_method: >-
-    {{ wine_become_method.get(wine_detected_os_family | default(ansible_os_family),
+    {{ wine_become_method.get(wine_detected_os_family | default(ansible_facts.get('os_family')),
     wine_become_method["_default"]) }}
   block:
 

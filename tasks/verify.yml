@@ -1,14 +1,14 @@
 ---
 - name: Checks if Wine is installed  # noqa risky-shell-pipe
   become: >-
-    {{ (wine_detected_os_family | default(ansible_os_family) == 'NixOS')
-    and (ansible_user_id != 'root') }}
+    {{ (wine_detected_os_family | default(ansible_facts.get('os_family')) == 'NixOS')
+    and (ansible_facts.get('user_id', 'root') != 'root') }}
   become_method: >-
-    {{ wine_become_method.get(wine_detected_os_family | default(ansible_os_family),
+    {{ wine_become_method.get(wine_detected_os_family | default(ansible_facts.get('os_family')),
     wine_become_method["_default"]) }}
   ansible.builtin.shell: |
     [ -f ~/.wine_env ] && . ~/.wine_env
-    {% if wine_detected_os_family | default(ansible_os_family) == 'NixOS' %}
+    {% if wine_detected_os_family | default(ansible_facts.get('os_family')) == 'NixOS' %}
     set -e
     nix-env -q 2>/dev/null | grep -Em1 '^wine-(wow64|wow|10|9|11)'
     {% else %}
@@ -21,10 +21,10 @@
 
 - name: Checks if Winetricks is installed
   become: >-
-    {{ (wine_detected_os_family | default(ansible_os_family) == 'NixOS')
-    and (ansible_user_id != 'root') }}
+    {{ (wine_detected_os_family | default(ansible_facts.get('os_family')) == 'NixOS')
+    and (ansible_facts.get('user_id', 'root') != 'root') }}
   become_method: >-
-    {{ wine_become_method.get(wine_detected_os_family | default(ansible_os_family),
+    {{ wine_become_method.get(wine_detected_os_family | default(ansible_facts.get('os_family')),
     wine_become_method["_default"]) }}
   changed_when: false
   ansible.builtin.shell: |
@@ -36,10 +36,10 @@
 
 - name: Verify dependency installation status
   become: >-
-    {{ (wine_detected_os_family | default(ansible_os_family) == 'NixOS')
-    and (ansible_user_id != 'root') }}
+    {{ (wine_detected_os_family | default(ansible_facts.get('os_family')) == 'NixOS')
+    and (ansible_facts.get('user_id', 'root') != 'root') }}
   become_method: >-
-    {{ wine_become_method.get(wine_detected_os_family | default(ansible_os_family),
+    {{ wine_become_method.get(wine_detected_os_family | default(ansible_facts.get('os_family')),
     wine_become_method["_default"]) }}
   when:
     - wine_install_winetricks | bool

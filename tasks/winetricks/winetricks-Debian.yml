@@ -5,12 +5,12 @@
   ansible.builtin.command: /usr/bin/lsb_release -si
   register: lsb_release_dist_id
 
-- name: Ensures Winetricks is installed ({{ wine_detected_os_family | default(ansible_os_family) }})
+- name: Ensures Winetricks is installed ({{ wine_detected_os_family | default(ansible_facts.get('os_family')) }})
   become: >-
-    {{ (ansible_user_id is defined and ansible_user_id != 'root')
-    or (ansible_user_id is not defined and (lookup('env', 'UID') | int != 0)) }}
+    {{ ansible_facts.get('user_id', 'root') != 'root' or
+    ansible_facts.get('env', {}).get('UID', lookup('ansible.builtin.env', 'UID') | default(0)) | int != 0 }}
   become_method: >-
-    {{ wine_become_method.get(wine_detected_os_family | default(ansible_os_family),
+    {{ wine_become_method.get(wine_detected_os_family | default(ansible_facts.get('os_family')),
     wine_become_method["_default"]) }}
   environment:
     DEBIAN_FRONTEND: noninteractive
