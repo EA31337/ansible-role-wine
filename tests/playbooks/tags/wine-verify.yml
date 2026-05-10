@@ -27,14 +27,14 @@
           name: wine-on-nixos-latest
           image: nixos/nix:latest
         ansible_python_interpreter: "{{ controller_python }}"
-      when: should_build_nixos
+      when: should_build_nixos | bool
 
     - name: Create ca-certificates directory in build context
       ansible.builtin.file:
         path: "{{ nixos_dockerfile_output | dirname }}/ca-certificates"
         state: directory
         mode: "0755"
-      when: should_build_nixos
+      when: should_build_nixos | bool
 
     - name: Build NixOS image with Python preinstalled
       community.docker.docker_image:
@@ -44,7 +44,7 @@
           dockerfile: "{{ nixos_dockerfile_output | basename }}"
         source: build
         force_source: true
-      when: should_build_nixos
+      when: should_build_nixos | bool
       vars:
         ansible_python_interpreter: "{{ controller_python }}"
       no_log: "{{ wine_no_log }}"
@@ -62,15 +62,14 @@
         command: sleep infinity
         # NixOS containers require privileged mode due to non-standard filesystem layout.
         privileged: "{{ container_image is search('nixos') }}"
-        pull: >-
-          {{ not (container_image is search('nixos')) }}
+        pull: "{{ not (container_image is search('nixos')) }}"
         # Don't recreate - just restart if needed
         recreate: false
         restart: false
         # Relaxed seccomp/apparmor for NixOS compatibility.
-        security_opts: >-
-          {{ ['seccomp=unconfined', 'apparmor=unconfined']
-          if container_image is search('nixos') else omit }}
+        security_opts: "{{
+          ['seccomp=unconfined', 'apparmor=unconfined']
+          if container_image is search('nixos') else omit }}"
       delegate_to: localhost
       vars:
         # Use system Python with requests installed for controller-side Docker modules.
@@ -129,8 +128,7 @@
 
     - name: Determine if we should become root
       ansible.builtin.set_fact:
-        wine_should_become: >-
-          {{ (ansible_facts.get('user_uid') | default(0) | int) != 0 }}
+        wine_should_become: "{{ (ansible_facts.get('user_uid') | default(0) | int) != 0 }}"
         cacheable: true
 
     - name: Install Python packages for Ubuntu/Debian

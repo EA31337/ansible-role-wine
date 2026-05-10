@@ -21,13 +21,12 @@
 
     - name: Discover proxy CA certificates on the host
       ansible.builtin.set_fact:
-        host_ca_certs: >-
-          {{
-            (lookup('ansible.builtin.fileglob', '/usr/local/share/ca-certificates/*.crt', wantlist=True) +
-             lookup('ansible.builtin.fileglob', '/etc/pki/ca-trust/source/anchors/*.crt', wantlist=True) +
-             lookup('ansible.builtin.fileglob', '/etc/ca-certificates/trust-source/anchors/*.crt', wantlist=True))
-            | unique
-          }}
+        host_ca_certs: "{{
+      (lookup('ansible.builtin.fileglob', '/usr/local/share/ca-certificates/*.crt', wantlist=True) +
+       lookup('ansible.builtin.fileglob', '/etc/pki/ca-trust/source/anchors/*.crt', wantlist=True) +
+       lookup('ansible.builtin.fileglob', '/etc/ca-certificates/trust-source/anchors/*.crt', wantlist=True))
+      | unique }}"
+
 
     - name: Prepare build context for custom images and CA certificates
       when:
@@ -85,9 +84,9 @@
         recreate: true
         pull: "{{ false if (item.dockerfile is defined or 'nixos' in item.name) else true }}"
         # Mount host CA certificates for proxy/firewall SSL interception environments.
-        volumes: >-
-          {{ [molecule_ephemeral_directory ~ '/ca-certificates:/usr/local/share/ca-certificates:ro']
-             if host_ca_certs | length > 0 else omit }}
+        volumes: "{{
+          [molecule_ephemeral_directory ~ '/ca-certificates:/usr/local/share/ca-certificates:ro']
+          if host_ca_certs | length > 0 else omit }}"
       loop: "{{ molecule_yml.platforms }}"
       loop_control:
         label: "{{ item.name }}"
