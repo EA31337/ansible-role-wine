@@ -76,7 +76,7 @@ jobs:
       - name: Install Python packages and Ansible collections
         run: |
           pip install -qq ansible-core
-          ansible-galaxy collection install -q -r requirements.yml -p collections
+          ansible-galaxy collection install -r requirements.yml -p collections
       - name: Filter molecule platforms to ${{ matrix.platform }}
         # yq is pre-installed on ubuntu-latest GitHub-hosted runners.
         run: |
