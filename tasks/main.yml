@@ -23,26 +23,31 @@
       ansible.builtin.set_fact:
         wine_detected_os_family: >-
           {{ 'NixOS' if (nixos_early_check.rc | default(1) == 0 or
-          ansible_facts.get('os_family', '') == 'NixOS')
-          else (ansible_facts.get('distribution') if (ansible_facts.get('distribution') is not none and
-          ansible_facts.get('distribution') == 'Ubuntu')
-          else ansible_facts.get('os_family', '')) }}
+          ansible_facts.get('os_family', ansible_os_family | default('')) == 'NixOS')
+          else ((ansible_facts.get('distribution', ansible_distribution | default('')))
+          if ((ansible_facts.get('distribution', ansible_distribution | default(''))) is not none and
+          (ansible_facts.get('distribution', ansible_distribution | default(''))) == 'Ubuntu')
+          else ansible_facts.get('os_family', ansible_os_family | default(''))) }}
 
     - name: Set wine_selected_winetricks_dependencies fact
       ansible.builtin.set_fact:
         wine_selected_winetricks_dependencies: >-
           {{ wine_winetricks_dependencies_os_family.get(wine_detected_os_family)
           if wine_winetricks_dependencies_os_family.get(wine_detected_os_family) is not none
-          else (wine_winetricks_dependencies_os_family.get(ansible_facts.get('os_family', ''))
-          if wine_winetricks_dependencies_os_family.get(ansible_facts.get('os_family', '')) is not none
+          else (wine_winetricks_dependencies_os_family.get(
+          ansible_facts.get('os_family', ansible_os_family | default(''))
+          )
+          if wine_winetricks_dependencies_os_family.get(
+          ansible_facts.get('os_family', ansible_os_family | default(''))
+          ) is not none
           else wine_install_winetricks_dependencies) }}
 
     - name: Debug OS detection and dependencies
       ansible.builtin.debug:
         msg:
           wine_detected_os_family: "{{ wine_detected_os_family }}"
-          ansible_os_family: "{{ ansible_facts.get('os_family', 'undefined') }}"
-          ansible_distribution: "{{ ansible_facts.get('distribution', 'undefined') }}"
+          ansible_os_family: "{{ ansible_facts.get('os_family', ansible_os_family | default('undefined')) }}"
+          ansible_distribution: "{{ ansible_facts.get('distribution', ansible_distribution | default('undefined')) }}"
           selected_deps: "{{ wine_selected_winetricks_dependencies }}"
         verbosity: 1
 

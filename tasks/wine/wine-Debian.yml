@@ -57,7 +57,7 @@
       ansible.builtin.template:
         dest: /etc/apt/sources.list.d/winehq.list
         mode: "0644"
-        src: "winehq.{{ ansible_facts.get('os_family') }}.list.j2"
+        src: "winehq.{{ ansible_facts.get('os_family', ansible_os_family | default('Debian')) }}.list.j2"
     - name: Ensures Wine backports repo is present
       ansible.builtin.template:
         dest: /etc/apt/sources.list.d/ubuntu.list

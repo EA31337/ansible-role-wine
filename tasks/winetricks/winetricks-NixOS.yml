@@ -1,5 +1,8 @@
 ---
-- name: Ensures Winetricks is installed ({{ ansible_facts.get('os_family') }})
+- name: >-
+    Ensures Winetricks is installed
+    ({{ wine_detected_os_family | default(ansible_facts.get(
+    'os_family', ansible_os_family | default('NixOS')), true) }})
   become: "{{ ansible_facts.get('user_id', 'root') != 'root' }}"
   become_method: >-
     {{ wine_become_method.get(wine_detected_os_family | default(ansible_facts.get('os_family')),
