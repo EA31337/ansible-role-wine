@@ -11,7 +11,7 @@ on:
       - '.github/workflows/galaxy-publish.yml'
       - '**/*.cfg'
       - '**/*.md'
-      - '**/*.mmd'
+      - '**.mmd'
       - '.*'
       - Pipfile*
   push:
@@ -22,7 +22,7 @@ on:
       - '.github/workflows/galaxy-publish.yml'
       - '**/*.cfg'
       - '**/*.md'
-      - '**/*.mmd'
+      - '**.mmd'
       - '.*'
       - Pipfile*
   workflow_dispatch:
