@@ -1,18 +1,13 @@
 ---
 - name: Configure Docker container
   # Note: Since facts are not gathered, we're checking for ansible_facts.get('user_id'), connection_user or UID instead.
-  become: >-
-    {{
-      (connection_user | default('root')) != 'root'
-      or (ansible_facts.get('user_id', 'root')) != 'root'
-      or (ansible_facts.get('user_uid', lookup('ansible.builtin.env', 'UID') | default(0)) | int) != 0
-      or (ansible_facts.get('env', {}).get('UID', lookup('ansible.builtin.env', 'UID') | default(0)) | int != 0)
-      or (
-        ansible_facts.get('env', {}).get('USER',
-        ansible_facts.get('env', {}).get('LOGNAME', 'root'))
-        != 'root'
-      )
-    }}
+  become: "{{
+    (connection_user | default('root')) != 'root'
+    or (ansible_facts.get('user_id', 'root')) != 'root'
+    or (ansible_facts.get('user_uid', lookup('ansible.builtin.env', 'UID') | default(0)) | int) != 0
+    or (ansible_facts.get('env', {}).get('UID', lookup('ansible.builtin.env', 'UID') | default(0)) | int != 0)
+    or (ansible_facts.get('env', {}).get('USER', ansible_facts.get('env', {}).get('LOGNAME', 'root')) != 'root')
+    }}"
   # Use su as become_method as sudo is not available in all containers.
   become_method: ansible.builtin.su
   gather_facts: false
@@ -53,13 +48,25 @@
 
 - name: Install ea31337.wine role on the container
   hosts: docker_containers
-  gather_facts: true
+  become_method: ansible.builtin.su
+  gather_facts: false
   vars_files:
     - ../../vars/main.yml
   tasks:
+    - name: Install Python 3 for Ansible
+      ansible.builtin.include_tasks: tasks/install-python.yml
+
+    - name: Gather facts
+      ansible.builtin.setup:
+
+    - name: Determine if we should become root
+      ansible.builtin.set_fact:
+        wine_should_become: "{{ (ansible_facts.get('user_uid') | default(0) | int) != 0 }}"
+
     - name: Installs ea31337.wine role
       ansible.builtin.import_role:
         name: ea31337.wine
+      become: "{{ wine_should_become }}"
 
   post_tasks:
     - name: Stop Docker containers

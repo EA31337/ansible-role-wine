@@ -27,14 +27,14 @@
           name: wine-on-nixos-latest
           image: nixos/nix:latest
         ansible_python_interpreter: "{{ controller_python }}"
-      when: should_build_nixos
+      when: should_build_nixos | bool
 
     - name: Create ca-certificates directory in build context
       ansible.builtin.file:
         path: "{{ nixos_dockerfile_output | dirname }}/ca-certificates"
         state: directory
         mode: "0755"
-      when: should_build_nixos
+      when: should_build_nixos | bool
 
     - name: Build NixOS image with Python preinstalled
       community.docker.docker_image:
@@ -44,7 +44,7 @@
           dockerfile: "{{ nixos_dockerfile_output | basename }}"
         source: build
         force_source: true
-      when: should_build_nixos
+      when: should_build_nixos | bool
       vars:
         ansible_python_interpreter: "{{ controller_python }}"
       no_log: "{{ wine_no_log }}"
@@ -73,15 +73,14 @@
         command: sleep infinity
         # NixOS containers require privileged mode due to non-standard filesystem layout.
         privileged: "{{ container_image is search('nixos') }}"
-        pull: >-
-          {{ not (container_image is search('nixos')) }}
+        pull: "{{ not (container_image is search('nixos')) }}"
         # Don't recreate - just restart if needed
         recreate: false
         restart: false
         # Relaxed seccomp/apparmor for NixOS compatibility.
-        security_opts: >-
-          {{ ['seccomp=unconfined', 'apparmor=unconfined']
-          if container_image is search('nixos') else omit }}
+        security_opts: "{{
+          ['seccomp=unconfined', 'apparmor=unconfined']
+          if container_image is search('nixos') else omit }}"
       delegate_to: localhost
       vars:
         # Use system Python with requests installed for controller-side Docker modules.
@@ -104,59 +103,15 @@
         ansible_python_interpreter: "{{ controller_python }}"
       no_log: "{{ wine_no_log }}"
 
-    - name: Install Python 3 on Alpine
-      ansible.builtin.raw: |
-        missing=""
-        [ -e "{{ ansible_python_interpreter }}" ] || missing="$missing python3 py3-pip"
-        command -v sudo >/dev/null 2>&1 || missing="$missing sudo"
-        command -v bash >/dev/null 2>&1 || missing="$missing bash"
-        command -v ps   >/dev/null 2>&1 || missing="$missing procps"
-        if [ -n "$missing" ]; then apk update -q && apk add -q --no-cache $missing; fi
-      changed_when: false
-      when: container_image is search("alpine")
-
-    - name: Install Python 3 on Ubuntu/Debian
-      ansible.builtin.raw: |
-        missing=""
-        [ -e "{{ ansible_python_interpreter }}" ] || missing="$missing python3 python3-pip"
-        command -v sudo >/dev/null 2>&1 || missing="$missing sudo"
-        command -v ps   >/dev/null 2>&1 || missing="$missing procps"
-        if [ -n "$missing" ]; then
-          apt-get update -qq && apt-get install -y -qq --no-install-recommends $missing
-        fi
-      changed_when: false
-      register: python_install_result
-      retries: 3
-      delay: 10
-      until: python_install_result.rc == 0
-      when: container_image is search("ubuntu") or container_image is search("debian")
-
-    - name: Install or verify Python on NixOS
-      ansible.builtin.raw: |
-        PATH=/root/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:$PATH
-        missing_packages=""
-        command -v python3 >/dev/null 2>&1 || missing_packages="$missing_packages nixpkgs.python3"
-        if ! command -v pip3 >/dev/null 2>&1 && ! command -v pip >/dev/null 2>&1; then
-          missing_packages="$missing_packages nixpkgs.python3Packages.pip"
-        fi
-        command -v sudo >/dev/null 2>&1 || missing_packages="$missing_packages nixpkgs.sudo"
-        command -v ps >/dev/null 2>&1 || missing_packages="$missing_packages nixpkgs.procps"
-
-        if [ -n "$missing_packages" ]; then
-          nix-channel --update > /dev/null
-          nix-env -iA $missing_packages > /dev/null
-        fi
-        python3 --version
-      changed_when: false
-      when: container_image is search("nixos")
+    - name: Install Python 3 for Ansible
+      ansible.builtin.include_tasks: tasks/install-python.yml
 
     - name: Gather facts
       ansible.builtin.setup:
 
     - name: Determine if we should become root
       ansible.builtin.set_fact:
-        wine_should_become: >-
-          {{ (ansible_facts.get('user_uid') | default(0) | int) != 0 }}
+        wine_should_become: "{{ (ansible_facts.get('user_uid') | default(0) | int) != 0 }}"
         cacheable: true
 
     - name: Install Python packages for Ubuntu/Debian
