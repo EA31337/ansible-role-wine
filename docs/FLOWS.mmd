@@ -1,0 +1,48 @@
+flowchart TD
+    %% Nodes definition (pre-defined for consistency)
+    End([End])
+    MolTest["molecule test (orchestrates full lifecycle)"]
+    VerifyInstallation[Verify Installation: tasks/verify.yml]
+
+    %% Ansible Role Execution Flow
+    subgraph Ansible_Role_Execution ["Ansible Role Execution"]
+        Start([Start: tasks/main.yml]) --> GatherFacts[Gather Facts & OS Detection]
+        GatherFacts --> CheckWine{Check if Wine is present / Version mismatch}
+
+        CheckWine -- Not Present/Mismatch --> WineDispatcher[tasks/wine/wine.yml]
+        CheckWine -- Present & Match --> CheckWinetricks{wine_install_winetricks == true?}
+
+        WineDispatcher --> OSDispatcher{OS Family Dispatcher}
+        OSDispatcher -- Alpine --> WineAlpine[tasks/wine/wine-Alpine.yml]
+        OSDispatcher -- Debian --> WineDebian[tasks/wine/wine-Debian.yml]
+        OSDispatcher -- Ubuntu --> WineDebian
+        OSDispatcher -- NixOS --> WineNixOS[tasks/wine/wine-NixOS.yml]
+        OSDispatcher -- Darwin --> WineDarwin[tasks/wine/wine-Darwin.yml]
+
+        WineAlpine --> CheckWinetricks
+        WineDebian --> CheckWinetricks
+        WineNixOS --> CheckWinetricks
+        WineDarwin --> CheckWinetricks
+
+        CheckWinetricks -- Yes --> Winetricks[tasks/winetricks/winetricks.yml]
+        Winetricks --> SetWinver[Set Windows Version via winetricks]
+        SetWinver --> VerifyInstallation
+
+        CheckWinetricks -- No --> VerifyInstallation
+        VerifyInstallation --> End
+    end
+
+    %% CI Pipeline
+    subgraph CI_Pipeline ["CI Pipeline"]
+        PR[Pull Request / Push] --> Lint[Linting: yamllint, ansible-lint, pre-commit]
+        Lint --> MolTest
+    end
+
+    %% Molecule Testing Flow
+    subgraph Molecule_Testing_Flow ["Molecule Testing Flow"]
+        MolTest --> MolCreate[create]
+        MolCreate --> MolPrepare[prepare]
+        MolPrepare --> MolConverge[converge]
+        MolConverge --> MolVerify[verify]
+        MolVerify --> MolDestroy[destroy]
+    end

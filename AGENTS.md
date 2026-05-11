@@ -26,6 +26,8 @@ For project overview and install instructions, see [README.md](README.md).
 | `tasks/wine/wine-NixOS.yml` | Nix-based Wine install |
 | `tasks/winetricks/winetricks.yml` | Winetricks dispatcher |
 | `tasks/verify.yml` | Post-install verification tasks |
+| `docs/FACTS.mmd` | Mindmap of role structure and knowledge |
+| `docs/FLOWS.mmd` | Flowchart of role execution and testing |
 | `molecule/default/molecule.yml` | Default Molecule scenario config |
 | `molecule/default/converge.yml` | Converge playbook (all scenarios) |
 | `molecule/default/create.yml` | Custom Docker create playbook |

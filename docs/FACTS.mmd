@@ -1,0 +1,28 @@
+mindmap
+  root((ansible-role-wine))
+    Documentation
+      README["README.md<br/>Overview & Install"]
+      AGENTS["AGENTS.md<br/>Agent Guidelines"]
+      Copilot[".github/copilot-instructions.md<br/>Copilot Context"]
+      Prompts["Prompts"]
+        MoleculePrompt[".github/prompts/molecule-test.prompt.md"]
+        CodeReviewPrompt[".github/prompts/code-review.prompt.md"]
+      Workflows[".github/workflows/README.md"]
+    SupportedOS
+      Alpine["Alpine Linux (apk)"]
+      Darwin["Darwin (macOS)"]
+      Debian["Debian/Ubuntu (apt)"]
+      NixOS["NixOS (nix-env)"]
+    Variables
+      Public["defaults/main.yml<br/>wine_release, wine_version, wine_install_winetricks"]
+      Internal["vars/main.yml<br/>Package maps, dependencies"]
+    CoreTasks
+      Main["tasks/main.yml<br/>Early checks, OS detection"]
+      Wine["tasks/wine/wine.yml<br/>OS-specific dispatcher"]
+      Winetricks["tasks/winetricks/winetricks.yml<br/>Winetricks installer"]
+      Verify["tasks/verify.yml<br/>Post-install verification"]
+    Testing
+      Molecule["Molecule<br/>Docker Driver"]
+        Scenarios["default, devel, staging, winetricks"]
+        Playbooks["converge.yml, create.yml, prepare.yml, verify.yml"]
+      Linters["yamllint, ansible-lint, pre-commit"]
