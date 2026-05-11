@@ -11,9 +11,9 @@ on:
       - '.github/workflows/cogni-ai-agent-sudo.yml'
       - '.github/workflows/copilot-setup-steps.yml'
       - '.github/workflows/galaxy-publish.yml'
-      - '**.cfg'
-      - '**.md'
-      - '**.mmd'
+      - '**/*.cfg'
+      - '**/*.md'
+      - '**/*.mmd'
       - '.*'
       - LICENSE
       - Pipfile*
@@ -24,9 +24,9 @@ on:
       - '.github/workflows/cogni-ai-agent-sudo.yml'
       - '.github/workflows/copilot-setup-steps.yml'
       - '.github/workflows/galaxy-publish.yml'
-      - '**.cfg'
-      - '**.md'
-      - '**.mmd'
+      - '**/*.cfg'
+      - '**/*.md'
+      - '**/*.mmd'
       - '.*'
       - LICENSE
       - Pipfile*
