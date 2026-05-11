@@ -1,4 +1,9 @@
 flowchart TD
+    %% Nodes definition (pre-defined for consistency)
+    End([End])
+    MolTest["molecule test (orchestrates full lifecycle)"]
+    VerifyInstallation[Verify Installation: tasks/verify.yml]
+
     %% Ansible Role Execution Flow
     subgraph Ansible_Role_Execution ["Ansible Role Execution"]
         Start([Start: tasks/main.yml]) --> GatherFacts[Gather Facts & OS Detection]
@@ -21,10 +26,10 @@ flowchart TD
 
         CheckWinetricks -- Yes --> Winetricks[tasks/winetricks/winetricks.yml]
         Winetricks --> SetWinver[Set Windows Version via winetricks]
-        SetWinver --> VerifyInstallation[Verify Installation: tasks/verify.yml]
+        SetWinver --> VerifyInstallation
 
         CheckWinetricks -- No --> VerifyInstallation
-        VerifyInstallation --> End([End])
+        VerifyInstallation --> End
     end
 
     %% CI Pipeline
@@ -35,7 +40,7 @@ flowchart TD
 
     %% Molecule Testing Flow
     subgraph Molecule_Testing_Flow ["Molecule Testing Flow"]
-        MolTest["molecule test (orchestrates full lifecycle)"] --> MolCreate[create]
+        MolTest --> MolCreate[create]
         MolCreate --> MolPrepare[prepare]
         MolPrepare --> MolConverge[converge]
         MolConverge --> MolVerify[verify]
