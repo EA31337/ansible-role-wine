@@ -19,27 +19,25 @@
       changed_when: false
       failed_when: false
 
-    - name: Set wine_detected_os_family fact
+    - name: Set OS detection facts
       ansible.builtin.set_fact:
-        wine_detected_os_family: >-
-          {{ 'NixOS' if (nixos_early_check.rc | default(1) == 0 or
-          ansible_facts.get('os_family', ansible_os_family | default('')) == 'NixOS')
-          else ((ansible_facts.get('distribution', ansible_distribution | default('')))
-          if ((ansible_facts.get('distribution', ansible_distribution | default(''))) is not none and
-          (ansible_facts.get('distribution', ansible_distribution | default(''))) == 'Ubuntu')
-          else ansible_facts.get('os_family', ansible_os_family | default(''))) }}
+        wine_detected_os_family: "{{ _detected_os }}"
+        wine_effective_os_family: "{{ 'Debian' if _detected_os == 'Ubuntu' else _detected_os }}"
+      vars:
+        _os_fam: "{{ ansible_facts.get('os_family', ansible_os_family | default('')) | default('', true) }}"
+        _dist: "{{ ansible_facts.get('distribution', ansible_distribution | default('')) | default('', true) }}"
+        _is_nixos: "{{ (nixos_early_check.rc | default(1) == 0) or _os_fam == 'NixOS' }}"
+        _detected_os: >-
+          {{ 'NixOS' if _is_nixos else
+          ('Ubuntu' if _dist == 'Ubuntu' else (_os_fam | default('Unknown', true))) }}
 
     - name: Set wine_selected_winetricks_dependencies fact
       ansible.builtin.set_fact:
         wine_selected_winetricks_dependencies: >-
           {{ wine_winetricks_dependencies_os_family.get(wine_detected_os_family)
           if wine_winetricks_dependencies_os_family.get(wine_detected_os_family) is not none
-          else (wine_winetricks_dependencies_os_family.get(
-          ansible_facts.get('os_family', ansible_os_family | default(''))
-          )
-          if wine_winetricks_dependencies_os_family.get(
-          ansible_facts.get('os_family', ansible_os_family | default(''))
-          ) is not none
+          else (wine_winetricks_dependencies_os_family.get(wine_effective_os_family)
+          if wine_winetricks_dependencies_os_family.get(wine_effective_os_family) is not none
           else wine_install_winetricks_dependencies) }}
 
     - name: Debug OS detection and dependencies
