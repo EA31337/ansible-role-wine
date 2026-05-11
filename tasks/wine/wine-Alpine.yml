@@ -1,9 +1,7 @@
 ---
 - name: Ensures Wine is present
   become: true
-  become_method: >-
-    {{ wine_become_method.get(wine_detected_os_family | default(ansible_facts.get('os_family')),
-    wine_become_method["_default"]) }}
+  become_method: "{{ wine_become_method.get(wine_detected_os_family, wine_become_method['_default']) }}"
   block:
 
     - name: Read existing Alpine repositories
@@ -90,9 +88,7 @@
 
 - name: Configure fontconfig and environment (Alpine)
   become: true
-  become_method: >-
-    {{ wine_become_method.get(wine_detected_os_family | default(ansible_facts.get('os_family')),
-    wine_become_method["_default"]) }}
+  become_method: "{{ wine_become_method.get(wine_detected_os_family, wine_become_method['_default']) }}"
   block:
     - name: Ensure fontconfig directories are present (Alpine)
       ansible.builtin.file:

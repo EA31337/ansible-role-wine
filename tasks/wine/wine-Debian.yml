@@ -4,9 +4,7 @@
     ansible_facts.get('user_id', 'root') != 'root' or
     ansible_facts.get('env', {}).get('UID', lookup('ansible.builtin.env', 'UID') | default(0)) | int != 0
     }}"
-  become_method: >-
-    {{ wine_become_method.get(wine_detected_os_family | default(ansible_facts.get('os_family')),
-    wine_become_method["_default"]) }}
+  become_method: "{{ wine_become_method.get(wine_detected_os_family, wine_become_method['_default']) }}"
   environment:
     DEBIAN_FRONTEND: noninteractive
   block:
@@ -57,7 +55,8 @@
       ansible.builtin.template:
         dest: /etc/apt/sources.list.d/winehq.list
         mode: "0644"
-        src: "winehq.{{ ansible_facts.get('os_family') }}.list.j2"
+        src: "winehq.{{ wine_effective_os_family }}.list.j2"
+
     - name: Ensures Wine backports repo is present
       ansible.builtin.template:
         dest: /etc/apt/sources.list.d/ubuntu.list
@@ -83,9 +82,7 @@
     ansible_facts.get('user_id', 'root') != 'root' or
     ansible_facts.get('env', {}).get('UID', lookup('ansible.builtin.env', 'UID') | default(0)) | int != 0
     }}"
-  become_method: >-
-    {{ wine_become_method.get(wine_detected_os_family | default(ansible_facts.get('os_family')),
-    wine_become_method["_default"]) }}
+  become_method: "{{ wine_become_method.get(wine_detected_os_family, wine_become_method['_default']) }}"
   environment:
     DEBIAN_FRONTEND: noninteractive
   block:
@@ -150,14 +147,12 @@
           {{ ansible_facts.get('user_dir', lookup('ansible.builtin.env', 'HOME')) }}/.wine/system.reg
       timeout: 120
 
-- name: Apt cleanup ({{ wine_detected_os_family | default(ansible_facts.get('os_family')) }})
+- name: Apt cleanup ({{ wine_detected_os_family }})
   become: "{{
     ansible_facts.get('user_id', 'root') != 'root' or
     ansible_facts.get('env', {}).get('UID', lookup('ansible.builtin.env', 'UID') | default(0)) | int != 0
     }}"
-  become_method: >-
-    {{ wine_become_method.get(wine_detected_os_family | default(ansible_facts.get('os_family')),
-    wine_become_method["_default"]) }}
+  become_method: "{{ wine_become_method.get(wine_detected_os_family, wine_become_method['_default']) }}"
   environment:
     DEBIAN_FRONTEND: noninteractive
   when: wine_install_winetricks | bool
