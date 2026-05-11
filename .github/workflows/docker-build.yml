@@ -12,6 +12,7 @@ on:
       - '.github/workflows/galaxy-publish.yml'
       - '**.cfg'
       - '**.md'
+      - '**.mmd'
       - '.*'
       - LICENSE
       - Pipfile*
@@ -26,6 +27,7 @@ on:
       - '.github/workflows/galaxy-publish.yml'
       - '**.cfg'
       - '**.md'
+      - '**.mmd'
       - '.*'
       - LICENSE
       - Pipfile*
