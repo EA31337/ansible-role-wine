@@ -27,6 +27,7 @@ wine_debug: "-all"
 # Wine DLL overrides.
 wine_dlloverrides: "mscoree,mshtml="
 # Ensures ~/.wine is initialized.
+# Note: Initialization is always skipped in Docker containers to keep images small.
 wine_init: false
 wine_winetricks_apt_install: false
 wine_apt_cleanup: false

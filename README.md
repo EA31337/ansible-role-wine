@@ -68,7 +68,7 @@ wine_install_recommends: false
 # Whether to install winetricks
 wine_install_winetricks: false
 
-# Whether to initialize ~/.wine
+# Whether to initialize ~/.wine (skipped in Docker)
 wine_init: false
 ```
 

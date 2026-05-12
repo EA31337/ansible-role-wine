@@ -130,3 +130,4 @@
   when:
     - nix_store_stat.stat.exists
     - wine_init | bool
+    - ansible_virtualization_type | default('') != 'docker'

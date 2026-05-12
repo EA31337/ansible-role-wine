@@ -56,7 +56,6 @@ provisioner:
   inventory:
     group_vars:
       all:
-        wine_init: true
         wine_install_winetricks: true
         wine_install_recommends: true
         wine_release: staging
