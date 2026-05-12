@@ -148,7 +148,6 @@
       timeout: 120
       when:
         - wine_init | bool
-        - ansible_virtualization_type | default('') != 'docker'
 
 - name: Apt cleanup ({{ wine_detected_os_family }})
   become: "{{

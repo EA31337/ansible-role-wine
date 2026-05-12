@@ -175,4 +175,3 @@
       timeout: 120
       when:
         - wine_init | bool
-        - ansible_virtualization_type | default('') != 'docker'
