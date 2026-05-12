@@ -127,4 +127,6 @@
   args:
     creates: >-
       {{ ansible_facts.get('user_dir', lookup('ansible.builtin.env', 'HOME')) }}/.wine/system.reg
-  when: nix_store_stat.stat.exists
+  when:
+    - nix_store_stat.stat.exists
+    - wine_init | bool
