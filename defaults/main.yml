@@ -26,6 +26,10 @@ wine_version: ""
 wine_debug: "-all"
 # Wine DLL overrides.
 wine_dlloverrides: "mscoree,mshtml="
+# Ensures ~/.wine is initialized.
+# Note: This is disabled by default to keep images small (e.g. for docker-publish).
+# It is enabled in Molecule tests to ensure functionality.
+wine_init: false
 wine_winetricks_apt_install: false
 wine_apt_cleanup: false
 wine_winetricks_url: https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks

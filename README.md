@@ -67,6 +67,9 @@ wine_install_recommends: false
 
 # Whether to install winetricks
 wine_install_winetricks: false
+
+# Whether to initialize ~/.wine (disabled by default)
+wine_init: false
 ```
 
 ### Example: Installing Wine 10.0 on Ubuntu 24.04

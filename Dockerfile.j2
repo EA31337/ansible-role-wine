@@ -35,7 +35,7 @@ COPY . .
 
 # Create a local playbook to apply the role
 RUN ansible-galaxy collection install -r requirements.yml && \
-    printf -- "---\n- hosts: localhost\n  connection: local\n  roles:\n    - role: ea31337.wine\n" > /tmp/playbook.yml && \
+    printf -- "---\n- hosts: localhost\n  connection: local\n  roles:\n    - role: ea31337.wine\n      wine_init: false\n" > /tmp/playbook.yml && \
     ansible-playbook /tmp/playbook.yml && \
     rm /tmp/playbook.yml
 
