@@ -18,15 +18,11 @@ lint: |
   ansible-lint
 platforms:
   - name: alpine-latest
-    dockerfile: ../resources/playbooks/Dockerfile.j2
     image: alpine:3.20
     init: true
-    pre_build_image: false
   - name: debian-latest
-    dockerfile: ../resources/playbooks/Dockerfile.j2
     image: debian:latest
     init: true
-    pre_build_image: false
   - name: nixos-latest
     dockerfile: ../resources/playbooks/Dockerfile.j2
     image: nixos/nix:latest
@@ -34,15 +30,11 @@ platforms:
     pre_build_image: false
     privileged: true
   - name: ubuntu-jammy
-    dockerfile: ../resources/playbooks/Dockerfile.j2
     image: ubuntu:jammy
     init: true
-    pre_build_image: false
   - name: ubuntu-noble
-    dockerfile: ../resources/playbooks/Dockerfile.j2
     image: ubuntu:noble
     init: true
-    pre_build_image: false
 provisioner:
   config_options:
     defaults:

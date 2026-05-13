@@ -4,7 +4,6 @@ FROM {{ base_image }}
 LABEL org.opencontainers.image.source=https://github.com/EA31337/ansible-role-wine
 LABEL org.opencontainers.image.description="Wine container based on ea31337.wine Ansible role"
 
-ENV DEBIAN_FRONTEND=noninteractive
 ENV DISPLAY=:0
 ENV XDG_RUNTIME_DIR=/tmp/runtime-root
 
@@ -70,25 +69,5 @@ RUN \
         xvfb-run && \
     # Ensure CA certs are properly registered in the system.
     update-ca-certificates
-
-{% else %}
-
-# Assume Debian/Ubuntu
-COPY ca-certificates/ /tmp/host-ca/
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        bash \
-        ca-certificates \
-        python3 \
-        sudo \
-        wget \
-        x11-utils \
-        xvfb && \
-    if ls /tmp/host-ca/*.crt >/dev/null 2>&1; then \
-      mkdir -p /usr/local/share/ca-certificates; \
-      cp /tmp/host-ca/*.crt /usr/local/share/ca-certificates/; \
-      update-ca-certificates; \
-    fi && \
-    rm -rf /tmp/host-ca /var/lib/apt/lists/*
 
 {% endif %}
