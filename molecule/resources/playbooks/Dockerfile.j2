@@ -1,6 +1,12 @@
 {% set base_image = item.base_image | default(item.image) %}
 FROM {{ base_image }}
 
+LABEL org.opencontainers.image.source=https://github.com/EA31337/ansible-role-wine
+LABEL org.opencontainers.image.description="Wine container based on ea31337.wine Ansible role"
+
+ENV DISPLAY=:0
+ENV XDG_RUNTIME_DIR=/tmp/runtime-root
+
 {% if 'nixos' in base_image %}
 
 # Prepare NixOS environment: containerd workarounds, proxy CA certs, and Ansible dependencies.
@@ -22,13 +28,19 @@ RUN \
       printf "ssl-cert-file = %s\n" "$combined" >> /etc/nix/nix.conf; \
     fi && \
     rm -rf /tmp/host-ca && \
-    # Install required packages for Ansible to work on NixOS.
+    # Install required packages for Ansible and Wine tests.
     nix-channel --update --option sandbox false > /dev/null && \
-    nix-env --option sandbox false -iA nixpkgs.procps nixpkgs.python3 nixpkgs.python3Packages.pip > /dev/null
+    nix-env --option sandbox false -iA \
+        nixpkgs.procps \
+        nixpkgs.python3 \
+        nixpkgs.python3Packages.pip \
+        nixpkgs.sudo \
+        nixpkgs.xorg.xdpyinfo \
+        nixpkgs.xvfb-run > /dev/null
 
 {% elif 'alpine' in base_image %}
 
-# Prepare Alpine environment: trust proxy CA certs and install Ansible dependencies.
+# Prepare Alpine environment: trust proxy CA certs and install Ansible/Wine dependencies.
 COPY ca-certificates/ /tmp/host-ca/
 RUN \
     # Trust proxy CA certificates if present (appended to live bundles for immediate use by apk).
@@ -43,9 +55,18 @@ RUN \
       fi; \
     fi && \
     rm -rf /tmp/host-ca && \
-    # Install required packages for Ansible.
+    # Enable community repository for some packages.
+    grep -E '^[^#].*/main$' /etc/apk/repositories | sed 's/main$/community/' >> /etc/apk/repositories && \
+    # Install required packages for Ansible and Wine tests.
     apk update -q && \
-    apk add -q --no-cache python3 sudo bash ca-certificates && \
+    apk add -q --no-cache \
+        bash \
+        ca-certificates \
+        python3 \
+        sudo \
+        xauth \
+        xdpyinfo \
+        xvfb-run && \
     # Ensure CA certs are properly registered in the system.
     update-ca-certificates
 
