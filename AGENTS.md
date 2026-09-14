@@ -136,7 +136,7 @@ molecule syntax
 
 - Root cause: Firewall/network policy blocks `dl.winehq.org`
 - Fix: Add `dl.winehq.org` to firewall allowlist
-- Prevention: Keep firewall rules documented in `.github/agents/FIREWALL.md`
+- Prevention: Keep firewall rules documented in `.github/FIREWALL.md`
 
 > Alpine apk fails with SSL certificate errors
 
@@ -227,7 +227,7 @@ If network requests fail during molecule tests (e.g. `dl.winehq.org`,
 
 - Refer to <https://gh.io/copilot/firewall-config> for agent firewall setup.
 - Do not work around blocked URLs; request allowlisting instead.
-- Document required hosts in `.github/agents/FIREWALL.md`.
+- Document required hosts in `.github/FIREWALL.md`.
 
 ### Alpine bootstrap fails with TLS error
 
