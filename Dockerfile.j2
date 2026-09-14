@@ -10,15 +10,17 @@ ENV DEBIAN_FRONTEND=noninteractive
 {% if 'alpine' in (docker_image | default('ubuntu:noble')) %}
 RUN grep -E '^[^#].*/main$' /etc/apk/repositories | sed 's/main$/community/' >> /etc/apk/repositories && \
     apk update -q && \
-    apk add -q --no-cache ansible bash ca-certificates cabextract curl fontconfig gawk p7zip python3 sudo ttf-freefont unzip xauth xvfb-run && \
+    apk add -q --no-cache ansible bash ca-certificates cabextract curl fontconfig gawk git p7zip python3 sudo ttf-freefont unzip xauth xvfb-run && \
     update-ca-certificates
 {% elif 'nixos' in (docker_image | default('ubuntu:noble')) %}
 RUN nix-channel --update > /dev/null && \
-    nix-env -iA nixpkgs.ansible nixpkgs.procps nixpkgs.python3 nixpkgs.python3Packages.pip nixpkgs.sudo > /dev/null
+    nix-env -iA nixpkgs.ansible nixpkgs.curl nixpkgs.procps nixpkgs.python3 nixpkgs.python3Packages.pip nixpkgs.sudo > /dev/null
 {% else %}
 RUN apt-get update -qq && \
     apt-get install -y -qq --no-install-recommends \
     ansible \
+    ca-certificates \
+    git \
     python3-apt \
     python3-pip \
     python3-setuptools \
@@ -31,13 +33,31 @@ RUN apt-get update -qq && \
 
 # Copy the role into the container
 WORKDIR /etc/ansible/roles/ea31337.wine
-COPY . .
+COPY defaults/ defaults/
+COPY meta/ meta/
+COPY tasks/ tasks/
+COPY templates/ templates/
+COPY vars/ vars/
+COPY ansible.cfg .
+COPY requirements.yml .
 
 # Create a local playbook to apply the role
-RUN ansible-galaxy collection install -r requirements.yml && \
-    printf -- "---\n- hosts: localhost\n  connection: local\n  roles:\n    - role: ea31337.wine\n      wine_init: false\n" > /tmp/playbook.yml && \
-    ansible-playbook /tmp/playbook.yml && \
-    rm /tmp/playbook.yml
+RUN ansible-galaxy role install -r requirements.yml --force && \
+    ansible-galaxy collection install -r requirements.yml --upgrade && \
+    printf -- "---\n- hosts: localhost\n  connection: local\n  roles:\n    - role: /etc/ansible/roles/ea31337.wine\n      wine_init: false\n" > /tmp/playbook.yml && \
+    ANSIBLE_PYTHON_INTERPRETER=auto_silent ansible-playbook /tmp/playbook.yml && \
+    rm /tmp/playbook.yml && \
+    if [ -f /usr/bin/apt-get ]; then \
+        export SUDO_FORCE_REMOVE=yes && \
+        apt-get update && \
+        apt-get purge -y --auto-remove \
+            git \
+            python3-pip \
+            python3-setuptools \
+            python3-wheel && \
+        apt-get clean && \
+        rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*; \
+    fi
 
 # Default CMD
 CMD ["wine", "--version"]
