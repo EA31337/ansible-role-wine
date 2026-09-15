@@ -95,7 +95,11 @@ jobs:
       - name: Run Molecule test
         uses: gofrolist/molecule-action@v2
         env:
-          ANSIBLE_COLLECTIONS_PATH: collections
+          # Must be absolute: Molecule runs ansible-playbook with the scenario
+          # directory as CWD, so a relative path would not resolve. This env var
+          # also takes precedence over the collections_path in Molecule's
+          # generated ansible.cfg.
+          ANSIBLE_COLLECTIONS_PATH: ${{ github.workspace }}/collections
           ANSIBLE_DISPLAY_OK_HOSTS: 'no'
           ANSIBLE_DISPLAY_SKIPPED_HOSTS: 'no'
           ANSIBLE_FORCE_COLOR: '1'

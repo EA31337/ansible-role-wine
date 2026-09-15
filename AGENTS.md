@@ -149,9 +149,18 @@ MOLECULE_DOCKER_NETWORK=host MOLECULE_DOCKER_FORCE_IPV4=true pipenv run molecule
 
 > `community.docker.docker_container` not found during molecule run
 
-- Root cause: Collections installed to `./collections` but not on Ansible search path
+- Root cause: Collections installed to `./collections` but not on Ansible's search path.
+  Molecule runs `ansible-playbook` with the **scenario directory** as CWD
+  (`molecule/<scenario>/`), so a *relative* `ANSIBLE_COLLECTIONS_PATH` does not resolve.
+  The env var also takes precedence over `collections_path` in Molecule's generated
+  `ansible.cfg`, so the absolute path configured there is bypassed.
+- Isolation: `molecule destroy -s <scenario>` fails at the first `ansible-playbook` call
+  with `couldn't resolve module/action 'community.docker.docker_container'`.
 - Fix: `collections_path` in molecule `config_options.defaults` includes `./collections`
-- Prevention: All scenario configs MUST include `collections_path`
+  (resolved against `MOLECULE_PROJECT_DIRECTORY`), and CI sets an **absolute**
+  `ANSIBLE_COLLECTIONS_PATH: ${{ github.workspace }}/collections`.
+- Prevention: Never set `ANSIBLE_COLLECTIONS_PATH` to a relative path; all scenario
+  configs MUST include `collections_path`.
 
 > Wine GPG key download fails (`dl.winehq.org` unreachable)
 
