@@ -69,11 +69,15 @@ For project overview and install instructions, see [README.md](README.md).
 
 | Container | Image | Notes |
 | --------- | ----- | ----- |
-| `alpine-latest` | `alpine:3.20` | Uses apk; Wine from Alpine repos |
-| `debian-latest` | `debian:latest` | Uses WineHQ apt repo |
-| `nixos-latest` | `nixos/nix:latest` | Custom Dockerfile; privileged mode |
-| `ubuntu-jammy` | `ubuntu:jammy` | WineHQ repo with `wine_release_codename: jammy` |
-| `ubuntu-noble` | `ubuntu:noble` | WineHQ repo with `wine_release_codename: jammy` |
+| `wine-alpine-latest` | `alpine:3.20` | Uses apk; Wine from Alpine repos |
+| `wine-debian-latest` | `debian:latest` | Uses WineHQ apt repo |
+| `wine-nixos-latest` | `nixos/nix:latest` | Custom Dockerfile; privileged mode |
+| `wine-ubuntu-jammy` | `ubuntu:jammy` | WineHQ repo with `wine_release_codename: jammy` |
+| `wine-ubuntu-noble` | `ubuntu:noble` | WineHQ repo with `wine_release_codename: jammy` |
+
+Platform names are prefixed with the role name (`wine-`) because Molecule's Docker
+driver names each container exactly after its platform. Generic names such as
+`debian-latest` would collide with concurrent Molecule runs of other roles.
 
 ### Running Tests
 

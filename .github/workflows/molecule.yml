@@ -50,11 +50,11 @@ jobs:
       fail-fast: true
       matrix:
         platform:
-          - alpine-latest
-          - debian-latest
-          - nixos-latest
-          - ubuntu-jammy
-          - ubuntu-noble
+          - wine-alpine-latest
+          - wine-debian-latest
+          - wine-nixos-latest
+          - wine-ubuntu-jammy
+          - wine-ubuntu-noble
         scenario:
           - default
           - devel
@@ -173,11 +173,11 @@ jobs:
             // Keep in sync with the strategy.matrix above.
             const scenarios = ['default', 'devel', 'staging', 'winetricks'];
             const platforms = [
-              'alpine-latest',
-              'debian-latest',
-              'nixos-latest',
-              'ubuntu-jammy',
-              'ubuntu-noble',
+              'wine-alpine-latest',
+              'wine-debian-latest',
+              'wine-nixos-latest',
+              'wine-ubuntu-jammy',
+              'wine-ubuntu-noble',
             ];
 
             const icon = (c) => ({
