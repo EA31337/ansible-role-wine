@@ -50,11 +50,11 @@ jobs:
       fail-fast: true
       matrix:
         platform:
-          - wine-alpine-latest
-          - wine-debian-latest
-          - wine-nixos-latest
-          - wine-ubuntu-jammy
-          - wine-ubuntu-noble
+          - alpine-latest
+          - debian-latest
+          - nixos-latest
+          - ubuntu-jammy
+          - ubuntu-noble
         scenario:
           - default
           - devel
@@ -88,7 +88,7 @@ jobs:
           PLATFORM="${{ matrix.platform }}"
           MOL_FILE="molecule/${SCENARIO}/molecule.yml"
           yq -i \
-            ".platforms = [.platforms[] | select(.name == \"${PLATFORM}\")]" \
+            ".platforms = [.platforms[] | select(.name | test(\"-${PLATFORM}$\"))]" \
             "$MOL_FILE"
           echo "Filtered platforms:"
           yq '.platforms[].name' "$MOL_FILE"
@@ -173,11 +173,11 @@ jobs:
             // Keep in sync with the strategy.matrix above.
             const scenarios = ['default', 'devel', 'staging', 'winetricks'];
             const platforms = [
-              'wine-alpine-latest',
-              'wine-debian-latest',
-              'wine-nixos-latest',
-              'wine-ubuntu-jammy',
-              'wine-ubuntu-noble',
+              'alpine-latest',
+              'debian-latest',
+              'nixos-latest',
+              'ubuntu-jammy',
+              'ubuntu-noble',
             ];
 
             const icon = (c) => ({

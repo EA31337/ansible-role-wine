@@ -185,15 +185,20 @@ pre-commit run -a
 
 ### Platforms
 
+Platform names follow the `<role>-<scenario>-<platform>` convention, so each
+scenario gets its own containers. For the `default` scenario:
+
 | Container | Image | Notes |
 | --------- | ----- | ----- |
-| `wine-alpine-latest` | `alpine:3.20` | Uses apk; Wine from Alpine repos |
-| `wine-debian-latest` | `debian:latest` | WineHQ apt repo; codename: `bookworm` |
-| `wine-nixos-latest` | `nixos/nix:latest` | Custom Dockerfile; privileged mode |
-| `wine-ubuntu-jammy` | `ubuntu:jammy` | WineHQ repo; codename: `jammy` |
-| `wine-ubuntu-noble` | `ubuntu:noble` | WineHQ repo; codename: `jammy` |
+| `wine-default-alpine-latest` | `alpine:3.20` | Uses apk; Wine from Alpine repos |
+| `wine-default-debian-latest` | `debian:latest` | WineHQ apt repo; codename: `bookworm` |
+| `wine-default-nixos-latest` | `nixos/nix:latest` | Custom Dockerfile; privileged mode |
+| `wine-default-ubuntu-jammy` | `ubuntu:jammy` | WineHQ repo; codename: `jammy` |
+| `wine-default-ubuntu-noble` | `ubuntu:noble` | WineHQ repo; codename: `jammy` |
 
-Platform names are prefixed with the role name (`wine-`) because Molecule's Docker
+The other scenarios (`devel`, `staging`, `winetricks`) use the same platform
+suffixes with their own scenario segment, e.g. `wine-devel-debian-latest`. This
+keeps containers unique across roles and scenarios, because Molecule's Docker
 driver names each container exactly after its platform. Generic names such as
 `debian-latest` would collide with concurrent Molecule runs of other roles.
 
