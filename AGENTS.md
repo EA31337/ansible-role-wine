@@ -53,6 +53,8 @@ For project overview and install instructions, see [README.md](README.md).
 - NEVER hardcode secrets or environment-specific values.
 - NEVER remove or modify tests to mask failures; fix root cause instead.
 - NEVER use `git add .` without verifying staged files.
+- MUST reference GitHub Actions by simple major version tags (e.g. `actions/checkout@v6`),
+  not pinned patch versions (e.g. `@v6.1.0`), so minor/patch updates apply automatically.
 
 ## Molecule Scenarios
 
@@ -78,32 +80,51 @@ For project overview and install instructions, see [README.md](README.md).
 If asked to run Molecule tests, MUST follow the instructions in
 [.github/prompts/molecule-test.prompt.md](.github/prompts/molecule-test.prompt.md).
 
+Molecule and Ansible are installed via the project `Pipfile`, so run every command through `pipenv`
+(they are not on `PATH`).
+
 ```bash
 # Full test (all scenarios)
-molecule test
+pipenv run molecule test
 
 # Single scenario
-molecule test -s default
+pipenv run molecule test -s default
 
 # Individual steps
-molecule create -s default
-molecule converge -s default
-molecule verify -s default
-molecule destroy -s default
+pipenv run molecule create -s default
+pipenv run molecule converge -s default
+pipenv run molecule verify -s default
+pipenv run molecule destroy -s default
 
 # Syntax check only
-molecule syntax
+pipenv run molecule syntax
+```
+
+### Sandboxed / firewalled environments
+
+In sandboxed environments (e.g. no outbound NAT on the default Docker bridge, or a resolver that
+returns non-routable IPv6 addresses), opt in to the following environment variables:
+
+- `MOLECULE_DOCKER_NETWORK=host` - run containers and image builds on the host network; required
+  when the default bridge has no outbound NAT.
+- `MOLECULE_DOCKER_FORCE_IPV4=true` - prefer IPv4 for DNS resolution inside containers; required
+  when the resolver returns IPv6 addresses that are not routable.
+
+Example invocation:
+
+```bash
+MOLECULE_DOCKER_NETWORK=host MOLECULE_DOCKER_FORCE_IPV4=true pipenv run molecule test -s default
 ```
 
 ## Testing & Verification Gates
 
-- `molecule syntax` — YAML + playbook syntax validation
-- `molecule converge` — full role execution on all containers
-- `molecule idempotence` — re-run must produce zero changes
-- `molecule verify` — asserts `wine --version` succeeds + winetricks if enabled
-- `yamllint .` — YAML lint (config: `.yamllint`)
-- `ansible-lint` — Ansible best practices (config: `.ansible-lint`)
-- `pre-commit run -a` — all pre-commit hooks
+- `pipenv run molecule syntax` - YAML + playbook syntax validation
+- `pipenv run molecule converge` - full role execution on all containers
+- `pipenv run molecule idempotence` - re-run must produce zero changes
+- `pipenv run molecule verify` - asserts `wine --version` succeeds + winetricks if enabled
+- `yamllint .` - YAML lint (config: `.yamllint`)
+- `ansible-lint` - Ansible best practices (config: `.ansible-lint`)
+- `pre-commit run -a` - all pre-commit hooks
 
 ## Troubleshooting Matrix
 
@@ -187,7 +208,7 @@ ansible-lint
 - Verify changes with `git diff --no-color`.
 - Ensure no temporary or unrelated files are staged.
 - Run `yamllint .` and `ansible-lint` for any YAML changes.
-- Run `molecule syntax` to catch playbook errors early.
+- Run `pipenv run molecule syntax` to catch playbook errors early.
 
 ### Updating Pre-commit Hooks
 
