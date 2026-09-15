@@ -205,7 +205,7 @@ pre-commit run -a
 2. **Common error patterns:**
    - **NixOS SSL/channel errors**: Proxy CA certs must be injected via
       `Dockerfile.j2` and `prepare.yml`. Combined cert bundle is stored
-      at `/etc/nix/ca-bundle.crt` (NOT `/etc/ssl/certs/` — files there
+      at `/etc/nix/ca-bundle.crt` (NOT `/etc/ssl/certs/` - files there
       vanish across Docker overlay layers in the NixOS image).
 
    - **NixOS firewall**: `channels.nixos.org`, `releases.nixos.org`, and
