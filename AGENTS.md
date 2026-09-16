@@ -56,6 +56,11 @@ For project overview and install instructions, see [README.md](README.md).
 - MUST reference GitHub Actions by simple major version tags (e.g. `actions/checkout@v6`),
   not pinned patch versions (e.g. `@v6.1.0`), so minor/patch updates apply automatically.
 
+## Docker Tests
+
+The standalone Docker test playbooks in `tests/`, how to run them via `pipenv`, and
+their troubleshooting matrix live in [tests/AGENTS.md](tests/AGENTS.md).
+
 ## Molecule Testing
 
 Molecule scenarios, the platform matrix, how to run the tests, and Molecule-specific
