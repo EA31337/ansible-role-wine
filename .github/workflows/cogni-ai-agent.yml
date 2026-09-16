@@ -99,7 +99,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false  # Prevents Duplicate header: "Authorization" error.
-      - uses: actions/setup-python@v6.1.0
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - name: Restore Python user site
@@ -161,22 +161,3 @@ jobs:
               github.event.pull_request.body ||
               inputs.prompt
             }}
-
-  summary:
-    name: Generate Summary (post-run)
-    needs: cogni-ai-agent
-    if: always() && needs.cogni-ai-agent.result != 'skipped'
-    runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: read
-      id-token: write
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-      - name: Generate Summary
-        uses: Cogni-AI-OU/cogni-ai-agent-action/ai-inference/summary@main
-        with:
-          agent_job_id: cogni-ai-agent
-          github_token: ${{ secrets.GITHUB_TOKEN }}

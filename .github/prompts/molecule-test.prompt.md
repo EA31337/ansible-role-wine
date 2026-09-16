@@ -38,15 +38,24 @@ Run all Molecule scenarios and report results as a table.
 | `staging` | `staging` | Yes | Staging release + winetricks |
 | `winetricks` | (default) | Yes | Winetricks install path only |
 
-## Platforms (shared by all scenarios)
+## Platforms (per scenario)
+
+Platform names follow the `<role>-<scenario>-<platform>` convention, so each
+scenario gets its own containers. For the `default` scenario:
 
 | Container | Image | Notes |
 | --- | --- | --- |
-| `alpine-latest` | `alpine:3.20` | Uses apk; Wine from Alpine repos |
-| `debian-latest` | `debian:latest` | WineHQ apt repo; codename `bookworm` |
-| `nixos-latest` | `nixos/nix:latest` | Custom Dockerfile; privileged mode |
-| `ubuntu-jammy` | `ubuntu:jammy` | WineHQ repo; codename `jammy` |
-| `ubuntu-noble` | `ubuntu:noble` | WineHQ repo; codename `jammy` |
+| `wine-default-alpine-latest` | `alpine:3.20` | Uses apk; Wine from Alpine repos |
+| `wine-default-debian-latest` | `debian:latest` | WineHQ apt repo; codename `bookworm` |
+| `wine-default-nixos-latest` | `nixos/nix:latest` | Custom Dockerfile; privileged mode |
+| `wine-default-ubuntu-jammy` | `ubuntu:jammy` | WineHQ repo; codename `jammy` |
+| `wine-default-ubuntu-noble` | `ubuntu:noble` | WineHQ repo; codename `jammy` |
+
+The other scenarios (`devel`, `staging`, `winetricks`) use the same platform
+suffixes with their own scenario segment, e.g. `wine-devel-debian-latest`. This
+keeps containers unique across roles and scenarios, because Molecule's Docker
+driver names each container exactly after its platform. Generic names such as
+`debian-latest` would collide with concurrent Molecule runs of other roles.
 
 ## Results Template
 
@@ -59,13 +68,16 @@ For each scenario, report per-platform step results:
 
 | Platform | create | prepare | converge | idempotence | verify |
 | --- | :---: | :---: | :---: | :---: | :---: |
-| `alpine-latest` | | | | | |
-| `debian-latest` | | | | | |
-| `nixos-latest` | | | | | |
-| `ubuntu-jammy` | | | | | |
-| `ubuntu-noble` | | | | | |
+| `wine-<scenario>-alpine-latest` | | | | | |
+| `wine-<scenario>-debian-latest` | | | | | |
+| `wine-<scenario>-nixos-latest` | | | | | |
+| `wine-<scenario>-ubuntu-jammy` | | | | | |
+| `wine-<scenario>-ubuntu-noble` | | | | | |
 
 ### Summary (all scenarios)
+
+Rows are the platform suffix; the container for a given cell is
+`wine-<scenario>-<platform>`.
 
 | Platform | default | devel | staging | winetricks |
 | --- | :---: | :---: | :---: | :---: |

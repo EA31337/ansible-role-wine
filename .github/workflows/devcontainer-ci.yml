@@ -1,7 +1,6 @@
 ---
 # Note: Keep keys and envs in alphabetical order.
-name: Devcontainer CI
-
+name: Development Containers (CI)
 # yamllint disable-line rule:truthy
 on:
   pull_request:
@@ -10,18 +9,17 @@ on:
       - .github/workflows/devcontainer-ci.yml
   push:
     branches:
-      - master
+      - dev
+      - main
     paths:
       - .devcontainer/**
       - .github/workflows/devcontainer-ci.yml
-  workflow_call:
+  schedule:
+    - cron: 0 0 * * 1  # Run every Monday at 00:00 UTC
   workflow_dispatch:
-
-permissions:
-  contents: read
-  packages: write
-
 jobs:
   devcontainer:
     uses: EA31337/.github/.github/workflows/devcontainer-ci.yml@master
-    secrets: inherit  # pragma: allowlist secret
+    permissions:
+      contents: read
+      packages: write

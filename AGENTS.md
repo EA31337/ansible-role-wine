@@ -53,121 +53,38 @@ For project overview and install instructions, see [README.md](README.md).
 - NEVER hardcode secrets or environment-specific values.
 - NEVER remove or modify tests to mask failures; fix root cause instead.
 - NEVER use `git add .` without verifying staged files.
+- MUST reference GitHub Actions by simple major version tags (e.g. `actions/checkout@v6`),
+  not pinned patch versions (e.g. `@v6.1.0`), so minor/patch updates apply automatically.
 
-## Molecule Scenarios
+## Docker Tests
 
-| Scenario | `wine_release` | Winetricks | Notes |
-| -------- | -------------- | ---------- | ----- |
-| `default` | `stable` | No | Version-pinned per host via `host_vars` |
-| `devel` | `devel` | Yes | Tests development release + winetricks |
-| `staging` | `staging` | Yes | Tests staging release + winetricks |
-| `winetricks` | (default) | Yes | Tests winetricks install path |
+The standalone Docker test playbooks in `tests/`, how to run them via `pipenv`, and
+their troubleshooting matrix live in [tests/AGENTS.md](tests/AGENTS.md).
 
-### Platforms (all scenarios)
+## Molecule Testing
 
-| Container | Image | Notes |
-| --------- | ----- | ----- |
-| `alpine-latest` | `alpine:3.20` | Uses apk; Wine from Alpine repos |
-| `debian-latest` | `debian:latest` | Uses WineHQ apt repo |
-| `nixos-latest` | `nixos/nix:latest` | Custom Dockerfile; privileged mode |
-| `ubuntu-jammy` | `ubuntu:jammy` | WineHQ repo with `wine_release_codename: jammy` |
-| `ubuntu-noble` | `ubuntu:noble` | WineHQ repo with `wine_release_codename: jammy` |
-
-### Running Tests
-
-If asked to run Molecule tests, MUST follow the instructions in
-[.github/prompts/molecule-test.prompt.md](.github/prompts/molecule-test.prompt.md).
-
-```bash
-# Full test (all scenarios)
-molecule test
-
-# Single scenario
-molecule test -s default
-
-# Individual steps
-molecule create -s default
-molecule converge -s default
-molecule verify -s default
-molecule destroy -s default
-
-# Syntax check only
-molecule syntax
-```
+Molecule scenarios, the platform matrix, how to run the tests, and Molecule-specific
+troubleshooting live in [molecule/AGENTS.md](molecule/AGENTS.md).
 
 ## Testing & Verification Gates
 
-- `molecule syntax` — YAML + playbook syntax validation
-- `molecule converge` — full role execution on all containers
-- `molecule idempotence` — re-run must produce zero changes
-- `molecule verify` — asserts `wine --version` succeeds + winetricks if enabled
-- `yamllint .` — YAML lint (config: `.yamllint`)
-- `ansible-lint` — Ansible best practices (config: `.ansible-lint`)
-- `pre-commit run -a` — all pre-commit hooks
+- `yamllint .` - YAML lint (config: `.yamllint`)
+- `ansible-lint` - Ansible best practices (config: `.ansible-lint`)
+- `pre-commit run -a` - all pre-commit hooks
 
 ## Troubleshooting Matrix
-
-> NixOS container build fails with SSL/channel errors
-
-- Root cause: `nix-channel --update` inside Docker can fail with sandbox or SSL issues
-- Isolation: Check `molecule/resources/playbooks/Dockerfile.j2`
-- Fix: Dockerfile injects proxy CA certs into Nix cert bundle via `ssl-cert-file`
-  in `nix.conf`; cert setup and `nix-channel --update` are in a single `RUN` layer
-- Required hosts: `channels.nixos.org`, `releases.nixos.org`, `cache.nixos.org`
-  (channels.nixos.org redirects to releases.nixos.org; cache.nixos.org serves binaries)
-- Prevention: All three Nix hosts must be in firewall allowlist
-
-> NixOS: files in `/etc/ssl/certs/` vanish across Docker build layers
-
-- Root cause: containerd/overlayfs bug causes files written to `/etc/ssl/certs/`
-  in one Docker `RUN` layer to disappear in subsequent layers (NixOS image only)
-- Isolation: `docker build` with separate RUN steps writing + reading a file there
-- Fix: Store combined CA bundle in `/etc/nix/ca-bundle.crt` instead;
-  `/etc/nix/` persists correctly across layers
-- Prevention: NEVER store persistent files under `/etc/ssl/certs/` in NixOS containers
-
-> `community.docker.docker_container` not found during molecule run
-
-- Root cause: Collections installed to `./collections` but not on Ansible search path
-- Fix: `collections_path` in molecule `config_options.defaults` includes `./collections`
-- Prevention: All scenario configs MUST include `collections_path`
 
 > Wine GPG key download fails (`dl.winehq.org` unreachable)
 
 - Root cause: Firewall/network policy blocks `dl.winehq.org`
 - Fix: Add `dl.winehq.org` to firewall allowlist
-- Prevention: Keep firewall rules documented in `.github/agents/FIREWALL.md`
+- Prevention: Keep firewall rules documented in `.github/FIREWALL.md`
 
 > Alpine apk fails with SSL certificate errors
 
 - Root cause: HTTPS interception or missing CA certs in container
 - Isolation: `docker run --rm alpine:3.20 apk update`
 - Fix: Ensure CA certificates are present; check proxy/firewall SSL inspection
-
-> `allow_broken_conditionals` errors on molecule-docker 2.1.0
-
-- Root cause: molecule-docker uses non-boolean `when:` in create/destroy playbooks
-- Fix: Set `allow_broken_conditionals: true` in all scenario configs
-- Ref: <https://github.com/ansible-community/molecule-plugins/issues/311>
-
-### GitHub Actions Molecule report step fails with summary size limit
-
-- **Root cause**: GitHub job summaries are capped at 1 MiB, but full Molecule HTML-to-Markdown conversions can exceed it.
-- **Fix**: Upload full Molecule HTML reports as workflow artifacts and append only a concise filtered summary
-  (e.g., Play Recap, errors, and warnings) to `$GITHUB_STEP_SUMMARY`.
-
-### Molecule report `EACCES: permission denied`
-
-- **Root cause**: The report file generated by `gofrolist/molecule-action` is owned by root with restricted permissions
-  because it is created inside a Docker container.
-- **Fix**: Run `sudo chown "$USER":"$USER" "$REPORT" || true` on the report file before attempting to read it
-  (for summary) or upload it.
-
-> Converge fails on wrong Wine version format for a platform
-
-- Root cause: Debian-style version strings (e.g. `10.0.0.0~jammy-1`) applied to Alpine/NixOS
-- Fix: Use `host_vars` per platform in molecule.yml; keep `converge.yml` generic
-- NEVER set platform-specific vars as role vars in `converge.yml`
 
 ## Linting and Validation
 
@@ -187,7 +104,29 @@ ansible-lint
 - Verify changes with `git diff --no-color`.
 - Ensure no temporary or unrelated files are staged.
 - Run `yamllint .` and `ansible-lint` for any YAML changes.
-- Run `molecule syntax` to catch playbook errors early.
+- Run `pipenv run molecule syntax` to catch playbook errors early.
+
+### Updating Pre-commit Hooks
+
+Run `pre-commit autoupdate`, then `pre-commit run -a`. Revert any hook that breaks and file an issue for it.
+
+Known blockers (as of the 2026-09 update):
+
+- `ansible-lint` v26.8.0 declares `language_version: python3.14`. Without a Python 3.14
+  interpreter, either keep the ref pinned or override the hook with `language_version: python3`.
+- `pre-commit-hooks` v6.0.0 removed `check-byte-order-marker`; replace it with
+  `fix-byte-order-marker`.
+- `markdownlint-cli` v0.49.1 needs node >= 22.20 (its dev dependency `ava@8`). If the hook pins
+  `language_version: 22.14.0`, the env fails to install; pin markdownlint-cli or bump the pinned node.
+- `ansible-lint` + `community.docker`: a stale, empty
+  `.ansible/collections/ansible_collections/community/docker` directory shadows the real collection
+  and causes `couldn't resolve module/action 'community.docker.docker_container'`. Remove it.
+- `additional_dependencies` with a version range must use the block form
+  (`- ansible-core>=2.16,<2.21`); the inline flow form splits on the comma into separate
+  requirements, and the no-space form trips ansible-lint's `yaml[commas]` rule.
+
+`pre-commit run -a` can also surface pre-existing failures (e.g. `yamlfix`/`black` reformatting,
+`flake8` violations) unrelated to the ref bump; CI lints only changed files, so file these separately.
 
 ### Editing Files
 
@@ -205,7 +144,7 @@ If network requests fail during molecule tests (e.g. `dl.winehq.org`,
 
 - Refer to <https://gh.io/copilot/firewall-config> for agent firewall setup.
 - Do not work around blocked URLs; request allowlisting instead.
-- Document required hosts in `.github/agents/FIREWALL.md`.
+- Document required hosts in `.github/FIREWALL.md`.
 
 ### Alpine bootstrap fails with TLS error
 

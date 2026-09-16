@@ -185,13 +185,22 @@ pre-commit run -a
 
 ### Platforms
 
+Platform names follow the `<role>-<scenario>-<platform>` convention, so each
+scenario gets its own containers. For the `default` scenario:
+
 | Container | Image | Notes |
 | --------- | ----- | ----- |
-| `alpine-latest` | `alpine:3.20` | Uses apk; Wine from Alpine repos |
-| `debian-latest` | `debian:latest` | WineHQ apt repo; codename: `bookworm` |
-| `nixos-latest` | `nixos/nix:latest` | Custom Dockerfile; privileged mode |
-| `ubuntu-jammy` | `ubuntu:jammy` | WineHQ repo; codename: `jammy` |
-| `ubuntu-noble` | `ubuntu:noble` | WineHQ repo; codename: `jammy` |
+| `wine-default-alpine-latest` | `alpine:3.20` | Uses apk; Wine from Alpine repos |
+| `wine-default-debian-latest` | `debian:latest` | WineHQ apt repo; codename: `bookworm` |
+| `wine-default-nixos-latest` | `nixos/nix:latest` | Custom Dockerfile; privileged mode |
+| `wine-default-ubuntu-jammy` | `ubuntu:jammy` | WineHQ repo; codename: `jammy` |
+| `wine-default-ubuntu-noble` | `ubuntu:noble` | WineHQ repo; codename: `jammy` |
+
+The other scenarios (`devel`, `staging`, `winetricks`) use the same platform
+suffixes with their own scenario segment, e.g. `wine-devel-debian-latest`. This
+keeps containers unique across roles and scenarios, because Molecule's Docker
+driver names each container exactly after its platform. Generic names such as
+`debian-latest` would collide with concurrent Molecule runs of other roles.
 
 ## Troubleshooting
 
@@ -205,7 +214,7 @@ pre-commit run -a
 2. **Common error patterns:**
    - **NixOS SSL/channel errors**: Proxy CA certs must be injected via
       `Dockerfile.j2` and `prepare.yml`. Combined cert bundle is stored
-      at `/etc/nix/ca-bundle.crt` (NOT `/etc/ssl/certs/` — files there
+      at `/etc/nix/ca-bundle.crt` (NOT `/etc/ssl/certs/` - files there
       vanish across Docker overlay layers in the NixOS image).
 
    - **NixOS firewall**: `channels.nixos.org`, `releases.nixos.org`, and
